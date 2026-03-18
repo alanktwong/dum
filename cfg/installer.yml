@@ -1,0 +1,42 @@
+playbook:
+  id: "my-test-playbook"
+  description: "My personal playbook for setting up my development environment"
+  jetbrains:
+    - datagrip: "DataGrip2025.1"
+    - goland: "GoLand2025.1"
+    - idea: "IntelliJIdea2025.1"
+    - pycharm: "PyCharm2025.1"
+    - rustrover: "RustRover2025.1"
+    - webstorm: "WebStorm2025.1"
+  plays:
+    - id: "test"
+      enabled: false
+      description: "My test play for setting up my development environment"
+      tasks:
+        - type: "dir"
+          id: "~/.dotfiles"
+        - type: "link"
+          id: "../projects/dotfiles"
+          root: "~/.dotfiles"
+        - type: "brew"
+          id: "scc"
+        - type: "function"
+          id: "install_test"
+        - type: "git"
+          id: "https://github.com/assertj/assertj.git"
+          root: "~/.dotfiles"
+          enabled: false
+        - type: "jetbrains"
+          id: "org.asciidoctor.intellij.asciidoc"
+          apps:
+            - "idea"
+          description: "AsciiDoc"
+          enabled: false
+        - type: "mas"
+          id: "462058435"
+          description: "Microsoft Excel"
+          enabled: false
+        - type: "vscode"
+          id: "asciidoctor.asciidoctor-vscode"
+          description: "AsciiDoctor"
+          enabled: false
