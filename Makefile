@@ -55,13 +55,11 @@ make_out:
 
 clean: ## cleans binary and other generated files
 	@printf ${COLOR} "Cleaning up ..."
-	@go clean
+	@go clean -cache
 	@rm -rf $(OUT_DIR)
 	@rm -f coverage*.out
-	@rm -f ./pkg/enums/jetbrains_type_enum.go
-	@rm -f ./pkg/enums/task_type_enum.go
-	@rm -f ./pkg/playbook/utilities_mocks_test.go
-	@rm -f ./pkg/playbook/playbook_mocks_test.go
+	@rm -f ./pkg/enums/*_enum.go
+	@rm -f ./pkg/playbook/*_mocks_test.go
 
 .PHONY: tidy
 tidy: ## runs tidy to fix go.mod dependencies
@@ -84,13 +82,10 @@ build: make_out fmt vendor generate ## local build
 	@printf ${COLOR} "Building ..."
 	@go build -v -o $(DUM_EXECUTABLE)-${DUM_VERSION} $(DUM_SOURCE)
 
-.PHONY: compile
-compile: build  ## compile binaries for many OSes and CPU architectures.
+.PHONY: release
+release: build  ## compile binaries for many OSes and CPU architectures using goreleaser
 	@printf ${COLOR} "Compiling for every OS and Platform ..."
-
-	GOOS=darwin GOARCH=amd64 go build -o ${DUM_EXECUTABLE}-darwin-amd64-${DUM_VERSION} ${DUM_SOURCE}
-	GOOS=darwin GOARCH=arm64 go build -o ${DUM_EXECUTABLE}-darwin-arm64-${DUM_VERSION} ${DUM_SOURCE}
-	GOOS=linux GOARCH=amd64 go build -o ${DUM_EXECUTABLE}-linux-amd64-${DUM_VERSION} ${DUM_SOURCE}
+	@goreleaser build --clean --snapshot
 
 ## Quality
 .PHONY: check
