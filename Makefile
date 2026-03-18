@@ -1,0 +1,158 @@
+# update app name. this is the name of binary
+# See https://www.mohitkhare.com/blog/go-makefile/
+OUT_DIR="./dist"
+
+DUM_APP=dum
+DUM_SOURCE=./cmd/${DUM_APP}/main.go
+DUM_VERSION="0.2.2"
+DUM_EXECUTABLE="$(OUT_DIR)/$(DUM_APP)"
+
+ALL_PACKAGES=$(shell go list ./... | grep -v /vendor)
+SHELL := /bin/bash # Use bash syntax
+
+# Optional colors to beautify output
+BLACK   := $(shell tput -Txterm setaf 0)
+RED     := $(shell tput -Txterm setaf 1)
+GREEN   := $(shell tput -Txterm setaf 2)
+YELLOW  := $(shell tput -Txterm setaf 3)
+BLUE    := $(shell tput -Txterm setaf 4)
+MAGENTA := $(shell tput -Txterm setaf 5)
+CYAN    := $(shell tput -Txterm setaf 6)
+WHITE   := $(shell tput -Txterm setaf 7)
+RESET   := $(shell tput -Txterm sgr0)
+COLOR   := "\e[1;36m%s\e[0m\n"
+
+## Tools
+.PHONY: print-go-version
+print-go-version: ## prints the go version
+	echo "Go Version: $(shell go version)"
+
+.PHONY: rhard
+rhard: ## git reset hard
+	@printf ${COLOR} "git resetting hard ..."
+	@git reset --hard HEAD
+	@for dir in vim/vim.d/plugged/*/; do \
+		if [ -d "$$dir/.git" ]; then \
+			echo "Resetting $$dir ..."; \
+			git -C "$$dir" reset --hard HEAD; \
+			git -C "$$dir" clean -fd; \
+		fi; \
+	done
+
+.PHONY: install
+install: ## Installs tools
+	@printf ${COLOR} "Installing tools ..."
+	@go install github.com/abice/go-enum@latest
+	@go install golang.org/x/tools/cmd/goimports@latest
+	@go install github.com/axw/gocov/gocov@latest
+	@go install github.com/matm/gocov-html/cmd/gocov-html@latest
+	@brew install golangci-lint
+	@brew install mockery
+
+## Compile
+make_out:
+	@mkdir -p ${OUT_DIR}
+
+clean: ## cleans binary and other generated files
+	@printf ${COLOR} "Cleaning up ..."
+	@go clean
+	@rm -rf $(OUT_DIR)
+	@rm -f coverage*.out
+	@rm -f ./pkg/enums/jetbrains_type_enum.go
+	@rm -f ./pkg/enums/task_type_enum.go
+	@rm -f ./pkg/playbook/utilities_mocks_test.go
+	@rm -f ./pkg/playbook/playbook_mocks_test.go
+
+.PHONY: tidy
+tidy: ## runs tidy to fix go.mod dependencies
+	@printf ${COLOR} "Tidying ..."
+	@go mod tidy
+
+.PHONY: vendor
+vendor: tidy ## all packages required to support builds and tests in the /vendor directory
+	@printf ${COLOR} "Vendoring ..."
+	@go mod vendor
+
+.PHONY: generate
+generate: ## generate code
+	@printf ${COLOR} "Generating ..."
+	@go generate ./...
+	@mockery
+
+.PHONY: build
+build: make_out fmt vendor generate ## local build
+	@printf ${COLOR} "Building ..."
+	@go build -v -o $(DUM_EXECUTABLE)-${DUM_VERSION} $(DUM_SOURCE)
+
+.PHONY: compile
+compile: build  ## compile binaries for many OSes and CPU architectures.
+	@printf ${COLOR} "Compiling for every OS and Platform ..."
+
+	GOOS=darwin GOARCH=amd64 go build -o ${DUM_EXECUTABLE}-darwin-amd64-${DUM_VERSION} ${DUM_SOURCE}
+	GOOS=darwin GOARCH=arm64 go build -o ${DUM_EXECUTABLE}-darwin-arm64-${DUM_VERSION} ${DUM_SOURCE}
+	GOOS=linux GOARCH=amd64 go build -o ${DUM_EXECUTABLE}-linux-amd64-${DUM_VERSION} ${DUM_SOURCE}
+
+## Quality
+.PHONY: check
+check: build lint vet test ## runs code quality checks
+	@printf ${COLOR} "Checking code quality ..."
+
+# Append || true below if blocking local development
+.PHONY: lint
+lint: build ## go linting. Update and use specific lint tool and options
+	@printf ${COLOR} "Linting ..."
+	@golangci-lint run cmd/...
+	@golangci-lint run pkg/...
+
+.PHONY: vet
+vet: ## go vet
+	@printf ${COLOR} "Vetting ..."
+	@go vet ./...
+
+.PHONY: fmt
+fmt: ## runs go formatter
+	@printf ${COLOR} "Formatting ..."
+	@go fmt ./...
+
+## Test
+.PHONY: test
+test: build ## runs tests and create generates coverage report
+	@printf ${COLOR} "Testing ..."
+	@go test -v -cover \
+	    -coverprofile=${OUT_DIR}/coverage.txt \
+	    -covermode=atomic \
+	    -coverpkg=./... \
+	    -race ./...
+
+.PHONY: coverage
+coverage: test ## displays test coverage report in html mode
+	@printf ${COLOR} "Checking coverage of tests ..."
+	@go tool cover -html=$(OUT_DIR)/coverage.txt
+
+.PHONY: profile
+profile: ## profiles
+	@printf ${COLOR} "Profiling ..."
+	@go test -cpuprofile cpu.prof -memprofile mem.prof -v -bench ./...
+
+.PHONY: bench
+bench: ## benchmarks
+	@printf ${COLOR} "Benchmarking ..."
+	@go test -v -benchmem -bench=. ./...
+
+## All
+.PHONY: all
+all: build check ## runs setup, quality checks and builds
+	@printf ${COLOR} "running all ..."
+
+## Help
+.PHONY: help
+help: ## Show this help.
+	@echo ''
+	@echo 'Usage:'
+	@echo '  ${YELLOW}make${RESET} ${GREEN}<target>${RESET}'
+	@echo ''
+	@echo 'Targets:'
+	@awk 'BEGIN {FS = ":.*?## "} { \
+		if (/^[a-zA-Z_-]+:.*?##.*$$/) {printf "    ${YELLOW}%-20s${GREEN}%s${RESET}\n", $$1, $$2} \
+		else if (/^## .*$$/) {printf "  ${CYAN}%s${RESET}\n", substr($$1,4)} \
+		}' $(MAKEFILE_LIST)
