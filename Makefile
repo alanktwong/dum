@@ -42,12 +42,12 @@ rhard: ## git reset hard
 .PHONY: install
 install: ## Installs tools
 	@printf ${COLOR} "Installing tools ..."
-	@go install github.com/abice/go-enum@latest
-	@go install golang.org/x/tools/cmd/goimports@latest
-	@go install github.com/axw/gocov/gocov@latest
-	@go install github.com/matm/gocov-html/cmd/gocov-html@latest
-	@brew install golangci-lint
-	@brew install mockery
+	@bash ./tools/dev-prep.sh
+
+.PHONY: check_tools
+check_tools: ## Check tools
+	@printf ${COLOR} "Checking tools ..."
+	@bash ./tools/dev-env-check.sh
 
 ## Compile
 make_out:

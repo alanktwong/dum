@@ -8,21 +8,27 @@ if ! command -v brew &>/dev/null; then
   exit 1
 fi
 
-# Ensure the docker command is available
-if ! command -v docker &>/dev/null; then
-  echo >&2 "Docker is required to build and test. Please install Docker and try again."
+if [[ ":$PATH:" != *":$GOPATH/bin:"* ]] && [[ ":$PATH:" != *"$GOPATH/bin"* ]]; then
+  echo >&2 "\$GOPATH/bin is not in your \$PATH."
+  echo >&2 "Add the following to your shell config: export PATH=\"\$PATH:\$GOPATH/bin\""
   exit 1
 fi
 
+
 REQUIRED_COMMANDS=(
-  "buf"
   "direnv"
   "git-lfs"
+  "go"
+  "go-enum"
+  "goimports"
+  "golangci-lint"
+  "goreleaser"
   "jq"
+  "mockery"
   "pre-commit"
   "shellcheck"
-  "temporal"
   "trufflehog"
+  "yamlfmt"
   "yq"
 )
 
@@ -32,11 +38,5 @@ for cmd in "${REQUIRED_COMMANDS[@]}"; do
     exit 1
   fi
 done
-
-if [[ "$__MAP_DIRENV_INSTALLED" != "1" ]]; then
-  echo >&2 "You haven't installed/setup direnv properly, or allowed it."
-  echo >&2 "Follow the install instructions at https://direnv.net/docs/hook.html"
-  exit 1
-fi
 
 echo "All good!"
