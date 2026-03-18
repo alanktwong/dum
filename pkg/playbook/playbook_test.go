@@ -38,7 +38,7 @@ func createTestPlayBook(t *testing.T) *PlayBook {
 func createTestInput(t *testing.T) *Input {
 	f := NewFactory()
 	input, err := f.Provide(InputOptions{
-		File:   "$GOPATH/src/dotfiles/pkg/testdata/test_installer.yml",
+		File:   "../../pkg/testdata/test_installer.yml",
 		Group:  "my-test-play",
 		DryRun: true,
 	})

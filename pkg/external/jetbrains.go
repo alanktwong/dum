@@ -34,7 +34,7 @@ func (j *JetBrainsImpl) IsInstalled(ideName, plugin string) bool {
 		"plugins",
 		plugin)
 	pluginPath := filepath.Clean(joined)
-	if _, err := os.Stat(pluginPath); err != nil { //nolint:gosec // G703: path is constructed from a known base dir and cleaned
+	if _, err := os.Stat(pluginPath); err != nil {
 		// ctx.Log.Debugf("%v %v: plugin %v already installed for %s", TASK_ELLIPSIS, ctx.Play, app, t.ID)
 		return true
 	}

@@ -9,7 +9,7 @@ import (
 
 func TestFactory_Provide(t *testing.T) {
 	options := InputOptions{
-		File:   "$GOPATH/src/dotfiles/pkg/testdata/test_installer.yml",
+		File:   "../../pkg/testdata/test_installer.yml",
 		Group:  "test",
 		DryRun: true,
 	}
