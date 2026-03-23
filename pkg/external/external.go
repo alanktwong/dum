@@ -42,6 +42,8 @@ type Ext interface {
 	IsDir(path string) bool
 	// IsSymlink determines whether a path is a symbolic link.
 	IsSymlink(path string) bool
+	// RunCommand runs a bash command.
+	RunCommand(ctx context.Context, command string, sudo bool) error
 }
 
 // DefaultExt implements Ext.
@@ -209,6 +211,21 @@ func (u *DefaultExt) IsDir(path string) bool {
 func (u *DefaultExt) IsSymlink(path string) bool {
 	info, err := os.Lstat(path)
 	return err == nil && info.Mode()&os.ModeSymlink != 0
+}
+
+// RunCommand implements Ext.
+func (u *DefaultExt) RunCommand(ctx context.Context, command string, sudo bool) error {
+	runner := func() error {
+		cmd := exec.CommandContext(ctx, "bash", "-c", command)
+		return cmd.Run()
+	}
+	if sudo {
+		runner = func() error {
+			cmd := exec.CommandContext(ctx, "sudo", "bash", "-c", command)
+			return cmd.Run()
+		}
+	}
+	return runner()
 }
 
 // ToAbsolutePath implements Ext.
