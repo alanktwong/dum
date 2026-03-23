@@ -11,23 +11,27 @@ import (
 // Use 'command' or 'script' in attributes to specify what to run.
 type BashTask struct {
 	Attributes
-	Utils external.Ext
-	Log   logging.Logger
+	Command string
+	Script  string
+	Utils   external.Ext
+	Log     logging.Logger
 }
 
 // NewBashTask constructs a BashTask.
-func NewBashTask(attributes *Attributes) (*BashTask, error) {
+func NewBashTask(attributes *Attributes, command, script string) (*BashTask, error) {
 	if attributes == nil {
 		return nil, fmt.Errorf("attributes cannot be nil")
 	}
 	if attributes.ID == "" {
 		return nil, fmt.Errorf("task ID cannot be empty")
 	}
-	if attributes.Command == "" && attributes.Script == "" {
+	if command == "" && script == "" {
 		return nil, fmt.Errorf("either command or script must be specified")
 	}
 	return &BashTask{
 		Attributes: *attributes,
+		Command:    command,
+		Script:     script,
 		Utils:      external.NewExt(),
 		Log:        logging.Log(),
 	}, nil

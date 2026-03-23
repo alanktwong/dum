@@ -15,8 +15,6 @@ type Attributes struct {
 	Description string
 	Enabled     bool
 	Sudo        bool
-	Command     string
-	Script      string
 }
 
 // Identifiable is the provider interface to get an id.

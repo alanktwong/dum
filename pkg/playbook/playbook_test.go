@@ -111,12 +111,6 @@ func createTestMasTask(t *testing.T, attr Attributes) *MasTask {
 	return task
 }
 
-func createTestBashTask(t *testing.T, attr Attributes) *BashTask {
-	task, err := NewBashTask(&attr)
-	assert.NoError(t, err)
-	return task
-}
-
 func createTestVsCodeTask(t *testing.T, attr Attributes) *VsCodePluginTask {
 	task, err := NewVsCodePluginTask(&attr)
 	assert.NoError(t, err)
