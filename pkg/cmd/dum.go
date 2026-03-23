@@ -8,6 +8,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var version = "dev"
+
 // Dum is the application for the dum CLI.
 type Dum struct {
 	Log l.Logger
@@ -21,7 +23,7 @@ func NewDum() *Dum {
 		Use:     rootUse,
 		Short:   fmt.Sprintf("%v is a command line tool for your utilities", rootUse),
 		Long:    fmt.Sprintf("%v is a command line tool for your utilites such as managing software installations and configurations.", rootUse),
-		Version: "0.2.2",
+		Version: version,
 	}
 	dum := &Dum{
 		Log: l.NewLogger(l.Options{
