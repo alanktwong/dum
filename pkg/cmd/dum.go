@@ -12,8 +12,11 @@ var version = "dev"
 
 // Dum is the application for the dum CLI.
 type Dum struct {
-	Log l.Logger
-	Cmd *cobra.Command
+	Log             l.Logger
+	Cmd             *cobra.Command
+	FactoryProvider factoryProvider
+	InstallExecutor installExecutor
+	ListExecutor    listExecutor
 }
 
 // NewDum constructs Dum.
@@ -32,6 +35,9 @@ func NewDum() *Dum {
 		}),
 		Cmd: rootCmd,
 	}
+	dum.FactoryProvider = &defaultFactoryProvider{}
+	dum.InstallExecutor = &defaultInstallExecutor{}
+	dum.ListExecutor = &defaultListExecutor{}
 	listCmd := NewListCommand(rootUse, dum)
 	rootCmd.AddCommand(listCmd)
 

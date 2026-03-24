@@ -14,8 +14,9 @@ func NewLogCommand(rootUse string, dum *Dum) *cobra.Command {
 	use := "log"
 	alias := "lg"
 	cmd := &cobra.Command{
-		Use:   use,
-		Short: fmt.Sprintf("%v-%v (or %v) logs for the shell", rootUse, use, alias),
+		Use:     use,
+		Aliases: []string{alias},
+		Short:   fmt.Sprintf("%v-%v (or %v) logs for the shell", rootUse, use, alias),
 		Long: strings.Join(
 			[]string{
 				fmt.Sprintf("%v-%v (or %v) is a command line interface (cli) that helps your shell log.",

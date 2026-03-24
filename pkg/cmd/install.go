@@ -3,11 +3,44 @@ package cmd
 import (
 	f "awong/dotfiles/pkg/factory"
 	pb "awong/dotfiles/pkg/playbook"
+	"context"
 	"fmt"
 	"strings"
 
 	"github.com/spf13/cobra"
 )
+
+// factoryProvider provides Input from options.
+type factoryProvider interface {
+	Provide(opts f.InputOptions) (*pb.Input, error)
+}
+
+// installExecutor installs a playbook.
+type installExecutor interface {
+	Install(ctx context.Context, input *pb.Input) (*pb.Result, error)
+}
+
+// defaultFactoryProvider wraps f.NewFactory().Provide().
+type defaultFactoryProvider struct{}
+
+func (d *defaultFactoryProvider) Provide(opts f.InputOptions) (*pb.Input, error) {
+	input, err := f.NewFactory().Provide(opts)
+	if err != nil {
+		return nil, fmt.Errorf("factory provide: %w", err)
+	}
+	return input, nil
+}
+
+// defaultInstallExecutor wraps pb.NewExecutor().Install().
+type defaultInstallExecutor struct{}
+
+func (d *defaultInstallExecutor) Install(ctx context.Context, input *pb.Input) (*pb.Result, error) {
+	result, err := pb.NewExecutor().Install(ctx, input)
+	if err != nil {
+		return nil, fmt.Errorf("executor install: %w", err)
+	}
+	return result, nil
+}
 
 // NewInstallCommand provides a command that installs plays and task.
 func NewInstallCommand(rootUse string, dum *Dum) *cobra.Command {
@@ -41,47 +74,7 @@ func NewInstallCommand(rootUse string, dum *Dum) *cobra.Command {
 			},
 			"\n"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			ctx := cmd.Context()
-			if ctx == nil {
-				return fmt.Errorf("nil context")
-			}
-			verbosity := GetVerbosityFromCommand(cmd)
-			dum.Log.SetLevel(verbosity.Level())
-
-			group, err := cmd.Flags().GetString(GROUP)
-			if err != nil {
-				group = ""
-			}
-			dryrun, err := cmd.Flags().GetBool(DRYRUN)
-			if err != nil {
-				return fmt.Errorf("error getting %v flag: %w", DRYRUN, err)
-			}
-			file, err := cmd.Flags().GetString(FILE)
-			if err != nil {
-				return fmt.Errorf("error getting %v flag: %w", FILE, err)
-			}
-			dum.Log.Debug("Running install command:",
-				DRYRUN, dryrun,
-				VERBOSE, verbosity.Verbose,
-				GROUP, group,
-				FILE, file)
-
-			factory := f.NewFactory()
-			input, err := factory.Provide(f.InputOptions{
-				File:   file,
-				Group:  group,
-				DryRun: dryrun,
-			})
-			if err != nil {
-				return fmt.Errorf("error providing context from file %s: %w", file, err)
-			}
-
-			executor := pb.NewExecutor()
-			_, err = executor.Install(ctx, input)
-			if err != nil {
-				return fmt.Errorf("error installing config file %s: %w", file, err)
-			}
-			return nil
+			return dum.runInstall(cmd)
 		},
 	}
 	addVerboseFlag(cmd)
@@ -89,4 +82,46 @@ func NewInstallCommand(rootUse string, dum *Dum) *cobra.Command {
 	addDryRunFlag(cmd)
 	addGroupFlag(cmd)
 	return cmd
+}
+
+func (d *Dum) runInstall(cmd *cobra.Command) error {
+	ctx := cmd.Context()
+	if ctx == nil {
+		return fmt.Errorf("nil context")
+	}
+	verbosity := GetVerbosityFromCommand(cmd)
+	d.Log.SetLevel(verbosity.Level())
+
+	group, err := cmd.Flags().GetString(GROUP)
+	if err != nil {
+		group = ""
+	}
+	dryrun, err := cmd.Flags().GetBool(DRYRUN)
+	if err != nil {
+		return fmt.Errorf("error getting %v flag: %w", DRYRUN, err)
+	}
+	file, err := cmd.Flags().GetString(FILE)
+	if err != nil {
+		return fmt.Errorf("error getting %v flag: %w", FILE, err)
+	}
+	d.Log.Debug("Running install command:",
+		DRYRUN, dryrun,
+		VERBOSE, verbosity.Verbose,
+		GROUP, group,
+		FILE, file)
+
+	input, err := d.FactoryProvider.Provide(f.InputOptions{
+		File:   file,
+		Group:  group,
+		DryRun: dryrun,
+	})
+	if err != nil {
+		return fmt.Errorf("error providing context from file %s: %w", file, err)
+	}
+
+	_, err = d.InstallExecutor.Install(ctx, input)
+	if err != nil {
+		return fmt.Errorf("error installing config file %s: %w", file, err)
+	}
+	return nil
 }
