@@ -18,3 +18,19 @@ packages:
       dir: 'pkg/playbook'
       pkgname: 'playbook'
       filename: "external_mocks.go"
+  awong/dotfiles/pkg/logging:
+    config:
+      all: true
+      dir: 'pkg/tasks/installer'
+      pkgname: 'installer'
+      filename: "logging_mocks.go"
+  awong/dotfiles/pkg/external/Brew:
+    config:
+      dir: 'pkg/tasks/installer'
+      pkgname: 'installer'
+      filename: "brew_mocks.go"
+  awong/dotfiles/pkg/external/Ext:
+    config:
+      dir: 'pkg/tasks/installer'
+      pkgname: 'installer'
+      filename: "ext_mocks.go"

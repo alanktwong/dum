@@ -59,9 +59,8 @@ clean: ## cleans binary and other generated files
 	@go clean -cache
 	@rm -rf $(OUT_DIR)
 	@rm -f coverage*.out
-	@rm -f ./pkg/playbook/*_mocks.go
-	@rm -f ./pkg/types/*_enum.go
-	@rm -f ./pkg/types/*_mocks.go
+	@rm -f ./pkg/**/*_mocks.go
+	@rm -f ./pkg/**/*_enum.go
 
 .PHONY: tidy
 tidy: ## runs tidy to fix go.mod dependencies
