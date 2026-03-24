@@ -99,7 +99,7 @@ func TestPlayExecutor_InstallPlay_Success(t *testing.T) {
 	pbi.On("GetJetBrainsApps").Return(map[string]string{})
 	input := newPlayInput(pbi)
 
-	logger.On("Printlnf", "%v Installing play (%v) ... %v", []interface{}{PlayEllipsis, "test-play", ""}).Return(nil)
+	logger.On("Printlnf", "%v Installing play (%v) ... %v", []any{PlayEllipsis, "test-play", ""}).Return(nil)
 
 	taskResult := &ty.TaskResult{Task: "task-1", Play: "test-play", PlayBook: "test-book", Success: true}
 	mockTask := &MockTask{
@@ -126,7 +126,7 @@ func TestPlayExecutor_InstallPlay_PrintlnfError(t *testing.T) {
 	pbi := NewMockPlayBookInfo(t)
 	input := newPlayInput(pbi)
 
-	logger.On("Printlnf", "%v Installing play (%v) ... %v", []interface{}{PlayEllipsis, "test-play", ""}).Return(errors.New("log failed"))
+	logger.On("Printlnf", "%v Installing play (%v) ... %v", []any{PlayEllipsis, "test-play", ""}).Return(errors.New("log failed"))
 
 	playAttr := &ty.Attributes{ID: "test-play", Enabled: true}
 	play, err := NewPlay(playAttr, []tk.Task{})
@@ -147,7 +147,7 @@ func TestPlayExecutor_InstallPlay_TaskError(t *testing.T) {
 	pbi.On("GetJetBrainsApps").Return(map[string]string{})
 	input := newPlayInput(pbi)
 
-	logger.On("Printlnf", "%v Installing play (%v) ... %v", []interface{}{PlayEllipsis, "test-play", ""}).Return(nil)
+	logger.On("Printlnf", "%v Installing play (%v) ... %v", []any{PlayEllipsis, "test-play", ""}).Return(nil)
 
 	mockTask := &MockTask{
 		Attr: ty.Attributes{ID: "task-1", Enabled: true},
@@ -173,7 +173,7 @@ func TestPlayExecutor_ListPlay_Success(t *testing.T) {
 	pbi.On("GetJetBrainsApps").Return(map[string]string{})
 	input := newPlayInput(pbi)
 
-	logger.On("Printlnf", "%v Listing play (%v) ... %v", []interface{}{PlayEllipsis, "test-play", ""}).Return(nil)
+	logger.On("Printlnf", "%v Listing play (%v) ... %v", []any{PlayEllipsis, "test-play", ""}).Return(nil)
 
 	taskResult := &ty.TaskResult{Task: "task-1", Play: "test-play", PlayBook: "test-book", Success: true}
 	mockTask := &MockTask{
@@ -198,7 +198,7 @@ func TestPlayExecutor_ListPlay_PrintlnfError(t *testing.T) {
 	pbi := NewMockPlayBookInfo(t)
 	input := newPlayInput(pbi)
 
-	logger.On("Printlnf", "%v Listing play (%v) ... %v", []interface{}{PlayEllipsis, "test-play", ""}).Return(errors.New("log failed"))
+	logger.On("Printlnf", "%v Listing play (%v) ... %v", []any{PlayEllipsis, "test-play", ""}).Return(errors.New("log failed"))
 
 	playAttr := &ty.Attributes{ID: "test-play", Enabled: true}
 	play, err := NewPlay(playAttr, []tk.Task{})
@@ -219,7 +219,7 @@ func TestPlayExecutor_ListPlay_TaskError(t *testing.T) {
 	pbi.On("GetJetBrainsApps").Return(map[string]string{})
 	input := newPlayInput(pbi)
 
-	logger.On("Printlnf", "%v Listing play (%v) ... %v", []interface{}{PlayEllipsis, "test-play", ""}).Return(nil)
+	logger.On("Printlnf", "%v Listing play (%v) ... %v", []any{PlayEllipsis, "test-play", ""}).Return(nil)
 
 	mockTask := &MockTask{
 		Attr: ty.Attributes{ID: "task-1", Enabled: true},

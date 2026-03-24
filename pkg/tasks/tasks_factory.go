@@ -23,11 +23,11 @@ func NewTaskFactory() *TaskFactory {
 }
 
 // ProvideTasks creates multiple Task instances from YML configuration.
-func (f *TaskFactory) ProvideTasks(yml map[string]interface{}) ([]Task, error) {
+func (f *TaskFactory) ProvideTasks(yml map[string]any) ([]Task, error) {
 	var tasks []Task
-	if arr, ok := yml["tasks"].([]interface{}); ok {
+	if arr, ok := yml["tasks"].([]any); ok {
 		for _, it := range arr {
-			if m, ok := it.(map[string]interface{}); ok {
+			if m, ok := it.(map[string]any); ok {
 				task, err := f.provideTask(m)
 				if err != nil {
 					return nil, fmt.Errorf("failed to provide task: %w", err)
@@ -41,7 +41,7 @@ func (f *TaskFactory) ProvideTasks(yml map[string]interface{}) ([]Task, error) {
 	return tasks, nil
 }
 
-func (f *TaskFactory) provideTask(yml map[string]interface{}) (Task, error) {
+func (f *TaskFactory) provideTask(yml map[string]any) (Task, error) {
 	id := f.Utils.GetString(yml, "id", "")
 	description := f.Utils.GetString(yml, "description", id)
 	attributes, err := ty.NewAttributes(

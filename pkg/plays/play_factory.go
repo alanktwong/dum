@@ -25,11 +25,11 @@ func NewPlayFactory() *PlayFactory {
 }
 
 // ProvidePlays creates multiple Play instances from YML configuration.
-func (f *PlayFactory) ProvidePlays(yml map[string]interface{}) ([]*Play, error) {
+func (f *PlayFactory) ProvidePlays(yml map[string]any) ([]*Play, error) {
 	var plays []*Play
-	if arr, ok := yml["plays"].([]interface{}); ok {
+	if arr, ok := yml["plays"].([]any); ok {
 		for _, each := range arr {
-			if m, ok := each.(map[string]interface{}); ok {
+			if m, ok := each.(map[string]any); ok {
 				play, err := f.ProvidePlay(m)
 				if err != nil {
 					return nil, fmt.Errorf("failed to provide play: %w", err)
@@ -44,7 +44,7 @@ func (f *PlayFactory) ProvidePlays(yml map[string]interface{}) ([]*Play, error) 
 }
 
 // ProvidePlay creates a single Play instance from YML configuration.
-func (f *PlayFactory) ProvidePlay(yml map[string]interface{}) (*Play, error) {
+func (f *PlayFactory) ProvidePlay(yml map[string]any) (*Play, error) {
 	tasks, err := f.TaskFactory.ProvideTasks(yml)
 	if err != nil {
 		return nil, fmt.Errorf("failed to provide tasks: %w", err)
@@ -70,10 +70,10 @@ func (f *PlayFactory) ProvidePlay(yml map[string]interface{}) (*Play, error) {
 	return play, nil
 }
 
-func (f *PlayFactory) getString(data map[string]interface{}, key string, def string) string {
+func (f *PlayFactory) getString(data map[string]any, key string, def string) string {
 	return f.Utils.GetString(data, key, def)
 }
 
-func (f *PlayFactory) getBool(data map[string]interface{}, key string, def bool) bool {
+func (f *PlayFactory) getBool(data map[string]any, key string, def bool) bool {
 	return f.Utils.GetBool(data, key, def)
 }

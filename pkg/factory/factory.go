@@ -54,7 +54,7 @@ func (f *Factory) Provide(options InputOptions) (*pb.Input, error) {
 	}, nil
 }
 
-func (f *Factory) getYaml(file string) (map[string]interface{}, error) {
+func (f *Factory) getYaml(file string) (map[string]any, error) {
 	f.Log.Debug("Loading playbook from file", "file", file)
 	absPath, err := f.Utils.ToAbsolutePath(file)
 	if err != nil {
@@ -64,7 +64,7 @@ func (f *Factory) getYaml(file string) (map[string]interface{}, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to get read file %s: %w", absPath, err)
 	}
-	var yamlMap map[string]interface{}
+	var yamlMap map[string]any
 	err = yaml.Unmarshal(byteArray, &yamlMap)
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal playbook from file %s: %w", file, err)
@@ -73,8 +73,8 @@ func (f *Factory) getYaml(file string) (map[string]interface{}, error) {
 }
 
 // ProvidePlayBook constructs a PlayBook given a map that expresses the YML.
-func (f *Factory) ProvidePlayBook(yml map[string]interface{}) (*pb.PlayBook, error) {
-	pbData, ok := yml["playbook"].(map[string]interface{})
+func (f *Factory) ProvidePlayBook(yml map[string]any) (*pb.PlayBook, error) {
+	pbData, ok := yml["playbook"].(map[string]any)
 	if !ok {
 		return nil, fmt.Errorf("playbook key not found or invalid format in YAML")
 	}
@@ -102,14 +102,14 @@ func (f *Factory) ProvidePlayBook(yml map[string]interface{}) (*pb.PlayBook, err
 	return playBook, nil
 }
 
-func (f *Factory) provideJetBrainsApps(yml map[string]interface{}) map[string]string {
+func (f *Factory) provideJetBrainsApps(yml map[string]any) map[string]string {
 	apps := make(map[string]string)
 	appkeys := t.JetBrainsTypeNames()
 
-	if jetbrainsArray, ok := yml["jetbrains"].([]interface{}); ok {
+	if jetbrainsArray, ok := yml["jetbrains"].([]any); ok {
 		for _, each := range appkeys {
 			for _, it := range jetbrainsArray {
-				if m, ok2 := it.(map[string]interface{}); ok2 {
+				if m, ok2 := it.(map[string]any); ok2 {
 					version := f.Utils.GetString(m, each, "")
 					if version != "" {
 						apps[each] = version

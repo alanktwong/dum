@@ -15,14 +15,14 @@ func TestNewTaskFactory(t *testing.T) {
 
 func TestTaskFactory_ProvideTasks_EmptyInput(t *testing.T) {
 	factory := NewTaskFactory()
-	tasks, err := factory.ProvideTasks(map[string]interface{}{})
+	tasks, err := factory.ProvideTasks(map[string]any{})
 	assert.NoError(t, err)
 	assert.Empty(t, tasks)
 }
 
 func TestTaskFactory_ProvideTasks_NoTasksKey(t *testing.T) {
 	factory := NewTaskFactory()
-	tasks, err := factory.ProvideTasks(map[string]interface{}{
+	tasks, err := factory.ProvideTasks(map[string]any{
 		"other": "data",
 	})
 	assert.NoError(t, err)
@@ -31,8 +31,8 @@ func TestTaskFactory_ProvideTasks_NoTasksKey(t *testing.T) {
 
 func TestTaskFactory_ProvideTasks_InvalidTaskFormat(t *testing.T) {
 	factory := NewTaskFactory()
-	_, err := factory.ProvideTasks(map[string]interface{}{
-		"tasks": []interface{}{
+	_, err := factory.ProvideTasks(map[string]any{
+		"tasks": []any{
 			"not a map",
 		},
 	})
@@ -42,9 +42,9 @@ func TestTaskFactory_ProvideTasks_InvalidTaskFormat(t *testing.T) {
 
 func TestTaskFactory_ProvideTasks_UnknownTaskType(t *testing.T) {
 	factory := NewTaskFactory()
-	_, err := factory.ProvideTasks(map[string]interface{}{
-		"tasks": []interface{}{
-			map[string]interface{}{
+	_, err := factory.ProvideTasks(map[string]any{
+		"tasks": []any{
+			map[string]any{
 				"id":   "test-task",
 				"type": "unknown-type",
 			},
@@ -56,9 +56,9 @@ func TestTaskFactory_ProvideTasks_UnknownTaskType(t *testing.T) {
 
 func TestTaskFactory_ProvideTasks_DirTask(t *testing.T) {
 	factory := NewTaskFactory()
-	tasks, err := factory.ProvideTasks(map[string]interface{}{
-		"tasks": []interface{}{
-			map[string]interface{}{
+	tasks, err := factory.ProvideTasks(map[string]any{
+		"tasks": []any{
+			map[string]any{
 				"id":          "test-dir",
 				"type":        "dir",
 				"description": "test directory",
@@ -74,9 +74,9 @@ func TestTaskFactory_ProvideTasks_DirTask(t *testing.T) {
 
 func TestTaskFactory_ProvideTasks_LinkTask(t *testing.T) {
 	factory := NewTaskFactory()
-	tasks, err := factory.ProvideTasks(map[string]interface{}{
-		"tasks": []interface{}{
-			map[string]interface{}{
+	tasks, err := factory.ProvideTasks(map[string]any{
+		"tasks": []any{
+			map[string]any{
 				"id":     "test-link",
 				"type":   "link",
 				"root":   "/tmp/root",
@@ -93,9 +93,9 @@ func TestTaskFactory_ProvideTasks_LinkTask(t *testing.T) {
 
 func TestTaskFactory_ProvideTasks_BrewTask(t *testing.T) {
 	factory := NewTaskFactory()
-	tasks, err := factory.ProvideTasks(map[string]interface{}{
-		"tasks": []interface{}{
-			map[string]interface{}{
+	tasks, err := factory.ProvideTasks(map[string]any{
+		"tasks": []any{
+			map[string]any{
 				"id":   "test-brew",
 				"type": "brew",
 				"tap":  "homebrew/cask",
@@ -111,9 +111,9 @@ func TestTaskFactory_ProvideTasks_BrewTask(t *testing.T) {
 
 func TestTaskFactory_ProvideTasks_BashTask(t *testing.T) {
 	factory := NewTaskFactory()
-	tasks, err := factory.ProvideTasks(map[string]interface{}{
-		"tasks": []interface{}{
-			map[string]interface{}{
+	tasks, err := factory.ProvideTasks(map[string]any{
+		"tasks": []any{
+			map[string]any{
 				"id":      "test-bash",
 				"type":    "bash",
 				"command": "echo hello",
@@ -129,9 +129,9 @@ func TestTaskFactory_ProvideTasks_BashTask(t *testing.T) {
 
 func TestTaskFactory_ProvideTasks_DisabledTask(t *testing.T) {
 	factory := NewTaskFactory()
-	tasks, err := factory.ProvideTasks(map[string]interface{}{
-		"tasks": []interface{}{
-			map[string]interface{}{
+	tasks, err := factory.ProvideTasks(map[string]any{
+		"tasks": []any{
+			map[string]any{
 				"id":      "test-disabled",
 				"type":    "dir",
 				"enabled": false,
@@ -147,18 +147,18 @@ func TestTaskFactory_ProvideTasks_DisabledTask(t *testing.T) {
 
 func TestTaskFactory_ProvideTasks_MultipleTasks(t *testing.T) {
 	factory := NewTaskFactory()
-	tasks, err := factory.ProvideTasks(map[string]interface{}{
-		"tasks": []interface{}{
-			map[string]interface{}{
+	tasks, err := factory.ProvideTasks(map[string]any{
+		"tasks": []any{
+			map[string]any{
 				"id":   "task-1",
 				"type": "dir",
 			},
-			map[string]interface{}{
+			map[string]any{
 				"id":   "task-2",
 				"type": "link",
 				"root": "/tmp",
 			},
-			map[string]interface{}{
+			map[string]any{
 				"id":      "task-3",
 				"type":    "bash",
 				"command": "echo hello",

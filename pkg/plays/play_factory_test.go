@@ -16,12 +16,12 @@ func TestNewPlayFactory_NoArgs(t *testing.T) {
 
 func TestPlayFactory_ProvidePlay_Success(t *testing.T) {
 	f := NewPlayFactory()
-	yml := map[string]interface{}{
+	yml := map[string]any{
 		"id":          "test-play",
 		"description": "a test play",
 		"enabled":     true,
-		"tasks": []interface{}{
-			map[string]interface{}{
+		"tasks": []any{
+			map[string]any{
 				"id":     "test-link",
 				"type":   "link",
 				"root":   "/tmp/root",
@@ -40,7 +40,7 @@ func TestPlayFactory_ProvidePlay_Success(t *testing.T) {
 
 func TestPlayFactory_ProvidePlay_NoTasks(t *testing.T) {
 	f := NewPlayFactory()
-	yml := map[string]interface{}{
+	yml := map[string]any{
 		"id":          "test-play",
 		"description": "a test play",
 	}
@@ -52,11 +52,11 @@ func TestPlayFactory_ProvidePlay_NoTasks(t *testing.T) {
 
 func TestPlayFactory_ProvidePlay_Disabled(t *testing.T) {
 	f := NewPlayFactory()
-	yml := map[string]interface{}{
+	yml := map[string]any{
 		"id":      "test-play",
 		"enabled": false,
-		"tasks": []interface{}{
-			map[string]interface{}{
+		"tasks": []any{
+			map[string]any{
 				"id":     "test-link",
 				"type":   "link",
 				"root":   "/tmp/root",
@@ -72,7 +72,7 @@ func TestPlayFactory_ProvidePlay_Disabled(t *testing.T) {
 
 func TestPlayFactory_ProvidePlays_Empty(t *testing.T) {
 	f := NewPlayFactory()
-	yml := map[string]interface{}{}
+	yml := map[string]any{}
 	plays, err := f.ProvidePlays(yml)
 	assert.NoError(t, err)
 	assert.Empty(t, plays)
@@ -80,12 +80,12 @@ func TestPlayFactory_ProvidePlays_Empty(t *testing.T) {
 
 func TestPlayFactory_ProvidePlays_Multiple(t *testing.T) {
 	f := NewPlayFactory()
-	yml := map[string]interface{}{
-		"plays": []interface{}{
-			map[string]interface{}{
+	yml := map[string]any{
+		"plays": []any{
+			map[string]any{
 				"id": "play-1",
-				"tasks": []interface{}{
-					map[string]interface{}{
+				"tasks": []any{
+					map[string]any{
 						"id":     "link-1",
 						"type":   "link",
 						"root":   "/tmp/root1",
@@ -93,10 +93,10 @@ func TestPlayFactory_ProvidePlays_Multiple(t *testing.T) {
 					},
 				},
 			},
-			map[string]interface{}{
+			map[string]any{
 				"id": "play-2",
-				"tasks": []interface{}{
-					map[string]interface{}{
+				"tasks": []any{
+					map[string]any{
 						"id":     "link-2",
 						"type":   "link",
 						"root":   "/tmp/root2",

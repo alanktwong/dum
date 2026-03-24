@@ -79,9 +79,9 @@ func TestNewPlay_Success_Tasks(t *testing.T) {
 	}
 	f := NewPlayFactory()
 
-	tasks, err := f.TaskFactory.ProvideTasks(map[string]interface{}{
-		"tasks": []interface{}{
-			map[string]interface{}{
+	tasks, err := f.TaskFactory.ProvideTasks(map[string]any{
+		"tasks": []any{
+			map[string]any{
 				"id":     "test-link",
 				"type":   "link",
 				"root":   "/tmp/root",
