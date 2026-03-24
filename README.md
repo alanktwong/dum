@@ -17,12 +17,12 @@ ls dist
 
 ### Subcommands
 
-| Command | Alias | Description |
-|---------|-------|-------------|
-| `install` | `i` | Runs plays and tasks for software installations |
-| `list` | `ls` | Lists plays and tasks from the playbook |
-| `rename` | `r` | Renames files with various transformations |
-| `log` | `lg` | Logging utilities for shell scripts |
+| Command   | Alias | Description                                     |
+|-----------|-------|-------------------------------------------------|
+| `install` | `i`   | Runs plays and tasks for software installations |
+| `list`    | `ls`  | Lists plays and tasks from the playbook         |
+| `rename`  | `r`   | Renames files with various transformations      |
+| `log`     | `lg`  | Logging utilities for shell scripts             |
 
 ### Install Command
 
@@ -99,6 +99,18 @@ make coverage-check  # Check coverage meets minimum threshold
 make all             # Runs build and quality checks
 make clean           # Clean generated files
 ```
+
+### Enums
+
+We are using [go-enum](https://github.com/abice/go-enum) to generate enums from Go struct field tags. 
+The generated enums, by convention, are suffixed as `_enum.go` and are gitignored.
+
+### Mockery
+
+We are using [mockery](https://vektra.github.io/mockery/v3.0/) to generate
+mocks of Go interfaces for testing. 
+The mockery configurations live in `cfg/mockery.*.yml` and the generated
+mocks are gitignored since they should follow the naming convention `*_mocks.go`.
 
 ### Coverage Threshold
 

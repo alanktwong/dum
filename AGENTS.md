@@ -30,6 +30,15 @@ make coverage-check  # Checks coverage meets minimum threshold (default 80%)
 make all        # Runs build and check (quality + build)
 make clean      # Clean generated files
 ```
+### Code Generation
+
+We are using [go-enum](https://github.com/abice/go-enum) to generate enums from Go struct field tags.
+The generated enums, by convention, are suffixed as `_enum.go` and are gitignored.
+
+We are using [mockery](https://vektra.github.io/mockery/v3.0/) to generate
+mocks of Go interfaces for testing.
+The mockery configurations live in `cfg/mockery.*.yml` and the generated
+mocks are gitignored since they should follow the naming convention `*_mocks.go`.
 
 ### Coverage Threshold
 - Default threshold is **80%**
