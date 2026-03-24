@@ -59,6 +59,7 @@ clean: ## cleans binary and other generated files
 	@go clean -cache
 	@rm -rf $(OUT_DIR)
 	@rm -f coverage*.out
+	@rm -f ${OUT_DIR}/coverage-filtered.txt
 	@rm -f ./pkg/**/*_mocks.go
 	@rm -f ./pkg/**/*_enum.go
 
@@ -130,13 +131,15 @@ test: build ## runs tests and create generates coverage report
 .PHONY: coverage
 coverage: test ## displays test coverage report in html mode
 	@printf ${COLOR} "Checking coverage of tests ..."
-	@go tool cover -html=$(OUT_DIR)/coverage.txt
+	@grep -v '_enum.go' $(OUT_DIR)/coverage.txt > $(OUT_DIR)/coverage-filtered.txt
+	@go tool cover -html=$(OUT_DIR)/coverage-filtered.txt
 
 COVERAGE_THRESHOLD ?= 80
 .PHONY: coverage-check
 coverage-check: test ## checks that test coverage meets the minimum threshold
 	@printf ${COLOR} "Checking coverage threshold ..."
-	@COVERAGE=$$(go tool cover -func=$(OUT_DIR)/coverage.txt | grep total | awk '{print $$3}' | tr -d '%'); \
+	@grep -v '_enum.go' $(OUT_DIR)/coverage.txt > $(OUT_DIR)/coverage-filtered.txt
+	@COVERAGE=$$(go tool cover -func=$(OUT_DIR)/coverage-filtered.txt | grep total | awk '{print $$3}' | tr -d '%'); \
 	if [ "$$(echo "$$COVERAGE < $(COVERAGE_THRESHOLD)" | bc -l)" -eq 1 ]; then \
 		echo "Coverage $$COVERAGE%% is below threshold $(COVERAGE_THRESHOLD)%%"; \
 		exit 1; \
