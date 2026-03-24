@@ -91,7 +91,7 @@ release: build  ## compile binaries for many OSes and CPU architectures using go
 
 ## Quality
 .PHONY: check
-check: build lint vet test ## runs code quality checks
+check: build fmt fix lint vet test coverage-check ## runs code quality checks
 	@printf ${COLOR} "Checking code quality ..."
 
 # Append || true below if blocking local development
@@ -111,6 +111,11 @@ fmt: ## runs go formatter
 	@printf ${COLOR} "Formatting ..."
 	@go fmt ./...
 
+.PHONY: fix
+fix: ## runs go fix to update code to use new language features
+	@printf ${COLOR} "Fixing ..."
+	@go fix ./...
+
 ## Test
 .PHONY: test
 test: build ## runs tests and create generates coverage report
@@ -125,6 +130,18 @@ test: build ## runs tests and create generates coverage report
 coverage: test ## displays test coverage report in html mode
 	@printf ${COLOR} "Checking coverage of tests ..."
 	@go tool cover -html=$(OUT_DIR)/coverage.txt
+
+COVERAGE_THRESHOLD ?= 80
+.PHONY: coverage-check
+coverage-check: test ## checks that test coverage meets the minimum threshold
+	@printf ${COLOR} "Checking coverage threshold ..."
+	@COVERAGE=$$(go tool cover -func=$(OUT_DIR)/coverage.txt | grep total | awk '{print $$3}' | tr -d '%'); \
+	if [ "$$(echo "$$COVERAGE < $(COVERAGE_THRESHOLD)" | bc -l)" -eq 1 ]; then \
+		echo "Coverage $$COVERAGE%% is below threshold $(COVERAGE_THRESHOLD)%%"; \
+		exit 1; \
+	else \
+		echo "Coverage $$COVERAGE%% meets threshold $(COVERAGE_THRESHOLD)%%"; \
+	fi
 
 .PHONY: profile
 profile: ## profiles

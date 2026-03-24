@@ -83,3 +83,27 @@ By default, the playbook is loaded from `~/.config/installer.yml`. You can speci
 - `vscode` - VS Code extensions
 - `mas` - Mac App Store apps
 - `jetbrains` - JetBrains IDE plugins
+
+## Development
+
+### Build Commands
+
+```shell
+make build           # Local build
+make test            # Run tests with coverage
+make lint            # Run golangci-lint
+make vet             # Go vet
+make fmt             # Go fmt
+make fix             # Runs go fix to update code to new language features
+make coverage-check  # Check coverage meets minimum threshold
+make all             # Runs build and quality checks
+make clean           # Clean generated files
+```
+
+### Coverage Threshold
+
+Default minimum coverage is **80%**. Override via environment variable:
+
+```shell
+COVERAGE_THRESHOLD=90 make coverage-check
+```

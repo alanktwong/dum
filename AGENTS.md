@@ -24,10 +24,20 @@ make test       # Run tests with coverage
 make lint       # Run golangci-lint
 make vet        # Go vet
 make fmt        # Go fmt
+make fix        # Runs go fix to update code to new language features
 make generate   # Run go generate and mockery
+make coverage-check  # Checks coverage meets minimum threshold (default 80%)
 make all        # Runs build and check (quality + build)
 make clean      # Clean generated files
 ```
+
+### Coverage Threshold
+- Default threshold is **80%**
+- Override via environment variable or command line:
+  ```bash
+  COVERAGE_THRESHOLD=90 make coverage-check
+  ```
+- `check` target enforces the threshold as part of quality checks
 
 ### Single Test Execution
 ```bash
@@ -47,6 +57,7 @@ make install    # Install tools (go-enum, goimports, gocov, golangci-lint, mocke
 make tidy       # Fix go.mod dependencies
 make vendor     # Vendor dependencies
 make coverage   # View coverage report in browser
+make coverage-check  # Enforce coverage threshold
 ```
 
 ## Code Style Guidelines
