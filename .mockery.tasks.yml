@@ -15,17 +15,13 @@ packages:
   awong/dotfiles/pkg/external:
     config:
       all: false
-      dir: 'pkg/playbook'
-      pkgname: 'playbook'
+      dir: 'pkg/tasks'
+      pkgname: 'tasks'
       filename: "external_mocks.go"
     interfaces:
       Brew: {}
       Code: {}
       Ext: {}
-      Runner: {}
-  awong/dotfiles/pkg/logging:
-    config:
-      all: true
-      dir: 'pkg/tasks/installer'
-      pkgname: 'installer'
-      filename: "logging_mocks.go"
+      Git: {}
+      JetBrainsApp: {}
+      Mas: {}

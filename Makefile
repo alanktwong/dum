@@ -77,6 +77,7 @@ generate: ## generate code
 	@printf ${COLOR} "Generating ..."
 	@go generate ./...
 	@mockery
+	@mockery --config .mockery.tasks.yml
 
 .PHONY: build
 build: make_out fmt vendor generate ## local build
