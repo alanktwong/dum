@@ -1,5 +1,5 @@
-// Package tasks provides Task types and related utilities.
-package tasks
+// Package installer provides Task types and related utilities.
+package installer
 
 import (
 	ext "awong/dotfiles/pkg/external"
@@ -32,7 +32,7 @@ type SdkCurlRunner struct{}
 // Run runs the SDKMAN! install script.
 func (r *SdkCurlRunner) Run(ctx context.Context) error {
 	var cmd *exec.Cmd
-	sudo := ty.GetSudo(ctx)
+	sudo := GetSudo(ctx)
 	if sudo {
 		cmd = exec.CommandContext(ctx, "bash", "-c", "$(curl -s https://get.sdkman.io)")
 	} else {
@@ -57,7 +57,7 @@ func (t *SdkmanInstaller) Install(ctx context.Context, input *ty.TaskInput) (*ty
 	t.Log.Infof("%v %v: install sdkman", TaskEllipsis, input.Play)
 	if !input.DryRun {
 		if t.Utils.IsOSX() || t.Utils.IsLinux() {
-			if err := t.Curl.Run(ty.WithSudo(ctx, input.Sudo)); err != nil {
+			if err := t.Curl.Run(WithSudo(ctx, input.Sudo)); err != nil {
 				return nil, fmt.Errorf("failed to run sdkman install: %w", err)
 			}
 		} else {

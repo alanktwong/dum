@@ -1,5 +1,5 @@
-// Package tasks provides Task types and related utilities.
-package tasks
+// Package installer provides Task types and related utilities.
+package installer
 
 import (
 	ext "awong/dotfiles/pkg/external"
@@ -33,7 +33,7 @@ type StarshipCurlRunner struct{}
 
 // Run runs the Starship install script on macOS.
 func (t *StarshipCurlRunner) Run(ctx context.Context) error {
-	sudo := ty.GetSudo(ctx)
+	sudo := GetSudo(ctx)
 	var cmd *exec.Cmd
 	if sudo {
 		cmd = exec.CommandContext(ctx, "sudo", "sh", "-c", "$(curl -sS https://starship.rs/install.sh)")
@@ -51,7 +51,7 @@ type StarshipLinuxCurlRunner struct{}
 
 // Run runs the Starship install script on Linux.
 func (t *StarshipLinuxCurlRunner) Run(ctx context.Context) error {
-	sudo := ty.GetSudo(ctx)
+	sudo := GetSudo(ctx)
 	var cmd *exec.Cmd
 	if sudo {
 		cmd = exec.CommandContext(ctx, "sudo", "bash", "-c", "$(curl -sS https://starship.rs/install.sh)")
@@ -77,7 +77,7 @@ func (t *StarshipInstaller) Install(ctx context.Context, input *ty.TaskInput) (*
 	}
 	t.Log.Infof("%v %v: install starship", TaskEllipsis, input.Play)
 	if !input.DryRun {
-		if err := t.Run(ty.WithSudo(ctx, input.Sudo)); err != nil {
+		if err := t.Run(WithSudo(ctx, input.Sudo)); err != nil {
 			return nil, err
 		}
 	}

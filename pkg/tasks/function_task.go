@@ -3,6 +3,7 @@ package tasks
 
 import (
 	l "awong/dotfiles/pkg/logging"
+	i "awong/dotfiles/pkg/tasks/installer"
 	ty "awong/dotfiles/pkg/types"
 	"context"
 	"fmt"
@@ -11,7 +12,7 @@ import (
 // FunctionTask executes a function from a predefined registry.
 type FunctionTask struct {
 	ty.Attributes
-	Registry map[string]Installer
+	Registry map[string]i.Installer
 	Log      l.Logger
 }
 
@@ -31,14 +32,14 @@ func NewFunctionTask(attributes *ty.Attributes) (*FunctionTask, error) {
 }
 
 // NewFunctionRegistry returns a map of available functions (installers) that can be executed.
-func NewFunctionRegistry() map[string]Installer {
-	return map[string]Installer{
-		"install_bash":                 NewBashInstaller(),
-		"install_starship":             NewStarshipInstaller(),
-		"install_sdkman":               NewSdkmanInstaller(),
-		"install_vim":                  NewVimInstaller(),
-		"install_case_sensitive_mount": NewMountInstaller(),
-		"install_test":                 NewTestInstaller(),
+func NewFunctionRegistry() map[string]i.Installer {
+	return map[string]i.Installer{
+		"install_bash":                 i.NewBashInstaller(),
+		"install_starship":             i.NewStarshipInstaller(),
+		"install_sdkman":               i.NewSdkmanInstaller(),
+		"install_vim":                  i.NewVimInstaller(),
+		"install_case_sensitive_mount": i.NewMountInstaller(),
+		"install_test":                 i.NewTestInstaller(),
 	}
 }
 

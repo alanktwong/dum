@@ -1,5 +1,5 @@
-// Package tasks provides Task types and related utilities.
-package tasks
+// Package installer provides Task types and related utilities.
+package installer
 
 import (
 	ext "awong/dotfiles/pkg/external"

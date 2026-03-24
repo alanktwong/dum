@@ -1,4 +1,4 @@
-package tasks
+package installer
 
 import "context"
 

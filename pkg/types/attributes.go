@@ -2,7 +2,6 @@
 package types
 
 import (
-	"context"
 	"fmt"
 )
 
@@ -51,20 +50,4 @@ func (a *Attributes) CreateTaskResult(input *TaskInput, success bool) (*TaskResu
 		DryRun:   input.DryRun,
 		Success:  success,
 	}, nil
-}
-
-type sudoCtxKey struct{}
-
-// WithSudo adds sudo privilege to the context.
-func WithSudo(ctx context.Context, sudo bool) context.Context {
-	return context.WithValue(ctx, sudoCtxKey{}, sudo)
-}
-
-// GetSudo retrieves sudo privilege from the context.
-func GetSudo(ctx context.Context) bool {
-	sudo, ok := ctx.Value(sudoCtxKey{}).(bool)
-	if !ok {
-		return false
-	}
-	return sudo
 }

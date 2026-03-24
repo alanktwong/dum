@@ -4,6 +4,7 @@ package tasks
 import (
 	ext "awong/dotfiles/pkg/external"
 	l "awong/dotfiles/pkg/logging"
+	i "awong/dotfiles/pkg/tasks/installer"
 	ty "awong/dotfiles/pkg/types"
 	"context"
 	"fmt"
@@ -12,7 +13,7 @@ import (
 // BrewCaskTask installs a Homebrew Cask package.
 type BrewCaskTask struct {
 	ty.Attributes
-	Tap   Installer
+	Tap   i.Installer
 	Brew  ext.Brew
 	Utils ext.Ext
 	Log   l.Logger
@@ -26,7 +27,7 @@ func NewBrewCaskTask(attributes *ty.Attributes, tap string) (*BrewCaskTask, erro
 	if attributes.ID == "" {
 		return nil, fmt.Errorf("attribute ID cannot be empty")
 	}
-	var brewTap Installer
+	var brewTap i.Installer
 	if tap != "" {
 		aTap, err := NewBrewTap(&ty.Attributes{
 			ID:          tap,
