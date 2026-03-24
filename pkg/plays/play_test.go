@@ -44,7 +44,7 @@ func TestNewPlay_Success_Enabled(t *testing.T) {
 	attr := &ty.Attributes{
 		ID:          "test-play",
 		Description: "",
-		Enabled: true,
+		Enabled:     true,
 	}
 	tasks := *new([]tk.Task)
 	play, err := NewPlay(attr, tasks)
@@ -58,8 +58,8 @@ func TestNewPlay_Success_Sudo(t *testing.T) {
 	attr := &ty.Attributes{
 		ID:          "test-play",
 		Description: "",
-		Enabled: true,
-		Sudo: true,
+		Enabled:     true,
+		Sudo:        true,
 	}
 	tasks := *new([]tk.Task)
 	play, err := NewPlay(attr, tasks)
@@ -74,8 +74,8 @@ func TestNewPlay_Success_Tasks(t *testing.T) {
 	attr := &ty.Attributes{
 		ID:          "test-play",
 		Description: "",
-		Enabled: true,
-		Sudo: true,
+		Enabled:     true,
+		Sudo:        true,
 	}
 	f := NewPlayFactory()
 
@@ -94,5 +94,5 @@ func TestNewPlay_Success_Tasks(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, play)
 	assert.Equal(t, attr.ID, play.ID)
-	assert.Equal(t,  tasks, play.Tasks)
+	assert.Equal(t, tasks, play.Tasks)
 }

@@ -25,4 +25,3 @@ func TestPlayExecutor_Run(t *testing.T) {
 	e := newPlayExecutorWithMocks(t)
 	assert.NotNil(t, e)
 }
-

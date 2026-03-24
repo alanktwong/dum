@@ -13,5 +13,3 @@ func TestNewPlayFactory_NoArgs(t *testing.T) {
 	assert.NotNil(t, f.Utils)
 	assert.NotNil(t, f.TaskFactory)
 }
-
-
