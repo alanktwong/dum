@@ -17,9 +17,4 @@ packages:
       all: true
       dir: 'pkg/playbook'
       pkgname: 'playbook'
-      filename: "external_mocks_test.go"
-  awong/dotfiles/pkg/playbook:
-    config:
-      filename: "task_mocks_test.go"
-    interfaces:
-      Installer:
+      filename: "external_mocks.go"

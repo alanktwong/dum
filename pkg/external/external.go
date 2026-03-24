@@ -44,6 +44,12 @@ type Ext interface {
 	IsSymlink(path string) bool
 	// RunCommand runs a bash command.
 	RunCommand(ctx context.Context, command string, sudo bool) error
+	// GetString infers the string value of a key in a map, or returns the default if it doesn't exist or is not a string.
+	GetString(data map[string]interface{}, key string, def string) string
+	// GetStrings infers the string array of a key in a map, or returns the default if it doesn't exist or is not a string.
+	GetStrings(data map[string]interface{}, key string, def []string) []string
+	// GetBool infers the bool value of a key in a map, or returns the default if it doesn't exist or is not a bool.
+	GetBool(data map[string]interface{}, key string, def bool) bool
 }
 
 // DefaultExt implements Ext.
@@ -231,4 +237,37 @@ func (u *DefaultExt) RunCommand(ctx context.Context, command string, sudo bool) 
 // ToAbsolutePath implements Ext.
 func (u *DefaultExt) ToAbsolutePath(path string) (string, error) {
 	return u.absolutePath(path)
+}
+
+func (u *DefaultExt) GetString(data map[string]interface{}, key string, def string) string {
+	if value, ok := data[key]; ok {
+		if strValue, ok := value.(string); ok {
+			return strValue
+		}
+	}
+	return def
+}
+
+func (u *DefaultExt) GetStrings(data map[string]interface{}, key string, def []string) []string {
+	if value, ok := data[key]; ok {
+		if generic, ok := value.([]interface{}); ok {
+			stringValues := make([]string, 0)
+			for _, v := range generic {
+				if strValue, ok := v.(string); ok {
+					stringValues = append(stringValues, strValue)
+				}
+			}
+			return stringValues
+		}
+	}
+	return def
+}
+
+func (u *DefaultExt) GetBool(data map[string]interface{}, key string, def bool) bool {
+	if value, ok := data[key]; ok {
+		if boolValue, ok := value.(bool); ok {
+			return boolValue
+		}
+	}
+	return def
 }

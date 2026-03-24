@@ -767,7 +767,6 @@ nvim/lazy-lock.json
 # go
 ######################
 vendor
-pkg/playbook/external_mocks_test.go
-pkg/playbook/task_mocks_test.go
-pkg/enums/jetbrains_type_enum.go
-pkg/enums/task_type_enum.go
+pkg/playbook/external_mocks.go
+pkg/types/jetbrains_type_enum.go
+pkg/types/task_type_enum.go

@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	f "awong/dotfiles/pkg/factory"
 	pb "awong/dotfiles/pkg/playbook"
 	"fmt"
 	"strings"
@@ -65,8 +66,8 @@ func NewInstallCommand(rootUse string, dum *Dum) *cobra.Command {
 				GROUP, group,
 				FILE, file)
 
-			factory := pb.NewFactory()
-			input, err := factory.Provide(pb.InputOptions{
+			factory := f.NewFactory()
+			input, err := factory.Provide(f.InputOptions{
 				File:   file,
 				Group:  group,
 				DryRun: dryrun,

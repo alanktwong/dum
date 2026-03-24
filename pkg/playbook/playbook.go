@@ -3,7 +3,8 @@
 package playbook
 
 import (
-	"context"
+	pl "awong/dotfiles/pkg/plays"
+	t "awong/dotfiles/pkg/types"
 	"fmt"
 
 	om "github.com/elliotchance/orderedmap/v3"
@@ -13,20 +14,18 @@ const (
 	// Ellipsis is prefix used in logs and println.
 	Ellipsis = "..."
 	// PlayEllipsis is prefix used in logs and println.
-	PlayEllipsis = "......."
-	// TaskEllipsis is prefix used in logs and println.
-	TaskEllipsis = "..........."
+	PlayEllipsis = pl.PlayEllipsis
 )
 
 // PlayBook consists of a single install execution of many plays.
 type PlayBook struct {
-	Attributes
-	Plays         []*Play
+	t.Attributes
+	Plays         []*pl.Play
 	JetBrainsApps map[string]string
 }
 
 // NewPlayBook constructs a PlayBook.
-func NewPlayBook(attributes *Attributes, plays []*Play, apps map[string]string) (*PlayBook, error) {
+func NewPlayBook(attributes *t.Attributes, plays []*pl.Play, apps map[string]string) (*PlayBook, error) {
 	if attributes == nil {
 		return nil, fmt.Errorf("attributes cannot be nil")
 	}
@@ -41,7 +40,7 @@ func NewPlayBook(attributes *Attributes, plays []*Play, apps map[string]string) 
 }
 
 // GetAttributes implements Attributable.
-func (p *PlayBook) GetAttributes() Attributes {
+func (p *PlayBook) GetAttributes() t.Attributes {
 	return p.Attributes
 }
 
@@ -55,10 +54,15 @@ func (p *PlayBook) IsEnabled() bool {
 	return p.Enabled
 }
 
+// GetJetBrainsApps implements PlayBookInfo.
+func (p *PlayBook) GetJetBrainsApps() map[string]string {
+	return p.JetBrainsApps
+}
+
 // GetPlays indexes all the Plays by its ID in an ordered map. If active is true it finds
 // all the active plays. Otherwise, it finds them all.
-func (p *PlayBook) GetPlays(active bool) *om.OrderedMap[string, *Play] {
-	plays := om.NewOrderedMap[string, *Play]()
+func (p *PlayBook) GetPlays(active bool) *om.OrderedMap[string, *pl.Play] {
+	plays := om.NewOrderedMap[string, *pl.Play]()
 	if !active {
 		for _, play := range p.Plays {
 			plays.Set(play.GetID(), play)
@@ -71,21 +75,4 @@ func (p *PlayBook) GetPlays(active bool) *om.OrderedMap[string, *Play] {
 		}
 	}
 	return plays
-}
-
-// sudoCtxKey is a private type key for the sudo value that may be in context.Context.
-type sudoCtxKey struct{}
-
-// WithSudo adds sudo to context.
-func WithSudo(ctx context.Context, sudo bool) context.Context {
-	return context.WithValue(ctx, sudoCtxKey{}, sudo)
-}
-
-// GetSudo gets sudo from context.
-func GetSudo(ctx context.Context) bool {
-	sudo, ok := ctx.Value(sudoCtxKey{}).(bool)
-	if !ok {
-		return false
-	}
-	return sudo
 }

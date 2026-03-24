@@ -1,0 +1,94 @@
+package tasks
+
+import (
+	ext "awong/dotfiles/pkg/external"
+	l "awong/dotfiles/pkg/logging"
+	ty "awong/dotfiles/pkg/types"
+	"fmt"
+)
+
+type TaskFactory struct {
+	Log   l.Logger
+	Utils ext.Ext
+}
+
+func NewTaskFactory() *TaskFactory {
+	return &TaskFactory{
+		Log:   l.Log(),
+		Utils: ext.NewExt(),
+	}
+}
+
+func (f *TaskFactory) ProvideTasks(yml map[string]interface{}) ([]Task, error) {
+	var tasks []Task
+	if arr, ok := yml["tasks"].([]interface{}); ok {
+		for _, it := range arr {
+			if m, ok := it.(map[string]interface{}); ok {
+				task, err := f.provideTask(m)
+				if err != nil {
+					return nil, fmt.Errorf("failed to provide task: %w", err)
+				}
+				tasks = append(tasks, task)
+			} else {
+				return nil, fmt.Errorf("task is not a map[string]interface{}")
+			}
+		}
+	}
+	return tasks, nil
+}
+
+func (f *TaskFactory) provideTask(yml map[string]interface{}) (Task, error) {
+	id := f.Utils.GetString(yml, "id", "")
+	description := f.Utils.GetString(yml, "description", id)
+	attributes, err := ty.NewAttributes(
+		id,
+		description,
+		f.Utils.GetBool(yml, "enabled", true),
+		f.Utils.GetBool(yml, "sudo", false),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create attributes: %w", err)
+	}
+
+	typeStr := f.Utils.GetString(yml, "type", "")
+	taskType, err := ty.ParseTaskType(typeStr)
+	if err != nil {
+		return nil, fmt.Errorf("unknown task type %s for task %s", typeStr, id)
+	}
+	switch taskType {
+	case ty.TaskTypeDir:
+		return NewDirTask(attributes)
+	case ty.TaskTypeMas:
+		return NewMasTask(attributes)
+	case ty.TaskTypeVscode:
+		return NewVsCodePluginTask(attributes)
+	case ty.TaskTypeFunction:
+		return NewFunctionTask(attributes)
+	case ty.TaskTypeLink:
+		return NewLinkTask(attributes,
+			f.Utils.GetString(yml, "root", ""),
+			f.Utils.GetString(yml, "target", ""))
+	case ty.TaskTypeGit:
+		return NewGitTask(attributes,
+			f.Utils.GetString(yml, "root", ""),
+			f.Utils.GetString(yml, "name", ""))
+	case ty.TaskTypeJetbrains:
+		apps := f.Utils.GetStrings(yml, "apps", make([]string, 0))
+		return NewJetBrainsPluginTask(attributes, apps)
+	case ty.TaskTypeBrew:
+		return NewBrewTask(attributes,
+			f.Utils.GetString(yml, "tap", ""))
+	case ty.TaskTypeCask:
+		return NewBrewCaskTask(attributes,
+			f.Utils.GetString(yml, "tap", ""))
+	case ty.TaskTypeCellar:
+		return NewBrewCellarTask(attributes,
+			f.Utils.GetString(yml, "tap", ""))
+	case ty.TaskTypeBash:
+		return NewBashTask(attributes,
+			f.Utils.GetString(yml, "command", ""),
+			f.Utils.GetString(yml, "script", ""))
+	default:
+		return nil, fmt.Errorf("unknown task type %s for task %s", taskType, id)
+	}
+}
