@@ -8,6 +8,13 @@ import (
 	"fmt"
 )
 
+// PlayExec abstracts play execution for testing.
+type PlayExec interface {
+	Initialize(input *PlayInput) (*PlayResult, error)
+	InstallPlay(ctx context.Context, p *Play, input *PlayInput) (*PlayResult, error)
+	ListPlay(ctx context.Context, p *Play, input *PlayInput) (*PlayResult, error)
+}
+
 // PlayExecutor performs the work of executing a play or task.
 type PlayExecutor struct {
 	Log l.Logger

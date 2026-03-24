@@ -14,7 +14,7 @@ import (
 type Executor struct {
 	Log          l.Logger
 	Ext          ext.Ext
-	PlayExecutor *pl.PlayExecutor
+	PlayExecutor pl.PlayExec
 }
 
 // NewExecutor constructs an Executor.
