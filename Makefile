@@ -76,9 +76,9 @@ vendor: tidy ## all packages required to support builds and tests in the /vendor
 generate: ## generate code
 	@printf ${COLOR} "Generating ..."
 	@go generate ./...
-	@mockery
-	@mockery --config .mockery.tasks.yml
-	@mockery --config .mockery.logging.yml
+	@mockery --config cfg/mockery.yml
+	@mockery --config cfg/mockery.tasks.yml
+	@mockery --config cfg/mockery.logging.yml
 
 .PHONY: build
 build: make_out fmt vendor generate ## local build
@@ -88,7 +88,7 @@ build: make_out fmt vendor generate ## local build
 .PHONY: release
 release: build  ## compile binaries for many OSes and CPU architectures using goreleaser
 	@printf ${COLOR} "Compiling for every OS and Platform ..."
-	@goreleaser build --clean --snapshot
+	@goreleaser build --clean --snapshot --config cfg/goreleaser.yaml
 
 ## Quality
 .PHONY: check

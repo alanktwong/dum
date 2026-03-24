@@ -36,6 +36,6 @@ packages:
       all: false
       dir: 'pkg/plays'
       pkgname: 'plays'
-      filename: "playbook_info_mocks_test.go"
+      filename: "playbook_info_mocks.go"
     interfaces:
       PlayBookInfo: {}

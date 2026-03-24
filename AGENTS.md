@@ -118,7 +118,7 @@ type Task interface {
 
 ### Testing
 - Tests use `testify/assert` package
-- Mocks are generated with `mockery` (configured in `.mockery.yml`)
+- Mocks are generated with `mockery` (configured in `cfg/mockery.yml`)
 - Test files are named `*_test.go`
 - Mock files are named `*_mocks_test.go`
 
@@ -147,7 +147,8 @@ type Task interface {
 ## Important Files
 
 - `.golangci.yml` - Linter configuration
-- `.mockery.yml` - Mock generation config
+- `cfg/mockery.yml` - Mock generation config
+- `cfg/goreleaser.yaml` - GoReleaser build config
 - `.editorconfig` - Editor formatting rules
 - `Makefile` - Build and development commands
 - `installer.yml` - Playbook configuration file
