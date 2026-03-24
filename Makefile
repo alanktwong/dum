@@ -76,9 +76,9 @@ vendor: tidy ## all packages required to support builds and tests in the /vendor
 generate: ## generate code
 	@printf ${COLOR} "Generating ..."
 	@go generate ./...
-	@mockery --config cfg/mockery.yml
-	@mockery --config cfg/mockery.tasks.yml
-	@mockery --config cfg/mockery.logging.yml
+	@for config in cfg/mockery*.yml; do \
+		mockery --config "$$config"; \
+	done
 
 .PHONY: build
 build: make_out fmt vendor generate ## local build
