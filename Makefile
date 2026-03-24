@@ -78,6 +78,7 @@ generate: ## generate code
 	@go generate ./...
 	@mockery
 	@mockery --config .mockery.tasks.yml
+	@mockery --config .mockery.logging.yml
 
 .PHONY: build
 build: make_out fmt vendor generate ## local build

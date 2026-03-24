@@ -1,0 +1,9 @@
+packages:
+  awong/dotfiles/pkg/logging:
+    config:
+      all: false
+      dir: 'pkg/logging'
+      pkgname: 'logging'
+      filename: "logging_mocks.go"
+    interfaces:
+      Logger: {}

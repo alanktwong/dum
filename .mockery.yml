@@ -29,6 +29,8 @@ packages:
       dir: 'pkg/tasks/installer'
       pkgname: 'installer'
       filename: "logging_mocks.go"
+    interfaces:
+      Logger: {}
   awong/dotfiles/pkg/plays:
     config:
       all: false
