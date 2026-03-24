@@ -1,3 +1,4 @@
+// Package tasks provides Task types and related utilities.
 package tasks
 
 import (
@@ -8,12 +9,14 @@ import (
 	"fmt"
 )
 
+// DirTask creates a directory.
 type DirTask struct {
 	ty.Attributes
 	Utils ext.Ext
 	Log   l.Logger
 }
 
+// NewDirTask returns a new DirTask for creating a directory.
 func NewDirTask(attributes *ty.Attributes) (*DirTask, error) {
 	if attributes == nil {
 		return nil, fmt.Errorf("attributes cannot be nil")
@@ -28,22 +31,30 @@ func NewDirTask(attributes *ty.Attributes) (*DirTask, error) {
 	}, nil
 }
 
+// GetAttributes returns the Attributes.
 func (t *DirTask) GetAttributes() ty.Attributes {
 	return t.Attributes
 }
 
+// GetID returns the ID.
 func (t *DirTask) GetID() string {
 	return t.ID
 }
 
+// IsEnabled returns whether the task is enabled.
 func (t *DirTask) IsEnabled() bool {
 	return t.Enabled
 }
 
+// Install installs the task.
 func (t *DirTask) Install(ctx context.Context, input *ty.TaskInput) (*ty.TaskResult, error) {
 	t.Log.Debugf("%s START ... play: %s taskID: %s", TaskEllipsis, input.Play, t.ID)
 	if !t.Enabled {
-		return t.CreateTaskResult(input, false)
+		result, err := t.CreateTaskResult(input, false)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create task result: %w", err)
+		}
+		return result, nil
 	}
 	path, err := t.Utils.ExpandUser(t.ID)
 	if err != nil {
@@ -51,7 +62,11 @@ func (t *DirTask) Install(ctx context.Context, input *ty.TaskInput) (*ty.TaskRes
 	}
 	if t.Utils.IsDir(path) {
 		t.Log.Infof("%s %s: %s already exists", TaskEllipsis, input.Play, t.ID)
-		return t.CreateTaskResult(input, false)
+		result, err := t.CreateTaskResult(input, false)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create task result: %w", err)
+		}
+		return result, nil
 	}
 	t.Log.Infof("%s %s: mkdir -p %s", TaskEllipsis, input.Play, t.ID)
 	if !input.DryRun {
@@ -60,13 +75,22 @@ func (t *DirTask) Install(ctx context.Context, input *ty.TaskInput) (*ty.TaskRes
 			return nil, fmt.Errorf("failed to mkdir -p %v: %v", t.ID, err)
 		}
 	}
-	return t.CreateTaskResult(input, true)
+	result, err := t.CreateTaskResult(input, true)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create task result: %w", err)
+	}
+	return result, nil
 }
 
+// List lists the task.
 func (t *DirTask) List(_ context.Context, input *ty.TaskInput) (*ty.TaskResult, error) {
 	err := t.Log.Printlnf("%v mkdir -p %s", TaskEllipsis, t.ID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list dir: %v", err)
 	}
-	return t.CreateTaskResult(input, true)
+	result, err := t.CreateTaskResult(input, true)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create task result: %w", err)
+	}
+	return result, nil
 }

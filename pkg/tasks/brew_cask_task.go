@@ -1,3 +1,4 @@
+// Package tasks provides Task types and related utilities.
 package tasks
 
 import (
@@ -8,6 +9,7 @@ import (
 	"fmt"
 )
 
+// BrewCaskTask installs a Homebrew Cask package.
 type BrewCaskTask struct {
 	ty.Attributes
 	Tap   Installer
@@ -16,6 +18,7 @@ type BrewCaskTask struct {
 	Log   l.Logger
 }
 
+// NewBrewCaskTask returns a new BrewCaskTask for installing a Homebrew Cask package.
 func NewBrewCaskTask(attributes *ty.Attributes, tap string) (*BrewCaskTask, error) {
 	if attributes == nil {
 		return nil, fmt.Errorf("attributes cannot be nil")
@@ -45,30 +48,43 @@ func NewBrewCaskTask(attributes *ty.Attributes, tap string) (*BrewCaskTask, erro
 	}, nil
 }
 
+// GetAttributes returns the Attributes.
 func (t *BrewCaskTask) GetAttributes() ty.Attributes {
 	return t.Attributes
 }
 
+// GetID returns the ID.
 func (t *BrewCaskTask) GetID() string {
 	return t.ID
 }
 
+// IsEnabled returns whether the task is enabled.
 func (t *BrewCaskTask) IsEnabled() bool {
 	return t.Enabled
 }
 
+// List lists the task.
 func (t *BrewCaskTask) List(_ context.Context, input *ty.TaskInput) (*ty.TaskResult, error) {
 	err := t.Log.Printlnf("%v brew install (Cask) %s", TaskEllipsis, t.ID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list brew cask: %v", err)
 	}
-	return t.CreateTaskResult(input, true)
+	result, err := t.CreateTaskResult(input, true)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create task result: %w", err)
+	}
+	return result, nil
 }
 
+// Install installs the task.
 func (t *BrewCaskTask) Install(ctx context.Context, input *ty.TaskInput) (*ty.TaskResult, error) {
 	t.Log.Debugf("%s START ... play: %s taskID: %s", TaskEllipsis, input.Play, t.ID)
 	if !t.Enabled {
-		return t.CreateTaskResult(input, false)
+		result, err := t.CreateTaskResult(input, false)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create task result: %w", err)
+		}
+		return result, nil
 	}
 	if !t.Utils.IsOSX() {
 		return nil, fmt.Errorf("cannot install cask %s outside of macOS", t.ID)
@@ -81,7 +97,11 @@ func (t *BrewCaskTask) Install(ctx context.Context, input *ty.TaskInput) (*ty.Ta
 	}
 	if t.Brew.InPath(ctx, "Caskroom", t.ID) {
 		t.Log.Infof("%s %s: %s is already installed", TaskEllipsis, input.Play, t.ID)
-		return t.CreateTaskResult(input, false)
+		result, err := t.CreateTaskResult(input, false)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create task result: %w", err)
+		}
+		return result, nil
 	}
 	t.Log.Infof("%s %s: brew install (Cask) %s", TaskEllipsis, input.Play, t.ID)
 	if !input.DryRun {
@@ -89,5 +109,9 @@ func (t *BrewCaskTask) Install(ctx context.Context, input *ty.TaskInput) (*ty.Ta
 			return nil, fmt.Errorf("failed to brew install --cask %v: %v", t.ID, err)
 		}
 	}
-	return t.CreateTaskResult(input, true)
+	result, err := t.CreateTaskResult(input, true)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create task result: %w", err)
+	}
+	return result, nil
 }

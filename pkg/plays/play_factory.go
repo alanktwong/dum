@@ -8,12 +8,14 @@ import (
 	"fmt"
 )
 
+// PlayFactory creates Play instances from YML configuration.
 type PlayFactory struct {
 	Log         l.Logger
 	Utils       ext.Ext
 	TaskFactory *t.TaskFactory
 }
 
+// NewPlayFactory returns a new PlayFactory for creating Play instances.
 func NewPlayFactory() *PlayFactory {
 	return &PlayFactory{
 		Log:         l.Log(),
@@ -22,6 +24,7 @@ func NewPlayFactory() *PlayFactory {
 	}
 }
 
+// ProvidePlays creates multiple Play instances from YML configuration.
 func (f *PlayFactory) ProvidePlays(yml map[string]interface{}) ([]*Play, error) {
 	var plays []*Play
 	if arr, ok := yml["plays"].([]interface{}); ok {
@@ -40,6 +43,7 @@ func (f *PlayFactory) ProvidePlays(yml map[string]interface{}) ([]*Play, error) 
 	return plays, nil
 }
 
+// ProvidePlay creates a single Play instance from YML configuration.
 func (f *PlayFactory) ProvidePlay(yml map[string]interface{}) (*Play, error) {
 	tasks, err := f.TaskFactory.ProvideTasks(yml)
 	if err != nil {

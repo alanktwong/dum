@@ -1,3 +1,4 @@
+// Package tasks provides Task types and related utilities.
 package tasks
 
 import (
@@ -9,6 +10,7 @@ import (
 	"path/filepath"
 )
 
+// LinkTask creates a symbolic link.
 type LinkTask struct {
 	ty.Attributes
 	Root   string
@@ -17,6 +19,7 @@ type LinkTask struct {
 	Log    l.Logger
 }
 
+// NewLinkTask returns a new LinkTask for creating a symbolic link.
 func NewLinkTask(attributes *ty.Attributes, root, target string) (*LinkTask, error) {
 	if attributes == nil {
 		return nil, fmt.Errorf("attributes cannot be nil")
@@ -33,29 +36,45 @@ func NewLinkTask(attributes *ty.Attributes, root, target string) (*LinkTask, err
 	}, nil
 }
 
+// GetAttributes returns the Attributes.
 func (t *LinkTask) GetAttributes() ty.Attributes {
 	return t.Attributes
 }
 
+// GetID returns the ID.
 func (t *LinkTask) GetID() string {
 	return t.ID
 }
 
+// IsEnabled returns whether the task is enabled.
 func (t *LinkTask) IsEnabled() bool {
 	return t.Enabled
 }
 
+// Install installs the task.
 func (t *LinkTask) Install(ctx context.Context, input *ty.TaskInput) (*ty.TaskResult, error) {
 	t.Log.Debugf("%s START ... play: %s taskID: %s", TaskEllipsis, input.Play, t.ID)
 	if t.Root == "" {
-		return t.CreateTaskResult(input, false)
+		result, err := t.CreateTaskResult(input, false)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create task result: %w", err)
+		}
+		return result, nil
 	}
 	target := t.ProvideTarget()
 	if target == "" {
-		return t.CreateTaskResult(input, false)
+		result, err := t.CreateTaskResult(input, false)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create task result: %w", err)
+		}
+		return result, nil
 	}
 	if !t.Enabled {
-		return t.CreateTaskResult(input, false)
+		result, err := t.CreateTaskResult(input, false)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create task result: %w", err)
+		}
+		return result, nil
 	}
 	rootPath, err := t.Utils.ExpandUser(t.Root)
 	if err != nil {
@@ -71,18 +90,28 @@ func (t *LinkTask) Install(ctx context.Context, input *ty.TaskInput) (*ty.TaskRe
 			return nil, fmt.Errorf("failed to link %v -> %s/%s: %v", t.ID, t.Root, target, err)
 		}
 	}
-	return t.CreateTaskResult(input, true)
+	result, err := t.CreateTaskResult(input, true)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create task result: %w", err)
+	}
+	return result, nil
 }
 
+// List lists the task.
 func (t *LinkTask) List(_ context.Context, input *ty.TaskInput) (*ty.TaskResult, error) {
 	target := t.ProvideTarget()
 	err := t.Log.Printlnf("%v linking %v -> %s/%s", TaskEllipsis, t.ID, t.Root, target)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list link: %v", err)
 	}
-	return t.CreateTaskResult(input, true)
+	result, err := t.CreateTaskResult(input, true)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create task result: %w", err)
+	}
+	return result, nil
 }
 
+// ProvideTarget returns the target path for the link.
 func (t *LinkTask) ProvideTarget() string {
 	if t.Target != "" {
 		return t.Target

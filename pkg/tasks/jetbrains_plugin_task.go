@@ -1,3 +1,4 @@
+// Package tasks provides Task types and related utilities.
 package tasks
 
 import (
@@ -8,6 +9,7 @@ import (
 	"fmt"
 )
 
+// JetBrainsPluginTask installs a JetBrains IDE plugin.
 type JetBrainsPluginTask struct {
 	ty.Attributes
 	Apps      []string
@@ -16,6 +18,7 @@ type JetBrainsPluginTask struct {
 	Log       l.Logger
 }
 
+// NewJetBrainsPluginTask returns a new JetBrainsPluginTask for installing a JetBrains IDE plugin.
 func NewJetBrainsPluginTask(attributes *ty.Attributes, apps []string) (*JetBrainsPluginTask, error) {
 	if attributes == nil {
 		return nil, fmt.Errorf("attributes cannot be nil")
@@ -35,22 +38,30 @@ func NewJetBrainsPluginTask(attributes *ty.Attributes, apps []string) (*JetBrain
 	}, nil
 }
 
+// GetAttributes returns the Attributes.
 func (t *JetBrainsPluginTask) GetAttributes() ty.Attributes {
 	return t.Attributes
 }
 
+// GetID returns the ID.
 func (t *JetBrainsPluginTask) GetID() string {
 	return t.ID
 }
 
+// IsEnabled returns whether the task is enabled.
 func (t *JetBrainsPluginTask) IsEnabled() bool {
 	return t.Enabled
 }
 
+// Install installs the task.
 func (t *JetBrainsPluginTask) Install(ctx context.Context, input *ty.TaskInput) (*ty.TaskResult, error) {
 	t.Log.Debugf("%s START ... play: %s taskID: %s", TaskEllipsis, input.Play, t.ID)
 	if !t.Enabled {
-		return t.CreateTaskResult(input, false)
+		result, err := t.CreateTaskResult(input, false)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create task result: %w", err)
+		}
+		return result, nil
 	}
 
 	success := true
@@ -75,9 +86,14 @@ func (t *JetBrainsPluginTask) Install(ctx context.Context, input *ty.TaskInput) 
 			success = false
 		}
 	}
-	return t.CreateTaskResult(input, success)
+	result, err := t.CreateTaskResult(input, success)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create task result: %w", err)
+	}
+	return result, nil
 }
 
+// List lists the task.
 func (t *JetBrainsPluginTask) List(_ context.Context, input *ty.TaskInput) (*ty.TaskResult, error) {
 	for _, app := range t.activeApps() {
 		err := t.Log.Printlnf("%v %s installPlugins  %s", TaskEllipsis, app, t.ID)
@@ -85,7 +101,11 @@ func (t *JetBrainsPluginTask) List(_ context.Context, input *ty.TaskInput) (*ty.
 			return nil, fmt.Errorf("failed to list jetbrains: %v", err)
 		}
 	}
-	return t.CreateTaskResult(input, t.Enabled)
+	result, err := t.CreateTaskResult(input, t.Enabled)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create task result: %w", err)
+	}
+	return result, nil
 }
 
 func (t *JetBrainsPluginTask) activeApps() []string {

@@ -1,3 +1,4 @@
+// Package plays provides Play types and related utilities.
 package plays
 
 import (

@@ -27,7 +27,7 @@ func NewExecutor() *Executor {
 }
 
 // Install installs a playbook.
-func (e *Executor) Install(ctx context.Context, input *PlaybookInput) (*Result, error) {
+func (e *Executor) Install(ctx context.Context, input *Input) (*Result, error) {
 	group := input.Play
 	pb := input.PlayBook
 	err := e.Log.Printlnf(Ellipsis+"Installing playbook (%v) ... %v", pb.ID, pb.Description)
@@ -69,7 +69,7 @@ func (e *Executor) installGroupPlay(ctx context.Context,
 	group string,
 	playResults []*pl.PlayResult,
 	playMap *om.OrderedMap[string, *pl.Play],
-	input *PlaybookInput,
+	input *Input,
 ) ([]*pl.PlayResult, error) {
 	if play, ok := playMap.Get(group); ok {
 		playResult, err := e.PlayExecutor.InstallPlay(ctx, play, &pl.PlayInput{
@@ -89,7 +89,7 @@ func (e *Executor) installGroupPlay(ctx context.Context,
 func (e *Executor) installAllPlays(ctx context.Context,
 	playResults []*pl.PlayResult,
 	playMap *om.OrderedMap[string, *pl.Play],
-	input *PlaybookInput,
+	input *Input,
 ) ([]*pl.PlayResult, error) {
 	for current, play := range playMap.AllFromFront() {
 		e.Log.Infof("%v %v", PlayEllipsis, current)
@@ -108,7 +108,7 @@ func (e *Executor) installAllPlays(ctx context.Context,
 }
 
 // List lists a playbook.
-func (e *Executor) List(ctx context.Context, input *PlaybookInput) (*Result, error) {
+func (e *Executor) List(ctx context.Context, input *Input) (*Result, error) {
 	group := input.Play
 	pb := input.PlayBook
 	err := e.Log.Printlnf(Ellipsis+"Listing playbook (%v) ... %v", pb.ID, pb.Description)
@@ -139,7 +139,7 @@ func (e *Executor) listGroupPlay(ctx context.Context,
 	group string,
 	playResults []*pl.PlayResult,
 	playMap *om.OrderedMap[string, *pl.Play],
-	input *PlaybookInput,
+	input *Input,
 ) ([]*pl.PlayResult, error) {
 	if play, ok := playMap.Get(group); ok {
 		playResult, err := e.PlayExecutor.ListPlay(ctx, play, &pl.PlayInput{
@@ -159,7 +159,7 @@ func (e *Executor) listGroupPlay(ctx context.Context,
 func (e *Executor) listAllPlays(ctx context.Context,
 	playResults []*pl.PlayResult,
 	playMap *om.OrderedMap[string, *pl.Play],
-	input *PlaybookInput,
+	input *Input,
 ) ([]*pl.PlayResult, error) {
 	for _, play := range playMap.AllFromFront() {
 		playResult, err := e.PlayExecutor.ListPlay(ctx, play, &pl.PlayInput{

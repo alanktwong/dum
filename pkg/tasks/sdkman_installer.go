@@ -1,3 +1,4 @@
+// Package tasks provides Task types and related utilities.
 package tasks
 
 import (
@@ -9,12 +10,14 @@ import (
 	"os/exec"
 )
 
+// SdkmanInstaller installs the SDKMAN! SDK management tool.
 type SdkmanInstaller struct {
 	Utils ext.Ext
 	Curl  ext.Runner
 	Log   l.Logger
 }
 
+// NewSdkmanInstaller returns a new SdkmanInstaller for installing SDKMAN!.
 func NewSdkmanInstaller() *SdkmanInstaller {
 	return &SdkmanInstaller{
 		Utils: ext.NewExt(),
@@ -23,8 +26,10 @@ func NewSdkmanInstaller() *SdkmanInstaller {
 	}
 }
 
+// SdkCurlRunner runs the SDKMAN! install script.
 type SdkCurlRunner struct{}
 
+// Run runs the SDKMAN! install script.
 func (r *SdkCurlRunner) Run(ctx context.Context) error {
 	var cmd *exec.Cmd
 	sudo := ty.GetSudo(ctx)
@@ -33,13 +38,21 @@ func (r *SdkCurlRunner) Run(ctx context.Context) error {
 	} else {
 		cmd = exec.CommandContext(ctx, "sudo", "bash", "-c", "$(curl -s https://get.sdkman.io)")
 	}
-	return cmd.Run()
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("failed to run sdkman install: %w", err)
+	}
+	return nil
 }
 
+// Install installs the task.
 func (t *SdkmanInstaller) Install(ctx context.Context, input *ty.TaskInput) (*ty.TaskResult, error) {
 	if t.Utils.IsInstalled("sdk") {
 		t.Log.Infof("%v %v: sdkman already installed", TaskEllipsis, input.Play)
-		return ty.NewTaskResult(input, false)
+		result, err := ty.NewTaskResult(input, false)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create task result: %w", err)
+		}
+		return result, nil
 	}
 	t.Log.Infof("%v %v: install sdkman", TaskEllipsis, input.Play)
 	if !input.DryRun {
@@ -51,5 +64,9 @@ func (t *SdkmanInstaller) Install(ctx context.Context, input *ty.TaskInput) (*ty
 			return nil, fmt.Errorf("fail to install sdkman since this is neither linux nor OSX")
 		}
 	}
-	return ty.NewTaskResult(input, true)
+	result, err := ty.NewTaskResult(input, true)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create task result: %w", err)
+	}
+	return result, nil
 }

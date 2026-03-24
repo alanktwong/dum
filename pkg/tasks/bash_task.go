@@ -1,3 +1,4 @@
+// Package tasks provides Task types and related utilities.
 package tasks
 
 import (
@@ -8,6 +9,7 @@ import (
 	"fmt"
 )
 
+// BashTask executes bash commands or scripts.
 type BashTask struct {
 	ty.Attributes
 	Command string
@@ -16,6 +18,7 @@ type BashTask struct {
 	Log     l.Logger
 }
 
+// NewBashTask returns a new BashTask for executing bash commands or scripts.
 func NewBashTask(attributes *ty.Attributes, command, script string) (*BashTask, error) {
 	if attributes == nil {
 		return nil, fmt.Errorf("attributes cannot be nil")
@@ -35,22 +38,30 @@ func NewBashTask(attributes *ty.Attributes, command, script string) (*BashTask, 
 	}, nil
 }
 
+// GetAttributes returns the Attributes.
 func (t *BashTask) GetAttributes() ty.Attributes {
 	return t.Attributes
 }
 
+// GetID returns the ID.
 func (t *BashTask) GetID() string {
 	return t.ID
 }
 
+// IsEnabled returns whether the task is enabled.
 func (t *BashTask) IsEnabled() bool {
 	return t.Enabled
 }
 
+// Install installs the task.
 func (t *BashTask) Install(ctx context.Context, input *ty.TaskInput) (*ty.TaskResult, error) {
 	t.Log.Debugf("%s START ... play: %s taskID: %s", TaskEllipsis, input.Play, t.ID)
 	if !t.Enabled {
-		return t.CreateTaskResult(input, false)
+		result, err := t.CreateTaskResult(input, false)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create task result: %w", err)
+		}
+		return result, nil
 	}
 
 	cmd := t.Command
@@ -65,9 +76,14 @@ func (t *BashTask) Install(ctx context.Context, input *ty.TaskInput) (*ty.TaskRe
 			return nil, fmt.Errorf("failed to run command %s: %w", t.ID, err)
 		}
 	}
-	return t.CreateTaskResult(input, true)
+	result, err := t.CreateTaskResult(input, true)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create task result: %w", err)
+	}
+	return result, nil
 }
 
+// List lists the task.
 func (t *BashTask) List(_ context.Context, input *ty.TaskInput) (*ty.TaskResult, error) {
 	cmd := t.Command
 	if cmd == "" {
@@ -77,5 +93,9 @@ func (t *BashTask) List(_ context.Context, input *ty.TaskInput) (*ty.TaskResult,
 	if err != nil {
 		return nil, fmt.Errorf("failed to list command: %w", err)
 	}
-	return t.CreateTaskResult(input, true)
+	result, err := t.CreateTaskResult(input, true)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create task result: %w", err)
+	}
+	return result, nil
 }

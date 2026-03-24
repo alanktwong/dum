@@ -1,3 +1,4 @@
+// Package tasks provides Task types and related utilities.
 package tasks
 
 import (
@@ -9,12 +10,14 @@ import (
 	"path/filepath"
 )
 
+// BashInstaller installs bash on macOS.
 type BashInstaller struct {
 	Brew  ext.Brew
 	Utils ext.Ext
 	Log   l.Logger
 }
 
+// NewBashInstaller returns a new BashInstaller for installing bash.
 func NewBashInstaller() *BashInstaller {
 	return &BashInstaller{
 		Brew:  ext.NewBrew(),
@@ -23,14 +26,23 @@ func NewBashInstaller() *BashInstaller {
 	}
 }
 
+// Install installs the task.
 func (t *BashInstaller) Install(ctx context.Context, input *ty.TaskInput) (*ty.TaskResult, error) {
 	if !t.Utils.IsOSX() {
 		t.Log.Infof("%v %v: there is no need to reinstall bash outside of Mac OSX", TaskEllipsis, input.Play)
-		return ty.NewTaskResult(input, false)
+		result, err := ty.NewTaskResult(input, false)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create task result: %w", err)
+		}
+		return result, nil
 	}
 	if t.Utils.IsInstalled("bash") {
 		t.Log.Infof("%v %v: updated bash is already installed", TaskEllipsis, input.Play)
-		return ty.NewTaskResult(input, true)
+		result, err := ty.NewTaskResult(input, true)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create task result: %w", err)
+		}
+		return result, nil
 	}
 
 	t.Log.Infof("%v %v: install bash", TaskEllipsis, input.Play)
@@ -43,7 +55,11 @@ func (t *BashInstaller) Install(ctx context.Context, input *ty.TaskInput) (*ty.T
 			return nil, err
 		}
 	}
-	return ty.NewTaskResult(input, true)
+	result, err := ty.NewTaskResult(input, true)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create task result: %w", err)
+	}
+	return result, nil
 }
 
 func (t *BashInstaller) buildLink(ctx context.Context, formula string, sudo bool) error {

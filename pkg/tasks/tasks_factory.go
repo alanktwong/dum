@@ -1,3 +1,4 @@
+// Package tasks provides Task types and related utilities.
 package tasks
 
 import (
@@ -7,11 +8,13 @@ import (
 	"fmt"
 )
 
+// TaskFactory creates Task instances from YML configuration.
 type TaskFactory struct {
 	Log   l.Logger
 	Utils ext.Ext
 }
 
+// NewTaskFactory returns a new TaskFactory for creating Task instances.
 func NewTaskFactory() *TaskFactory {
 	return &TaskFactory{
 		Log:   l.Log(),
@@ -19,6 +22,7 @@ func NewTaskFactory() *TaskFactory {
 	}
 }
 
+// ProvideTasks creates multiple Task instances from YML configuration.
 func (f *TaskFactory) ProvideTasks(yml map[string]interface{}) ([]Task, error) {
 	var tasks []Task
 	if arr, ok := yml["tasks"].([]interface{}); ok {

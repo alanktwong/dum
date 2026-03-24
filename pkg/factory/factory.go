@@ -1,3 +1,4 @@
+// Package factory provides the Factory for constructing Input.
 package factory
 
 import (
@@ -12,12 +13,14 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// Factory provides the Factory for constructing Input from YML files.
 type Factory struct {
 	Log         l.Logger
 	Utils       ext.Ext
 	PlayFactory *pl.PlayFactory
 }
 
+// NewFactory returns a new Factory for constructing Input.
 func NewFactory() *Factory {
 	return &Factory{
 		Log:         l.Log(),
@@ -26,15 +29,15 @@ func NewFactory() *Factory {
 	}
 }
 
-// InputOptions provides the parameterized struct for constructing a PlaybookInput.
+// InputOptions provides the parameterized struct for constructing a Input.
 type InputOptions struct {
 	File   string
 	Group  string
 	DryRun bool
 }
 
-// Provide constructs a PlaybookInput given PlaybookInput Options.
-func (f *Factory) Provide(options InputOptions) (*pb.PlaybookInput, error) {
+// Provide constructs a Input given Input Options.
+func (f *Factory) Provide(options InputOptions) (*pb.Input, error) {
 	yml, err := f.getYaml(options.File)
 	if err != nil {
 		return nil, err
@@ -43,7 +46,7 @@ func (f *Factory) Provide(options InputOptions) (*pb.PlaybookInput, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to provide playbook: %w", err)
 	}
-	return &pb.PlaybookInput{
+	return &pb.Input{
 		DryRun:   options.DryRun,
 		Play:     options.Group,
 		PlayBook: playBook,
@@ -92,7 +95,11 @@ func (f *Factory) ProvidePlayBook(yml map[string]interface{}) (*pb.PlayBook, err
 	if err != nil {
 		return nil, fmt.Errorf("failed to create attributes: %w", err)
 	}
-	return pb.NewPlayBook(attributes, plays, apps)
+	playBook, err := pb.NewPlayBook(attributes, plays, apps)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create playbook: %w", err)
+	}
+	return playBook, nil
 }
 
 func (f *Factory) provideJetBrainsApps(yml map[string]interface{}) map[string]string {

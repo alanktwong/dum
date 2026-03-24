@@ -30,6 +30,7 @@ func calculateSuccess(tasksResults []*types.TaskResult) bool {
 	return true
 }
 
+// CalculateSuccess determines if all plays were successful.
 func CalculateSuccess(playResults []*PlayResult) bool {
 	for _, result := range playResults {
 		if !result.Success {

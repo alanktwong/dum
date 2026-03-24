@@ -7,6 +7,6 @@ type Result struct {
 }
 
 // NewResult constructs a PlayBook Result.
-func NewResult(input *PlaybookInput, success bool) *Result {
+func NewResult(input *Input, success bool) *Result {
 	return &Result{PlayBook: input.PlayBook.ID, Success: success}
 }

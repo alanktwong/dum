@@ -53,6 +53,8 @@ type Ext interface {
 }
 
 // DefaultExt implements Ext.
+// DefaultExt provides OS abstraction utilities for file system operations,
+// path manipulation, and command execution.
 type DefaultExt struct{}
 
 // NewExt constructs DefaultExt.
@@ -239,6 +241,8 @@ func (u *DefaultExt) ToAbsolutePath(path string) (string, error) {
 	return u.absolutePath(path)
 }
 
+// GetString implements Ext.
+// GetString infers the string value of a key in a map, or returns the default if it doesn't exist or is not a string.
 func (u *DefaultExt) GetString(data map[string]interface{}, key string, def string) string {
 	if value, ok := data[key]; ok {
 		if strValue, ok := value.(string); ok {
@@ -248,6 +252,8 @@ func (u *DefaultExt) GetString(data map[string]interface{}, key string, def stri
 	return def
 }
 
+// GetStrings implements Ext.
+// GetStrings infers the string array of a key in a map, or returns the default if it doesn't exist or is not a string.
 func (u *DefaultExt) GetStrings(data map[string]interface{}, key string, def []string) []string {
 	if value, ok := data[key]; ok {
 		if generic, ok := value.([]interface{}); ok {
@@ -263,6 +269,8 @@ func (u *DefaultExt) GetStrings(data map[string]interface{}, key string, def []s
 	return def
 }
 
+// GetBool implements Ext.
+// GetBool infers the bool value of a key in a map, or returns the default if it doesn't exist or is not a bool.
 func (u *DefaultExt) GetBool(data map[string]interface{}, key string, def bool) bool {
 	if value, ok := data[key]; ok {
 		if boolValue, ok := value.(bool); ok {

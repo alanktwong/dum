@@ -22,6 +22,7 @@ func NewPlayExecutor() *PlayExecutor {
 	}
 }
 
+// Initialize checks for required system dependencies (tar, zip, unzip) and returns a PlayResult.
 func (e *PlayExecutor) Initialize(input *PlayInput) (*PlayResult, error) {
 	if !e.Ext.IsInstalled("tar") {
 		return nil, fmt.Errorf("tar is not installed, please install it to continue")

@@ -1,3 +1,4 @@
+// Package tasks provides Task types and related utilities.
 package tasks
 
 import (
@@ -11,6 +12,7 @@ import (
 	"strings"
 )
 
+// GitTask clones a git repository.
 type GitTask struct {
 	ty.Attributes
 	Root string
@@ -19,6 +21,7 @@ type GitTask struct {
 	Log  l.Logger
 }
 
+// NewGitTask returns a new GitTask for cloning a git repository.
 func NewGitTask(attributes *ty.Attributes, root, name string) (*GitTask, error) {
 	if attributes == nil {
 		return nil, fmt.Errorf("attributes cannot be nil")
@@ -39,25 +42,33 @@ func NewGitTask(attributes *ty.Attributes, root, name string) (*GitTask, error) 
 	}, nil
 }
 
+// GetAttributes returns the Attributes.
 func (t *GitTask) GetAttributes() ty.Attributes {
 	return t.Attributes
 }
 
+// GetID returns the ID.
 func (t *GitTask) GetID() string {
 	return t.ID
 }
 
+// IsEnabled returns whether the task is enabled.
 func (t *GitTask) IsEnabled() bool {
 	return t.Enabled
 }
 
+// Install installs the task.
 func (t *GitTask) Install(ctx context.Context, input *ty.TaskInput) (*ty.TaskResult, error) {
 	t.Log.Debugf("%s START ... play: %s taskID: %s", TaskEllipsis, input.Play, t.ID)
 	if t.Root == "" {
 		return nil, fmt.Errorf("task root cannot be empty")
 	}
 	if !t.Enabled {
-		return t.CreateTaskResult(input, false)
+		result, err := t.CreateTaskResult(input, false)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create task result: %w", err)
+		}
+		return result, nil
 	}
 	providedName := provideName(t.ID, t.Name)
 	rootPath := filepath.Join(os.ExpandEnv(t.Root))
@@ -65,7 +76,11 @@ func (t *GitTask) Install(ctx context.Context, input *ty.TaskInput) (*ty.TaskRes
 
 	if t.Git.AlreadyExists(targetPath) {
 		t.Log.Infof("%s %s git dir %v/%v exists", TaskEllipsis, input.Play, t.Root, providedName)
-		return t.CreateTaskResult(input, false)
+		result, err := t.CreateTaskResult(input, false)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create task result: %w", err)
+		}
+		return result, nil
 	}
 	t.Log.Infof("%s %s: git clone %s %s", TaskEllipsis, input.Play, t.ID, providedName)
 	if !input.DryRun {
@@ -73,16 +88,25 @@ func (t *GitTask) Install(ctx context.Context, input *ty.TaskInput) (*ty.TaskRes
 			return nil, fmt.Errorf("failed to git clone %v: %v", t.ID, err)
 		}
 	}
-	return t.CreateTaskResult(input, true)
+	result, err := t.CreateTaskResult(input, true)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create task result: %w", err)
+	}
+	return result, nil
 }
 
+// List lists the task.
 func (t *GitTask) List(_ context.Context, input *ty.TaskInput) (*ty.TaskResult, error) {
 	name := provideName(t.ID, t.Name)
 	err := t.Log.Printlnf("%v at %v, git clone %v %v", TaskEllipsis, t.Root, t.ID, name)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list git: %v", err)
 	}
-	return t.CreateTaskResult(input, true)
+	result, err := t.CreateTaskResult(input, true)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create task result: %w", err)
+	}
+	return result, nil
 }
 
 func provideName(id, name string) string {
