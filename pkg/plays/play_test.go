@@ -96,3 +96,58 @@ func TestNewPlay_Success_Tasks(t *testing.T) {
 	assert.Equal(t, attr.ID, play.ID)
 	assert.Equal(t, tasks, play.Tasks)
 }
+
+func TestPlay_GetTasks_All(t *testing.T) {
+	attr := &ty.Attributes{
+		ID:      "test-play",
+		Enabled: true,
+	}
+	enabledTask := &MockTask{
+		Attr: ty.Attributes{ID: "task-1", Enabled: true},
+	}
+	disabledTask := &MockTask{
+		Attr: ty.Attributes{ID: "task-2", Enabled: false},
+	}
+	play, err := NewPlay(attr, []tk.Task{enabledTask, disabledTask})
+	assert.NoError(t, err)
+
+	tasks := play.GetTasks(false)
+	assert.Equal(t, 2, tasks.Len())
+	assert.True(t, tasks.Has("task-1"))
+	assert.True(t, tasks.Has("task-2"))
+}
+
+func TestPlay_GetTasks_Filtered(t *testing.T) {
+	attr := &ty.Attributes{
+		ID:      "test-play",
+		Enabled: true,
+	}
+	enabledTask := &MockTask{
+		Attr: ty.Attributes{ID: "task-1", Enabled: true},
+	}
+	disabledTask := &MockTask{
+		Attr: ty.Attributes{ID: "task-2", Enabled: false},
+	}
+	play, err := NewPlay(attr, []tk.Task{enabledTask, disabledTask})
+	assert.NoError(t, err)
+
+	tasks := play.GetTasks(true)
+	assert.Equal(t, 1, tasks.Len())
+	assert.True(t, tasks.Has("task-1"))
+	assert.False(t, tasks.Has("task-2"))
+}
+
+func TestPlay_GetTasks_Filtered_DisabledPlay(t *testing.T) {
+	attr := &ty.Attributes{
+		ID:      "test-play",
+		Enabled: false,
+	}
+	enabledTask := &MockTask{
+		Attr: ty.Attributes{ID: "task-1", Enabled: true},
+	}
+	play, err := NewPlay(attr, []tk.Task{enabledTask})
+	assert.NoError(t, err)
+
+	tasks := play.GetTasks(true)
+	assert.Equal(t, 0, tasks.Len())
+}

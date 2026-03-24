@@ -29,3 +29,11 @@ packages:
       dir: 'pkg/tasks/installer'
       pkgname: 'installer'
       filename: "logging_mocks.go"
+  awong/dotfiles/pkg/plays:
+    config:
+      all: false
+      dir: 'pkg/plays'
+      pkgname: 'plays'
+      filename: "playbook_info_mocks_test.go"
+    interfaces:
+      PlayBookInfo: {}
