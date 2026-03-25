@@ -8,10 +8,7 @@ on:
 
 jobs:
   test-coverage:
-    # TODO: Enable this workflow once test coverage is sufficient
-    # enabled: false
     runs-on: ubuntu-latest
-    if: false  # Disabled by default - set to true or remove condition to enable
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
