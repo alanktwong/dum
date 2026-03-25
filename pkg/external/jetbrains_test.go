@@ -12,7 +12,7 @@ func TestJetBrainsImpl_IsInstalled(t *testing.T) {
 	jetbrains := NewJetBrains()
 
 	pluginPath := filepath.Join(os.Getenv("HOME"), "Library", "Application Support", "JetBrains", "IntelliJIDEA", "plugins", "test-plugin")
-	os.MkdirAll(filepath.Dir(pluginPath), 0755)
+	os.MkdirAll(filepath.Dir(pluginPath), 0o755)
 	defer os.RemoveAll(filepath.Dir(pluginPath))
 
 	result := jetbrains.IsInstalled("IntelliJIDEA", "test-plugin")

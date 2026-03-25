@@ -1,6 +1,7 @@
 package external
 
 import (
+	"awong/dotfiles/pkg/external/gen"
 	"context"
 	"fmt"
 	"os"
@@ -9,12 +10,7 @@ import (
 )
 
 // JetBrainsApp is an abstraction for jetbrains app.
-type JetBrainsApp interface {
-	// Install installs the plugin for the app.
-	Install(ctx context.Context, app, plugin string) error
-	// IsInstalled checks whether the plugin is installed for the app.
-	IsInstalled(ideName, plugin string) bool
-}
+type JetBrainsApp = gen.JetBrainsApp
 
 // JetBrainsImpl implements JetBrainsApp.
 type JetBrainsImpl struct{}
