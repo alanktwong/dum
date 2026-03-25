@@ -2,6 +2,7 @@
 package logging
 
 import (
+	"awong/dotfiles/pkg/logging/gen"
 	"fmt"
 	"os"
 	"sync"
@@ -10,6 +11,9 @@ import (
 	"github.com/charmbracelet/log"
 )
 
+// Logger is the interface for CLIs logging.
+type Logger = gen.Logger
+
 // Note charmbracelet/log uses atomic.Pointer, sync.Once and sync.RWMutex.
 var (
 	// logger lock provides a mutex for the logger singleton.
@@ -17,38 +21,6 @@ var (
 	// loggerSingleton is a singleton of the logger.
 	loggerSingleton Logger
 )
-
-// Logger is the interface for CLIs logging.
-type Logger interface {
-	// Debug prints a debug message.
-	Debug(msg any, keyvals ...any)
-	// Info prints an info message.
-	Info(msg any, keyvals ...any)
-	// Warn prints a warn message.
-	Warn(msg any, keyvals ...any)
-	// Error prints an error message.
-	Error(msg any, keyvals ...any)
-	// Fatal prints a fatal message.
-	Fatal(msg any, keyvals ...any)
-	// Debugf prints a debug message with formatting.
-	Debugf(format string, args ...any)
-	// Infof prints an info message with formatting.
-	Infof(format string, args ...any)
-	// Warnf prints a warn message with formatting.
-	Warnf(format string, args ...any)
-	// Errorf prints an error message with formatting.
-	Errorf(format string, args ...any)
-	// Fatalf prints a fatal message with formatting.
-	Fatalf(format string, args ...any)
-	// Printlnf prints a message with formatting.
-	Printlnf(format string, a ...any) error
-	// SetLevel sets the current level.
-	SetLevel(level log.Level)
-	// WithPrefix returns a new logger with the given prefix.
-	WithPrefix(prefix string) Logger
-	// GetPrefix returns the current prefix.
-	GetPrefix() string
-}
 
 // LoggerImpl is the default implementation of Logger.
 type LoggerImpl struct {
