@@ -32,3 +32,4 @@ jobs:
         with:
           profile: dist/cover.out
           config: ./.testcoverage.yml
+          github-action-output: true
