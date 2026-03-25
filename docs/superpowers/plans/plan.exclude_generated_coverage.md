@@ -22,18 +22,19 @@ Each phase creates a PR that stacks onto the previous one, ultimately stacking o
 
 ### Phase 1: Types Package (Stacked on #5)
 
+**PR**: [#6](https://github.com/alanktwong/dum/pull/6)
 **PR Title**: `refactor(types): move enums to gen/ subpackage`
 
-- [ ] **1.1** Create `pkg/types/gen/` directory
-- [ ] **1.2** Move `task_type.go` to `pkg/types/gen/`
-- [ ] **1.3** Move `task_type_enum.go` to `pkg/types/gen/`
-- [ ] **1.4** Move `jetbrains_type.go` to `pkg/types/gen/`
-- [ ] **1.5** Move `jetbrains_type_enum.go` to `pkg/types/gen/`
-- [ ] **1.6** Update go-enum directive in `task_type.go` to output to `gen/`
-- [ ] **1.7** Update go-enum directive in `jetbrains_type.go` to output to `gen/`
-- [ ] **1.8** Update imports in `tasks_factory.go` to use `types/gen`
-- [ ] **1.9** Run `go generate` to verify enum generation works
-- [ ] **1.10** Run tests to verify everything compiles
+- [x] **1.1** Create `pkg/types/gen/` directory
+- [x] **1.2** Move `task_type.go` to `pkg/types/gen/`
+- [x] **1.3** Move `task_type_enum.go` to `pkg/types/gen/`
+- [x] **1.4** Move `jetbrains_type.go` to `pkg/types/gen/`
+- [x] **1.5** Move `jetbrains_type_enum.go` to `pkg/types/gen/`
+- [x] **1.6** Update go-enum directive in `task_type.go` to output to `gen/`
+- [x] **1.7** Update go-enum directive in `jetbrains_type.go` to output to `gen/`
+- [x] **1.8** Update imports in `tasks_factory.go` to use `types/gen`
+- [x] **1.9** Run `go generate` to verify enum generation works
+- [x] **1.10** Run tests to verify everything compiles
 
 ---
 
