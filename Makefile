@@ -131,7 +131,7 @@ test: build ## runs tests and create generates coverage report
 .PHONY: coverage
 coverage: test ## displays test coverage report and checks threshold
 	@printf ${COLOR} "Checking coverage of tests ..."
-	@go-test-coverage --config=./.testcoverage.yml || true
+	@go-test-coverage --config=./cfg/testcoverage.yml || true
 	@printf ${COLOR} "Generating HTML report ..."
 	@go tool cover -html=${OUT_DIR}/cover.out -o ${OUT_DIR}/coverage.html
 	@printf ${COLOR} "HTML report: ${OUT_DIR}/coverage.html"
@@ -139,7 +139,7 @@ coverage: test ## displays test coverage report and checks threshold
 .PHONY: check-coverage
 check-coverage: test ## checks that test coverage meets the minimum threshold
 	@printf ${COLOR} "Checking coverage threshold ..."
-	@go-test-coverage --config=./.testcoverage.yml
+	@go-test-coverage --config=./cfg/testcoverage.yml
 
 .PHONY: profile
 profile: ## profiles
