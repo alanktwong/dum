@@ -29,5 +29,5 @@ func TestPlay_GetActiveTasks(t *testing.T) {
 
 	play1.Enabled = true
 	againActiveTasks := play1.GetTasks(true)
-	assert.Equal(t, 10, againActiveTasks.Len(), "should return 10 active plays when play is enabled")
+	assert.Equal(t, 12, againActiveTasks.Len(), "should return 12 active plays when play is enabled")
 }

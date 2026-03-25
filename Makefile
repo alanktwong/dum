@@ -4,7 +4,8 @@ OUT_DIR="./dist"
 
 DUM_APP=dum
 DUM_SOURCE=./cmd/${DUM_APP}/main.go
-DUM_VERSION="0.2.2"
+GIT_VERSION := $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
+DUM_VERSION ?= $(GIT_VERSION)
 DUM_EXECUTABLE="$(OUT_DIR)/$(DUM_APP)"
 
 ALL_PACKAGES=$(shell go list ./... | grep -v /vendor)
@@ -80,7 +81,7 @@ generate: ## generate code
 .PHONY: build
 build: make_out fmt vendor generate ## local build
 	@printf ${COLOR} "Building ..."
-	@go build -v -o $(DUM_EXECUTABLE)-${DUM_VERSION} $(DUM_SOURCE)
+	@go build -v -ldflags "-X awong/dotfiles/pkg/cmd.version=$(DUM_VERSION)" -o $(DUM_EXECUTABLE)-${DUM_VERSION} $(DUM_SOURCE)
 
 .PHONY: release
 release: build  ## compile binaries for many OSes and CPU architectures using goreleaser

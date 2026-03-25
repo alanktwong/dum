@@ -193,6 +193,10 @@ func (f *Factory) provideTask(yml map[string]interface{}) (Task, error) {
 	case e.TaskTypeCellar:
 		return NewBrewCellarTask(attributes,
 			f.getString(yml, "tap", ""))
+	case e.TaskTypeBash:
+		return NewBashTask(attributes,
+			f.getString(yml, "command", ""),
+			f.getString(yml, "script", ""))
 	default:
 		return nil, fmt.Errorf("unknown task type %s for task %s", taskType, id)
 	}

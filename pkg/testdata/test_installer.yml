@@ -20,6 +20,16 @@ playbook:
           id: "../projects/dotfiles"
           root: "~/.dotfiles"
           description: "ln -s for a test"
+        - type: "bash"
+          id: "test-echo"
+          command: "echo 'hello world'"
+          description: "bash command test"
+        - type: "bash"
+          id: "test-script"
+          script: |
+            echo 'line 1'
+            echo 'line 2'
+          description: "bash script test"
         - type: "brew"
           id: "scc"
           description: "Count LOC for a test"
