@@ -127,13 +127,14 @@ separation but requires significant migration work.
 1. **Where to maintain exclusion list?** → Config file (not Makefile)
 2. **How often are new generated packages created?** → Unpredictable; could stabilize or keep growing with new CLIs
 3. **Open to restructuring imports for approach B?** → Yes
-4. **Are tooling changes for approach C acceptable?** → Not addressed
+4. **Are tooling changes for approach C acceptable?** → No
 
 ---
 
 ## Decision
 
 Given answers to (1) and (3), **Approach B (separate packages)** is recommended:
+ 
 - Uses config file for exclusion list
 - Clean package boundaries with generated code in dedicated subpackages
 - Eliminates need to maintain exclusion list long-term
