@@ -93,7 +93,7 @@ release: build  ## compile binaries for many OSes and CPU architectures using go
 
 ## Quality
 .PHONY: check
-check: build fmt fix lint vet test coverage-check ## runs code quality checks
+check: build fmt fix lint vet test check-coverage ## runs code quality checks
 	@printf ${COLOR} "Checking code quality ..."
 
 # Append || true below if blocking local development
@@ -129,23 +129,17 @@ test: build ## runs tests and create generates coverage report
 	    -race ./...
 
 .PHONY: coverage
-coverage: test ## displays test coverage report in html mode
+coverage: test ## displays test coverage report in html mode and checks threshold
 	@printf ${COLOR} "Checking coverage of tests ..."
 	@grep -v '_enum.go' $(OUT_DIR)/coverage.txt > $(OUT_DIR)/coverage-filtered.txt
 	@go tool cover -html=$(OUT_DIR)/coverage-filtered.txt
+	@bash ./tools/coverage-check.sh
 
 COVERAGE_THRESHOLD ?= 80
-.PHONY: coverage-check
-coverage-check: test ## checks that test coverage meets the minimum threshold
+.PHONY: check-coverage
+check-coverage: test ## checks that test coverage meets the minimum threshold
 	@printf ${COLOR} "Checking coverage threshold ..."
-	@grep -v '_enum.go' $(OUT_DIR)/coverage.txt > $(OUT_DIR)/coverage-filtered.txt
-	@COVERAGE=$$(go tool cover -func=$(OUT_DIR)/coverage-filtered.txt | grep total | awk '{print $$3}' | tr -d '%'); \
-	if [ "$$(echo "$$COVERAGE < $(COVERAGE_THRESHOLD)" | bc -l)" -eq 1 ]; then \
-		echo "Coverage $$COVERAGE%% is below threshold $(COVERAGE_THRESHOLD)%%"; \
-		exit 1; \
-	else \
-		echo "Coverage $$COVERAGE%% meets threshold $(COVERAGE_THRESHOLD)%%"; \
-	fi
+	@bash ./tools/coverage-check.sh
 
 .PHONY: profile
 profile: ## profiles

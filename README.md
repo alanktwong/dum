@@ -95,7 +95,8 @@ make lint            # Run golangci-lint
 make vet             # Go vet
 make fmt             # Go fmt
 make fix             # Runs go fix to update code to new language features
-make coverage-check  # Check coverage meets minimum threshold
+make coverage        # View coverage report in browser and check threshold
+make check-coverage  # Check coverage meets minimum threshold
 make all             # Runs build and quality checks
 make clean           # Clean generated files
 ```

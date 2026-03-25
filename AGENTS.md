@@ -19,16 +19,16 @@ This document provides guidelines for agentic coding agents operating in this re
 
 ### Primary Commands (via Makefile)
 ```bash
-make build      # Local build (includes tidy, fmt, vendor, generate)
-make test       # Run tests with coverage
-make lint       # Run golangci-lint
-make vet        # Go vet
-make fmt        # Go fmt
-make fix        # Runs go fix to update code to new language features
-make generate   # Run go generate and mockery
-make coverage-check  # Checks coverage meets minimum threshold (default 80%)
-make all        # Runs build and check (quality + build)
-make clean      # Clean generated files
+make build           # Local build (includes tidy, fmt, vendor, generate)
+make test            # Run tests with coverage
+make lint            # Run golangci-lint
+make vet             # Go vet
+make fmt             # Go fmt
+make fix             # Runs go fix to update code to new language features
+make generate        # Run go generate and mockery
+make check-coverage  # Checks coverage meets minimum threshold (default 80%)
+make all             # Runs build and check (quality + build)
+make clean           # Clean generated files
 ```
 ### Code Generation
 
@@ -65,7 +65,7 @@ go test -v -race ./...
 make install    # Install tools (go-enum, goimports, gocov, golangci-lint, mockery)
 make tidy       # Fix go.mod dependencies
 make vendor     # Vendor dependencies
-make coverage   # View coverage report in browser
+make coverage   # View coverage report in browser and check threshold
 make coverage-check  # Enforce coverage threshold
 ```
 
