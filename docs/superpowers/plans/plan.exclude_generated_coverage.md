@@ -40,14 +40,15 @@ Each phase creates a PR that stacks onto the previous one, ultimately stacking o
 
 ### Phase 2: Plays Package
 
+**PR**: [#7](https://github.com/alanktwong/dum/pull/7)
 **PR Title**: `refactor(plays): move PlayBookInfo to gen/ subpackage`
 
-- [ ] **2.1** Create `pkg/plays/gen/` directory
-- [ ] **2.2** Move `playbook_info.go` to `pkg/plays/gen/`
-- [ ] **2.3** Update imports in `pkg/plays/` that reference `PlayBookInfo`
-- [ ] **2.4** Update mockery config to generate mock to `gen/`
-- [ ] **2.5** Run mockery to generate `playbook_info_mocks.go` in `gen/`
-- [ ] **2.6** Run tests to verify everything compiles
+- [x] **2.1** Create `pkg/plays/gen/` directory
+- [x] **2.2** Move `playbook_info.go` to `pkg/plays/gen/`
+- [x] **2.3** Update imports in `pkg/plays/` that reference `PlayBookInfo`
+- [x] **2.4** Update mockery config to generate mock to `gen/`
+- [x] **2.5** Run mockery to generate `playbook_info_mocks.go` in `gen/`
+- [x] **2.6** Run tests to verify everything compiles
 
 ---
 
