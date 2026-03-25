@@ -7,7 +7,17 @@
 
 The generated Go code (`*_enum.go`, `*_mocks.go`) currently lives in the same packages as source code (e.g., `pkg/types`, `pkg/plays`). The `go-test-coverage` tool can exclude these files at report time using file patterns, but this doesn't prevent them from being collected in the coverage profile.
 
-This design explores three approaches to exclude generated code from test coverage more cleanly.
+This design explores approaches to exclude generated code from test coverage more cleanly.
+
+## Completed
+
+### A: Fix CI Config Path
+
+Fixed the GitHub workflow to reference the correct config file path (`./cfg/testcoverage.yml` instead of `./.testcoverage.yml`).
+
+**Status**: Done - committed in `27d0b32`
+
+---
 
 ## Approaches
 
@@ -66,46 +76,16 @@ Update all imports from `awong/dotfiles/pkg/types` to `awong/dotfiles/pkg/types/
 
 ---
 
-### D: Build Tags
-
-Add build tags to generated files to exclude them at compilation time.
-
-In `*_enum.go` and `*_mocks.go`:
-```go
-//go:build ignore_coverage
-// +build ignore_coverage
-
-package types
-...
-```
-
-Then in Makefile:
-```makefile
-go test -cover -tags ignore_coverage ./...
-```
-
-**Pros:**
-- Excludes at compilation time, not collection time
-- Works with go-enum and mockery configurations
-
-**Cons:**
-- Requires modifying generation templates (go-enum, mockery)
-- Build tags may have unintended side effects
-- More complex to maintain
-- May not work well with all tooling
-
----
-
 ## Comparison Matrix
 
-| Aspect | B (coverpkg) | C (separate packages) | D (build tags) |
-|--------|--------------|------------------------|-----------------|
-| Implementation complexity | Low | High | Medium |
-| Code restructuring | None | Significant | Medium |
-| Maintenance burden | Medium | Low | Medium |
-| Excludes at collection time | Yes | Yes | Yes |
-| Import changes required | No | Yes | No |
-| Tooling changes required | No | Yes | Yes |
+| Aspect                      | B (coverpkg) | C (separate packages) |
+|-----------------------------|--------------|-----------------------|
+| Implementation complexity   | Low          | High                  |
+| Code restructuring          | None         | Significant           |
+| Maintenance burden          | Medium       | Low                   |
+| Excludes at collection time | Yes          | Yes                   |
+| Import changes required     | No           | Yes                   |
+| Tooling changes required    | No           | Yes                   |
 
 ## Recommendation
 
