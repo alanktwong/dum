@@ -82,14 +82,14 @@ Each phase creates a PR that stacks onto the previous one, ultimately stacking o
 
 ### Phase 5: Factory Package (mocks only)
 
-**PR**: TBD
+**PR**: [#10](https://github.com/alanktwong/dum/pull/10)
 **PR Title**: `refactor factory package: move its interfaces to gen/`
 
-- [ ] **5.1** Create `pkg/factory/gen/` directory
-- [ ] **5.2** Move interfaces used for mocking to `gen/`
-- [ ] **5.3** Update imports throughout codebase
-- [ ] **5.4** Update mockery configs to generate to `gen/`
-- [ ] **5.5** Run tests to verify everything compiles
+- [x] **5.1** Create `pkg/factory/gen/` directory
+- [x] **5.2** Move interfaces used for mocking to `gen/`
+- [x] **5.3** Update imports throughout codebase
+- [x] **5.4** Update mockery configs to generate to `gen/`
+- [x] **5.5** Run tests to verify everything compiles
 
 ---
 
