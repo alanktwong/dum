@@ -56,12 +56,12 @@ Each phase creates a PR that stacks onto the previous one, ultimately stacking o
 
 **PR Title**: `refactor(logging): move Logger interface to gen/ subpackage`
 
-- [ ] **3.1** Create `pkg/logging/gen/` directory
-- [ ] **3.2** Move `logging.go` to `pkg/logging/gen/`
-- [ ] **3.3** Update imports in `pkg/logging/` that reference `Logger`
-- [ ] **3.4** Update mockery config to generate mock to `gen/`
-- [ ] **3.5** Run mockery to generate `logging_mocks.go` in `gen/`
-- [ ] **3.6** Run tests to verify everything compiles
+- [x] **3.1** Create `pkg/logging/gen/` directory
+- [x] **3.2** Create `logger.go` interface in `pkg/logging/gen/`
+- [x] **3.3** Update `logging.go` to re-export from `gen/`
+- [x] **3.4** Update mockery config to generate mock to `gen/`
+- [x] **3.5** Run mockery to generate `logging_mocks.go` in `gen/`
+- [x] **3.6** Run tests to verify everything compiles
 
 ---
 
