@@ -22,6 +22,9 @@ packages:
       Brew: {}
       Code: {}
       Ext: {}
+      Git: {}
+      JetBrainsApp: {}
+      Mas: {}
       Runner: {}
   awong/dotfiles/pkg/logging:
     config:
