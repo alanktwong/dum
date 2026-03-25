@@ -3,6 +3,7 @@
 package external
 
 import (
+	"awong/dotfiles/pkg/external/gen"
 	"context"
 	"fmt"
 	"os"
@@ -15,43 +16,12 @@ import (
 	"syscall"
 )
 
-// Runner is an abstraction around things such as exec.Command.
-type Runner interface {
-	// Run runs something in a context.
-	Run(ctx context.Context) error
-}
-
-// Ext is an OS abstraction.
-type Ext interface {
-	// IsInstalled determines whether the 'command' is installed in the PATH.
-	IsInstalled(command string) bool
-	// IsOSX determines whether the current OS is a MacOSX.
-	IsOSX() bool
-	// IsLinux determines whether the current OS is Linux.
-	IsLinux() bool
-	// IsUserInFileGroup - Checks if the current user belongs to the group of the given file.
-	IsUserInFileGroup(filePath string) (bool, error)
-	// CreateDirectory does a mkdir -p.
-	CreateDirectory(ctx context.Context, path string, sudo bool) error
-	// SoftLink creates a soft link at rootPath from src to target.
-	SoftLink(ctx context.Context, rootPath, src, target string, sudo bool) error
-	// ExpandUser expands that path if it contains home directory aliases.
-	ExpandUser(path string) (string, error)
-	// ToAbsolutePath converts a path given its environment variables.
-	ToAbsolutePath(path string) (string, error)
-	// IsDir determines whether a path is a directory.
-	IsDir(path string) bool
-	// IsSymlink determines whether a path is a symbolic link.
-	IsSymlink(path string) bool
-	// RunCommand runs a bash command.
-	RunCommand(ctx context.Context, command string, sudo bool) error
-	// GetString infers the string value of a key in a map, or returns the default if it doesn't exist or is not a string.
-	GetString(data map[string]any, key string, def string) string
-	// GetStrings infers the string array of a key in a map, or returns the default if it doesn't exist or is not a string.
-	GetStrings(data map[string]any, key string, def []string) []string
-	// GetBool infers the bool value of a key in a map, or returns the default if it doesn't exist or is not a bool.
-	GetBool(data map[string]any, key string, def bool) bool
-}
+type (
+	// Runner is an abstraction around things such as exec.Command.
+	Runner = gen.Runner
+	// Ext is an OS abstraction.
+	Ext = gen.Ext
+)
 
 // DefaultExt implements Ext.
 // DefaultExt provides OS abstraction utilities for file system operations,

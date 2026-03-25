@@ -1,5 +1,5 @@
 packages:
-  awong/dotfiles/pkg/external:
+  awong/dotfiles/pkg/external/gen:
     config:
       all: false
       dir: 'pkg/tasks'

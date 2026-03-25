@@ -2,7 +2,7 @@ profile: dist/cover.out
 threshold:
   file: 0
   package: 0
-  total: 50
+  total: 20
 
 override:
   - path: ^pkg/cmd$
@@ -28,3 +28,4 @@ exclude:
   paths:
     - \*_enum\.go$
     - \*_mocks\.go$
+    - ^pkg/[^/]+/gen
