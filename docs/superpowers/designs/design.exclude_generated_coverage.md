@@ -1,7 +1,7 @@
 # Design: Excluding Generated Code from Test Coverage
 
 **Date**: 2026-03-25
-**Status**: Draft
+**Status**: Approved - Approach B (separate packages)
 
 ## Background
 
@@ -124,6 +124,17 @@ separation but requires significant migration work.
 
 ## Open Questions
 
-1. Should we maintain the exclusion list in the Makefile or in a config file?
-2. How often do new generated packages get created? (affects maintenance burden of A)
-3. Is the team open to restructuring imports for approach B?
+1. **Where to maintain exclusion list?** → Config file (not Makefile)
+2. **How often are new generated packages created?** → Unpredictable; could stabilize or keep growing with new CLIs
+3. **Open to restructuring imports for approach B?** → Yes
+4. **Are tooling changes for approach C acceptable?** → Not addressed
+
+---
+
+## Decision
+
+Given answers to (1) and (3), **Approach B (separate packages)** is recommended:
+- Uses config file for exclusion list
+- Clean package boundaries with generated code in dedicated subpackages
+- Eliminates need to maintain exclusion list long-term
+- Follows Go best practices for generated code organization
