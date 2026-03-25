@@ -768,5 +768,10 @@ nvim/lazy-lock.json
 # go
 ######################
 vendor
-pkg/**/*_mocks.go
-pkg/**/*_enum.go
+*_mocks.go
+*_enum.go
+
+######################
+# development
+######################
+bin
