@@ -1,124 +1,82 @@
 package playbook
 
 import (
-	"fmt"
+	pl "awong/dotfiles/pkg/plays"
+	ty "awong/dotfiles/pkg/types"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
-func TestGetAllPlays(t *testing.T) {
-	pb := createTestPlayBook(t)
-	playMap := pb.GetPlays(false)
-	assert.Equal(t, 2, playMap.Len(), "should return 2 plays")
+func TestNewPlayBook_NilAttributes(t *testing.T) {
+	pb, err := NewPlayBook(nil, nil, nil)
+	assert.Error(t, err)
+	assert.Nil(t, pb)
+	assert.Contains(t, err.Error(), "attributes cannot be nil")
 }
 
-func TestGetActivePlays(t *testing.T) {
-	pb := createTestPlayBook(t)
-	allPlayMap := pb.GetPlays(false)
-	play, ok := allPlayMap.Get("play-1")
-	assert.True(t, ok, "play should exist in playbook")
-	play.Enabled = true
-
-	activePlayMap := pb.GetPlays(true)
-	assert.Equal(t, 1, activePlayMap.Len(), "should return 1 active plays")
+func TestNewPlayBook_EmptyID(t *testing.T) {
+	attr := &ty.Attributes{ID: "", Description: "test"}
+	pb, err := NewPlayBook(attr, nil, nil)
+	assert.Error(t, err)
+	assert.Nil(t, pb)
+	assert.Contains(t, err.Error(), "playbook ID cannot be empty")
 }
 
-func expectTaskResult(t *testing.T, success bool, attr Attributes, ctx *Input) *TaskResult {
-	res, err := attr.CreateTaskResult(ctx, success)
+func TestNewPlayBook_Success(t *testing.T) {
+	attr := &ty.Attributes{ID: "test-pb", Description: "desc"}
+	pb, err := NewPlayBook(attr, nil, nil)
 	assert.NoError(t, err)
-	return res
+	assert.NotNil(t, pb)
+	assert.Equal(t, "test-pb", pb.ID)
+	assert.Equal(t, "desc", pb.Description)
 }
 
-func createTestPlayBook(t *testing.T) *PlayBook {
-	input := createTestInput(t)
-	return input.PlayBook
-}
-
-func createTestInput(t *testing.T) *Input {
-	f := NewFactory()
-	input, err := f.Provide(InputOptions{
-		File:   "../../pkg/testdata/test_installer.yml",
-		Group:  "my-test-play",
-		DryRun: true,
-	})
+func TestNewPlayBook_Success_Enabled(t *testing.T) {
+	attr := &ty.Attributes{ID: "test-pb", Enabled: true}
+	pb, err := NewPlayBook(attr, nil, nil)
 	assert.NoError(t, err)
-	return input
+	assert.True(t, pb.IsEnabled())
 }
 
-func findTask(pb *PlayBook, id string) (Task, error) {
-	playMap := pb.GetPlays(false)
-	for _, play := range playMap.AllFromFront() {
-		taskMap := play.GetTasks(false)
-		if task, ok := taskMap.Get(id); ok {
-			return task, nil
-		}
+func TestPlayBook_GetPlays_All(t *testing.T) {
+	attr := &ty.Attributes{ID: "test-pb", Enabled: true}
+	plays := []*pl.Play{
+		{Attributes: ty.Attributes{ID: "play-1", Enabled: true}},
+		{Attributes: ty.Attributes{ID: "play-2", Enabled: false}},
 	}
-	return nil, fmt.Errorf("cannot find task %s in playbook %s", id, pb.ID)
+	pb, err := NewPlayBook(attr, plays, nil)
+	assert.NoError(t, err)
+
+	result := pb.GetPlays(false)
+	assert.Equal(t, 2, result.Len())
+	assert.True(t, result.Has("play-1"))
+	assert.True(t, result.Has("play-2"))
 }
 
-func createTestBrewTask(t *testing.T, attr Attributes) *BrewTask {
-	brewTask, err := NewBrewTask(&attr, "")
+func TestPlayBook_GetPlays_Active(t *testing.T) {
+	attr := &ty.Attributes{ID: "test-pb", Enabled: true}
+	plays := []*pl.Play{
+		{Attributes: ty.Attributes{ID: "play-1", Enabled: true}},
+		{Attributes: ty.Attributes{ID: "play-2", Enabled: false}},
+	}
+	pb, err := NewPlayBook(attr, plays, nil)
 	assert.NoError(t, err)
-	return brewTask
+
+	result := pb.GetPlays(true)
+	assert.Equal(t, 1, result.Len())
+	assert.True(t, result.Has("play-1"))
+	assert.False(t, result.Has("play-2"))
 }
 
-func createTestBrewCaskTask(t *testing.T, attr Attributes) *BrewCaskTask {
-	brewTask, err := NewBrewCaskTask(&attr, "")
+func TestPlayBook_GetPlays_DisabledPlayBook(t *testing.T) {
+	attr := &ty.Attributes{ID: "test-pb", Enabled: false}
+	plays := []*pl.Play{
+		{Attributes: ty.Attributes{ID: "play-1", Enabled: true}},
+	}
+	pb, err := NewPlayBook(attr, plays, nil)
 	assert.NoError(t, err)
-	return brewTask
-}
 
-func createTestBrewCellarTask(t *testing.T, attr Attributes) *BrewCellarTask {
-	brewTask, err := NewBrewCellarTask(&attr, "")
-	assert.NoError(t, err)
-	return brewTask
-}
-
-func createTestDirTask(t *testing.T, attr Attributes) *DirTask {
-	task, err := NewDirTask(&attr)
-	assert.NoError(t, err)
-	return task
-}
-
-func createTestFunctionTask(t *testing.T, attr Attributes) *FunctionTask {
-	task, err := NewFunctionTask(&attr)
-	assert.NoError(t, err)
-	return task
-}
-
-func createTestGitTask(t *testing.T, attr Attributes, root, name string) *GitTask {
-	task, err := NewGitTask(&attr, root, name)
-	assert.NoError(t, err)
-	return task
-}
-
-func createTestJetBrainsTask(t *testing.T, attr Attributes, apps []string) *JetBrainsPluginTask {
-	task, err := NewJetBrainsPluginTask(&attr, apps)
-	assert.NoError(t, err)
-	return task
-}
-
-func createTestLinkTask(t *testing.T, attr Attributes, root, target string) *LinkTask {
-	task, err := NewLinkTask(&attr, root, target)
-	assert.NoError(t, err)
-	return task
-}
-
-func createTestMasTask(t *testing.T, attr Attributes) *MasTask {
-	task, err := NewMasTask(&attr)
-	assert.NoError(t, err)
-	return task
-}
-
-func createTestVsCodeTask(t *testing.T, attr Attributes) *VsCodePluginTask {
-	task, err := NewVsCodePluginTask(&attr)
-	assert.NoError(t, err)
-	return task
-}
-
-func createTestBrewTap(t *testing.T, attr Attributes) *BrewTap {
-	installer, err := NewBrewTap(&attr)
-	assert.NoError(t, err)
-	return installer
+	result := pb.GetPlays(true)
+	assert.Equal(t, 0, result.Len())
 }

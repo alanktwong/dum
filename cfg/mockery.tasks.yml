@@ -1,0 +1,14 @@
+packages:
+  awong/dotfiles/pkg/external:
+    config:
+      all: false
+      dir: 'pkg/tasks'
+      pkgname: 'tasks'
+      filename: "external_mocks.go"
+    interfaces:
+      Brew: {}
+      Code: {}
+      Ext: {}
+      Git: {}
+      JetBrainsApp: {}
+      Mas: {}

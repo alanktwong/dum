@@ -11,6 +11,8 @@ DUM_EXECUTABLE="$(OUT_DIR)/$(DUM_APP)"
 ALL_PACKAGES=$(shell go list ./... | grep -v /vendor)
 SHELL := /bin/bash # Use bash syntax
 
+COVERAGE_THRESHOLD ?= 80
+
 # Optional colors to beautify output
 BLACK   := $(shell tput -Txterm setaf 0)
 RED     := $(shell tput -Txterm setaf 1)
@@ -58,9 +60,8 @@ clean: ## cleans binary and other generated files
 	@printf ${COLOR} "Cleaning up ..."
 	@go clean -cache
 	@rm -rf $(OUT_DIR)
-	@rm -f coverage*.out
-	@rm -f ./pkg/enums/*_enum.go
-	@rm -f ./pkg/playbook/*_mocks_test.go
+	@rm -f ./pkg/**/*_mocks.go
+	@rm -f ./pkg/**/*_enum.go
 
 .PHONY: tidy
 tidy: ## runs tidy to fix go.mod dependencies
@@ -76,7 +77,9 @@ vendor: tidy ## all packages required to support builds and tests in the /vendor
 generate: ## generate code
 	@printf ${COLOR} "Generating ..."
 	@go generate ./...
-	@mockery
+	@for config in cfg/mockery*.yml; do \
+		mockery --config "$$config"; \
+	done
 
 .PHONY: build
 build: make_out fmt vendor generate ## local build
@@ -86,19 +89,19 @@ build: make_out fmt vendor generate ## local build
 .PHONY: release
 release: build  ## compile binaries for many OSes and CPU architectures using goreleaser
 	@printf ${COLOR} "Compiling for every OS and Platform ..."
-	@goreleaser build --clean --snapshot
+	@goreleaser build --clean --snapshot --config cfg/goreleaser.yaml
 
 ## Quality
 .PHONY: check
-check: build lint vet test ## runs code quality checks
+check: build fmt fix lint vet test check-coverage ## runs code quality checks
 	@printf ${COLOR} "Checking code quality ..."
 
 # Append || true below if blocking local development
 .PHONY: lint
 lint: build ## go linting. Update and use specific lint tool and options
 	@printf ${COLOR} "Linting ..."
-	@golangci-lint run cmd/...
-	@golangci-lint run pkg/...
+	@golangci-lint run --config cfg/golangci.yml cmd/...
+	@golangci-lint run --config cfg/golangci.yml pkg/...
 
 .PHONY: vet
 vet: ## go vet
@@ -110,20 +113,33 @@ fmt: ## runs go formatter
 	@printf ${COLOR} "Formatting ..."
 	@go fmt ./...
 
+.PHONY: fix
+fix: ## runs go fix to update code to use new language features
+	@printf ${COLOR} "Fixing ..."
+	@go fix ./...
+
 ## Test
 .PHONY: test
 test: build ## runs tests and create generates coverage report
 	@printf ${COLOR} "Testing ..."
 	@go test -v -cover \
-	    -coverprofile=${OUT_DIR}/coverage.txt \
+	    -coverprofile=${OUT_DIR}/cover.out \
 	    -covermode=atomic \
 	    -coverpkg=./... \
 	    -race ./...
 
 .PHONY: coverage
-coverage: test ## displays test coverage report in html mode
+coverage: test ## displays test coverage report and checks threshold
 	@printf ${COLOR} "Checking coverage of tests ..."
-	@go tool cover -html=$(OUT_DIR)/coverage.txt
+	@go-test-coverage --config=./cfg/testcoverage.yml || true
+	@printf ${COLOR} "Generating HTML report ..."
+	@go tool cover -html=${OUT_DIR}/cover.out -o ${OUT_DIR}/coverage.html
+	@printf ${COLOR} "HTML report: ${OUT_DIR}/coverage.html"
+
+.PHONY: check-coverage
+check-coverage: test ## checks that test coverage meets the minimum threshold
+	@printf ${COLOR} "Checking coverage threshold ..."
+	@go-test-coverage --config=./cfg/testcoverage.yml
 
 .PHONY: profile
 profile: ## profiles

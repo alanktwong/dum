@@ -1,142 +1,293 @@
 package playbook
 
 import (
-	e "awong/dotfiles/pkg/enums"
 	"context"
+	"errors"
 	"fmt"
-	"path/filepath"
+
+	l "awong/dotfiles/pkg/logging"
+	pl "awong/dotfiles/pkg/plays"
+	ty "awong/dotfiles/pkg/types"
 	"testing"
 
+	"github.com/charmbracelet/log"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
-func TestExecutor_Install(t *testing.T) {
-	// given: context
+// MockPlayExecutor implements PlayExec for testing.
+type MockPlayExecutor struct {
+	mock.Mock
+}
+
+func (m *MockPlayExecutor) Initialize(input *pl.PlayInput) (*pl.PlayResult, error) {
+	ret := m.Called(input)
+	var r0 *pl.PlayResult
+	if ret.Get(0) != nil {
+		r0 = ret.Get(0).(*pl.PlayResult)
+	}
+	return r0, ret.Error(1)
+}
+
+func (m *MockPlayExecutor) InstallPlay(ctx context.Context, p *pl.Play, input *pl.PlayInput) (*pl.PlayResult, error) {
+	ret := m.Called(ctx, p, input)
+	var r0 *pl.PlayResult
+	if ret.Get(0) != nil {
+		r0 = ret.Get(0).(*pl.PlayResult)
+	}
+	return r0, ret.Error(1)
+}
+
+func (m *MockPlayExecutor) ListPlay(ctx context.Context, p *pl.Play, input *pl.PlayInput) (*pl.PlayResult, error) {
+	ret := m.Called(ctx, p, input)
+	var r0 *pl.PlayResult
+	if ret.Get(0) != nil {
+		r0 = ret.Get(0).(*pl.PlayResult)
+	}
+	return r0, ret.Error(1)
+}
+
+// MockPlayBookInfo implements plays.PlayBookInfo for testing.
+type MockPlayBookInfo struct {
+	mock.Mock
+}
+
+func (m *MockPlayBookInfo) GetID() string {
+	ret := m.Called()
+	return ret.Get(0).(string)
+}
+
+func (m *MockPlayBookInfo) GetJetBrainsApps() map[string]string {
+	ret := m.Called()
+	if ret.Get(0) == nil {
+		return nil
+	}
+	return ret.Get(0).(map[string]string)
+}
+
+// mockLogger satisfies logging.Logger for testing (only implements used methods).
+type mockLogger struct {
+	mock.Mock
+}
+
+func (m *mockLogger) Printlnf(format string, a ...any) error {
+	args := []any{format}
+	args = append(args, a...)
+	ret := m.Called(args...)
+	return ret.Error(0)
+}
+
+func (m *mockLogger) Infof(format string, args ...any) {
+	callArgs := []any{format}
+	callArgs = append(callArgs, args...)
+	m.Called(callArgs...)
+}
+
+func (m *mockLogger) Debug(msg any, keyvals ...any)     { panic("not implemented") }
+func (m *mockLogger) Info(msg any, keyvals ...any)      { panic("not implemented") }
+func (m *mockLogger) Warn(msg any, keyvals ...any)      { panic("not implemented") }
+func (m *mockLogger) Error(msg any, keyvals ...any)     { panic("not implemented") }
+func (m *mockLogger) Fatal(msg any, keyvals ...any)     { panic("not implemented") }
+func (m *mockLogger) Debugf(format string, args ...any) { panic("not implemented") }
+func (m *mockLogger) Warnf(format string, args ...any)  { panic("not implemented") }
+func (m *mockLogger) Errorf(format string, args ...any) { panic("not implemented") }
+func (m *mockLogger) Fatalf(format string, args ...any) { panic("not implemented") }
+func (m *mockLogger) SetLevel(level log.Level)          { panic("not implemented") }
+func (m *mockLogger) WithPrefix(prefix string) l.Logger { panic("not implemented") }
+func (m *mockLogger) GetPrefix() string                 { panic("not implemented") }
+
+func newTestExecutor(t *testing.T) (*Executor, *mockLogger, *MockPlayExecutor) {
+	t.Helper()
+	logger := &mockLogger{}
+	playExec := &MockPlayExecutor{}
+	return &Executor{
+		Log:          logger,
+		PlayExecutor: playExec,
+	}, logger, playExec
+}
+
+func newTestPlayBook(id string, playNames ...string) *PlayBook {
+	var plays []*pl.Play
+	for _, name := range playNames {
+		plays = append(plays, &pl.Play{Attributes: ty.Attributes{ID: name, Enabled: true}})
+	}
+	pb := &PlayBook{
+		Attributes: ty.Attributes{ID: id, Description: "test", Enabled: true},
+		Plays:      plays,
+	}
+	return pb
+}
+
+func TestNewExecutor_NoArgs(t *testing.T) {
+	e := NewExecutor()
+	assert.NotNil(t, e)
+	assert.NotNil(t, e.Log)
+	assert.NotNil(t, e.Ext)
+	assert.NotNil(t, e.PlayExecutor)
+}
+
+func TestExecutor_Install_GroupPlay_Success(t *testing.T) {
+	e, logger, playExec := newTestExecutor(t)
 	ctx := context.Background()
-	input := createTestInput(t)
-	input.Play = ""
-	input.DryRun = false
-	// and mocks
-	mockBrew := NewMockBrew(t)
-	mockUtils := NewMockExt(t)
-	mockUtils.EXPECT().IsInstalled("tar").Return(true)
-	mockUtils.EXPECT().IsInstalled("zip").Return(true)
-	mockUtils.EXPECT().IsInstalled("unzip").Return(true)
-	mockTapInstaller := NewMockInstaller(t)
-	// and: brew cask
-	brewCaskTask := findBrewCaskTask(t, input)
 
-	mockUtils.EXPECT().IsOSX().Return(true)
-	wantedTapResult := expectTaskResult(t, false, brewCaskTask.Attributes, input)
-	mockTapInstaller.EXPECT().Install(ctx, input).Return(wantedTapResult, nil)
+	pb := newTestPlayBook("test-book", "play-1")
+	input := &Input{Play: "play-1", PlayBook: pb}
 
-	mockBrew.EXPECT().InPath(ctx, "Caskroom", brewCaskTask.ID).Return(false)
-	mockBrew.EXPECT().InstallCask(ctx, brewCaskTask.ID).Return(nil).Once()
+	logger.On("Printlnf", "...Installing playbook (%v) ... %v", "test-book", "test").Return(nil)
+	logger.On("Infof", "...END: installing playbook (%v) ... %v", "test-book", "test").Return(nil)
 
-	brewCaskTask.Brew = mockBrew
-	brewCaskTask.Utils = mockUtils
-	brewCaskTask.Tap = mockTapInstaller
-	brewCaskTask.Enabled = true
-	// and: brew cellar
-	brewCellarTask := findBrewCellarTask(t, input)
-	mockBrew.EXPECT().InPath(ctx, "Cellar", brewCellarTask.ID).Return(false)
-	mockBrew.EXPECT().Install(ctx, brewCellarTask.ID).Return(nil).Once()
+	initResult := &pl.PlayResult{PlayBook: "test-book", Play: "initialize", Success: true}
+	playExec.On("Initialize", mock.AnythingOfType("*plays.PlayInput")).Return(initResult, nil)
 
-	brewCellarTask.Brew = mockBrew
-	brewCellarTask.Tap = mockTapInstaller
-	brewCellarTask.Enabled = true
-	// and: brew
-	brewTask := findBrewTask(t, input)
-	mockBrew.EXPECT().InPath(ctx, "opt", brewTask.ID).Return(false)
-	mockUtils.EXPECT().IsInstalled(brewTask.ID).Return(false)
-	mockBrew.EXPECT().Install(ctx, brewTask.ID).Return(nil).Once()
+	playResult := &pl.PlayResult{PlayBook: "test-book", Play: "play-1", Success: true}
+	playExec.On("InstallPlay", ctx, mock.AnythingOfType("*plays.Play"), mock.AnythingOfType("*plays.PlayInput")).Return(playResult, nil)
 
-	brewTask.Brew = mockBrew
-	brewTask.Utils = mockUtils
-	brewTask.Tap = mockTapInstaller
-	brewTask.Enabled = true
-	// and: dir
-	dirTask := findDirTask(t, input)
-	expanded := fmt.Sprintf("/Users/user/%v", dirTask.ID)
-	mockUtils.EXPECT().ExpandUser(dirTask.ID).Return(expanded, nil)
-	mockUtils.EXPECT().IsDir(expanded).Return(false)
-	mockUtils.EXPECT().CreateDirectory(ctx, expanded, dirTask.Sudo).Return(nil).Once()
-
-	dirTask.Utils = mockUtils
-	dirTask.Enabled = true
-	// and: link
-	linkTask := findLinkTask(t, input)
-	rel := "projects"
-	rootPath := fmt.Sprintf("/Users/user/%v", rel)
-	linkUtils := NewMockExt(t)
-	providedTarget := linkTask.provideTarget()
-	linkUtils.EXPECT().ExpandUser(linkTask.Root).Return(rootPath, nil)
-	targetPath := rootPath + "/dotfiles"
-	linkUtils.EXPECT().IsSymlink(targetPath).Return(false)
-	linkUtils.EXPECT().SoftLink(ctx, rootPath, linkTask.ID, providedTarget, linkTask.Sudo).Return(nil).Once()
-
-	linkTask.Utils = linkUtils
-	linkTask.Enabled = true
-	// and: function
-	functionTask := findFunctionTask(t, input)
-	mockRegistry := make(map[string]Installer)
-	mockFnInstaller := NewMockInstaller(t)
-	wantedResult := expectTaskResult(t, true, functionTask.Attributes, input)
-	mockFnInstaller.EXPECT().Install(ctx, input).Return(wantedResult, nil).Once()
-	mockRegistry[functionTask.ID] = mockFnInstaller
-	functionTask.Registry = mockRegistry
-	functionTask.Enabled = true
-	// and: git
-	gitTask := findGitTask(t, input)
-
-	mockGit := NewMockGit(t)
-	mockGit.EXPECT().Clone(ctx, gitTask.ID, gitTask.Name, gitTask.Root, gitTask.Sudo).Return(nil).Once()
-	gitPath := filepath.Join(gitTask.Root, gitTask.Name)
-	mockGit.EXPECT().AlreadyExists(gitPath).Return(false)
-	gitTask.Git = mockGit
-	gitTask.Enabled = true
-	// and: jetbrains
-	jetBrainsTask := findJetBrainsTask(t, input)
-	apps := input.PlayBook.JetBrainsApps
-	mockUtils.EXPECT().IsInstalled(e.JetBrainsTypeIdea.String()).Return(true)
-	mockUtils.EXPECT().IsInstalled(e.JetBrainsTypeGoland.String()).Return(true)
-
-	mockJetBrains := NewMockJetBrainsApp(t)
-	intellij, ok := apps[e.JetBrainsTypeIdea.String()]
-	assert.True(t, ok)
-	mockJetBrains.EXPECT().IsInstalled(intellij, jetBrainsTask.ID).Return(false)
-	goland, ok := apps[e.JetBrainsTypeGoland.String()]
-	assert.True(t, ok)
-	mockJetBrains.EXPECT().IsInstalled(goland, jetBrainsTask.ID).Return(false)
-	mockJetBrains.EXPECT().Install(ctx, e.JetBrainsTypeIdea.String(), jetBrainsTask.ID).Return(nil).Once()
-	mockJetBrains.EXPECT().Install(ctx, e.JetBrainsTypeGoland.String(), jetBrainsTask.ID).Return(nil).Once()
-
-	jetBrainsTask.JetBrains = mockJetBrains
-	jetBrainsTask.Utils = mockUtils
-	jetBrainsTask.Enabled = true
-	// and: mas
-	masTask := findMasTask(t, input)
-
-	mockMas := NewMockMas(t)
-	mockMas.EXPECT().List(ctx).Return("", nil)
-	mockMas.EXPECT().Install(ctx, masTask.ID).Return(nil).Once()
-
-	masTask.Mas = mockMas
-	masTask.Enabled = true
-	// and: vscode
-	vsCodeTask := findVsCodeTask(t, input)
-
-	mockCode := NewMockCode(t)
-	mockCode.EXPECT().ListExtensions(ctx).Return("", nil)
-	mockCode.EXPECT().InstallExtension(ctx, vsCodeTask.ID).Return(nil).Once()
-	vsCodeTask.Code = mockCode
-	vsCodeTask.Enabled = true
-
-	// when
-	executor := NewExecutor()
-	executor.Utils = mockUtils
-	got, err := executor.Install(ctx, input)
-	// then
+	result, err := e.Install(ctx, input)
 	assert.NoError(t, err)
-	assert.NotNilf(t, got, "executor should install(%v) all active tasks", input)
+	assert.NotNil(t, result)
+	assert.True(t, result.Success)
+	assert.Equal(t, "test-book", result.PlayBook)
+}
+
+func TestExecutor_Install_AllPlays_Success(t *testing.T) {
+	e, logger, playExec := newTestExecutor(t)
+	ctx := context.Background()
+
+	pb := newTestPlayBook("test-book", "play-1")
+	input := &Input{Play: "", PlayBook: pb}
+
+	logger.On("Printlnf", "...Installing playbook (%v) ... %v", "test-book", "test").Return(nil)
+	logger.On("Infof", "%v %v", PlayEllipsis, "play-1").Return(nil)
+	logger.On("Infof", "...END: installing playbook (%v) ... %v", "test-book", "test").Return(nil)
+
+	initResult := &pl.PlayResult{PlayBook: "test-book", Play: "initialize", Success: true}
+	playExec.On("Initialize", mock.AnythingOfType("*plays.PlayInput")).Return(initResult, nil)
+
+	playResult := &pl.PlayResult{PlayBook: "test-book", Play: "play-1", Success: true}
+	playExec.On("InstallPlay", ctx, mock.AnythingOfType("*plays.Play"), mock.AnythingOfType("*plays.PlayInput")).Return(playResult, nil)
+
+	result, err := e.Install(ctx, input)
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.True(t, result.Success)
+}
+
+func TestExecutor_Install_PrintlnfError(t *testing.T) {
+	e, logger, _ := newTestExecutor(t)
+	ctx := context.Background()
+
+	pb := newTestPlayBook("test-book")
+	input := &Input{PlayBook: pb}
+
+	logger.On("Printlnf", "...Installing playbook (%v) ... %v", "test-book", "test").Return(errors.New("log failed"))
+
+	result, err := e.Install(ctx, input)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "failed to install playbook")
+}
+
+func TestExecutor_Install_InitializeError(t *testing.T) {
+	e, logger, playExec := newTestExecutor(t)
+	ctx := context.Background()
+
+	pb := newTestPlayBook("test-book")
+	input := &Input{PlayBook: pb}
+
+	logger.On("Printlnf", "...Installing playbook (%v) ... %v", "test-book", "test").Return(nil)
+	playExec.On("Initialize", mock.AnythingOfType("*plays.PlayInput")).Return(nil, fmt.Errorf("init failed"))
+
+	result, err := e.Install(ctx, input)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "failed to Initialize")
+}
+
+func TestExecutor_Install_InstallPlayError(t *testing.T) {
+	e, logger, playExec := newTestExecutor(t)
+	ctx := context.Background()
+
+	pb := newTestPlayBook("test-book", "play-1")
+	input := &Input{Play: "play-1", PlayBook: pb}
+
+	logger.On("Printlnf", "...Installing playbook (%v) ... %v", "test-book", "test").Return(nil)
+
+	initResult := &pl.PlayResult{PlayBook: "test-book", Play: "initialize", Success: true}
+	playExec.On("Initialize", mock.AnythingOfType("*plays.PlayInput")).Return(initResult, nil)
+	playExec.On("InstallPlay", ctx, mock.AnythingOfType("*plays.Play"), mock.AnythingOfType("*plays.PlayInput")).Return(nil, fmt.Errorf("install failed"))
+
+	result, err := e.Install(ctx, input)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "failed to install play")
+}
+
+func TestExecutor_List_GroupPlay_Success(t *testing.T) {
+	e, logger, playExec := newTestExecutor(t)
+	ctx := context.Background()
+
+	pb := newTestPlayBook("test-book", "play-1")
+	input := &Input{Play: "play-1", PlayBook: pb}
+
+	logger.On("Printlnf", "...Listing playbook (%v) ... %v", "test-book", "test").Return(nil)
+	logger.On("Infof", "...END: listing playbook (%v) ... %v", "test-book", "test").Return(nil)
+
+	playResult := &pl.PlayResult{PlayBook: "test-book", Play: "play-1", Success: true}
+	playExec.On("ListPlay", ctx, mock.AnythingOfType("*plays.Play"), mock.AnythingOfType("*plays.PlayInput")).Return(playResult, nil)
+
+	result, err := e.List(ctx, input)
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.True(t, result.Success)
+	assert.Equal(t, "test-book", result.PlayBook)
+}
+
+func TestExecutor_List_AllPlays_Success(t *testing.T) {
+	e, logger, playExec := newTestExecutor(t)
+	ctx := context.Background()
+
+	pb := newTestPlayBook("test-book", "play-1")
+	input := &Input{Play: "", PlayBook: pb}
+
+	logger.On("Printlnf", "...Listing playbook (%v) ... %v", "test-book", "test").Return(nil)
+	logger.On("Infof", "...END: listing playbook (%v) ... %v", "test-book", "test").Return(nil)
+
+	playResult := &pl.PlayResult{PlayBook: "test-book", Play: "play-1", Success: true}
+	playExec.On("ListPlay", ctx, mock.AnythingOfType("*plays.Play"), mock.AnythingOfType("*plays.PlayInput")).Return(playResult, nil)
+
+	result, err := e.List(ctx, input)
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.True(t, result.Success)
+}
+
+func TestExecutor_List_PrintlnfError(t *testing.T) {
+	e, logger, _ := newTestExecutor(t)
+	ctx := context.Background()
+
+	pb := newTestPlayBook("test-book")
+	input := &Input{PlayBook: pb}
+
+	logger.On("Printlnf", "...Listing playbook (%v) ... %v", "test-book", "test").Return(errors.New("log failed"))
+
+	result, err := e.List(ctx, input)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "failed to list playbook")
+}
+
+func TestExecutor_List_ListPlayError(t *testing.T) {
+	e, logger, playExec := newTestExecutor(t)
+	ctx := context.Background()
+
+	pb := newTestPlayBook("test-book", "play-1")
+	input := &Input{Play: "play-1", PlayBook: pb}
+
+	logger.On("Printlnf", "...Listing playbook (%v) ... %v", "test-book", "test").Return(nil)
+	playExec.On("ListPlay", ctx, mock.AnythingOfType("*plays.Play"), mock.AnythingOfType("*plays.PlayInput")).Return(nil, fmt.Errorf("list failed"))
+
+	result, err := e.List(ctx, input)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "failed to list play")
 }

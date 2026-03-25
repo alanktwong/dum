@@ -753,6 +753,7 @@ zsh/config.zsh
 ######################
 # Others
 ######################
+.worktrees/
 *.class
 *.*~
 *~
@@ -767,7 +768,10 @@ nvim/lazy-lock.json
 # go
 ######################
 vendor
-pkg/playbook/external_mocks_test.go
-pkg/playbook/task_mocks_test.go
-pkg/enums/jetbrains_type_enum.go
-pkg/enums/task_type_enum.go
+*_mocks.go
+*_enum.go
+
+######################
+# development
+######################
+bin

@@ -21,25 +21,25 @@ var (
 // Logger is the interface for CLIs logging.
 type Logger interface {
 	// Debug prints a debug message.
-	Debug(msg interface{}, keyvals ...interface{})
+	Debug(msg any, keyvals ...any)
 	// Info prints an info message.
-	Info(msg interface{}, keyvals ...interface{})
+	Info(msg any, keyvals ...any)
 	// Warn prints a warn message.
-	Warn(msg interface{}, keyvals ...interface{})
+	Warn(msg any, keyvals ...any)
 	// Error prints an error message.
-	Error(msg interface{}, keyvals ...interface{})
+	Error(msg any, keyvals ...any)
 	// Fatal prints a fatal message.
-	Fatal(msg interface{}, keyvals ...interface{})
+	Fatal(msg any, keyvals ...any)
 	// Debugf prints a debug message with formatting.
-	Debugf(format string, args ...interface{})
+	Debugf(format string, args ...any)
 	// Infof prints an info message with formatting.
-	Infof(format string, args ...interface{})
+	Infof(format string, args ...any)
 	// Warnf prints a warn message with formatting.
-	Warnf(format string, args ...interface{})
+	Warnf(format string, args ...any)
 	// Errorf prints an error message with formatting.
-	Errorf(format string, args ...interface{})
+	Errorf(format string, args ...any)
 	// Fatalf prints a fatal message with formatting.
-	Fatalf(format string, args ...interface{})
+	Fatalf(format string, args ...any)
 	// Printlnf prints a message with formatting.
 	Printlnf(format string, a ...any) error
 	// SetLevel sets the current level.
@@ -94,52 +94,52 @@ func Log() Logger {
 }
 
 // Debug implements the Logger interface.
-func (l *LoggerImpl) Debug(msg interface{}, keyvals ...interface{}) {
+func (l *LoggerImpl) Debug(msg any, keyvals ...any) {
 	l.Log.Debug(msg, keyvals...)
 }
 
 // Info implements the Logger interface.
-func (l *LoggerImpl) Info(msg interface{}, keyvals ...interface{}) {
+func (l *LoggerImpl) Info(msg any, keyvals ...any) {
 	l.Log.Info(msg, keyvals...)
 }
 
 // Warn implements the Logger interface.
-func (l *LoggerImpl) Warn(msg interface{}, keyvals ...interface{}) {
+func (l *LoggerImpl) Warn(msg any, keyvals ...any) {
 	l.Log.Warn(msg, keyvals...)
 }
 
 // Error implements the Logger interface.
-func (l *LoggerImpl) Error(msg interface{}, keyvals ...interface{}) {
+func (l *LoggerImpl) Error(msg any, keyvals ...any) {
 	l.Log.Error(msg, keyvals...)
 }
 
 // Fatal implements the Logger interface.
-func (l *LoggerImpl) Fatal(msg interface{}, keyvals ...interface{}) {
+func (l *LoggerImpl) Fatal(msg any, keyvals ...any) {
 	l.Log.Fatal(msg, keyvals...)
 }
 
 // Debugf implements the Logger interface.
-func (l *LoggerImpl) Debugf(format string, args ...interface{}) {
+func (l *LoggerImpl) Debugf(format string, args ...any) {
 	l.Log.Debugf(format, args...)
 }
 
 // Infof implements the Logger interface.
-func (l *LoggerImpl) Infof(format string, args ...interface{}) {
+func (l *LoggerImpl) Infof(format string, args ...any) {
 	l.Log.Infof(format, args...)
 }
 
 // Warnf implements the Logger interface.
-func (l *LoggerImpl) Warnf(format string, args ...interface{}) {
+func (l *LoggerImpl) Warnf(format string, args ...any) {
 	l.Log.Warnf(format, args...)
 }
 
 // Errorf implements the Logger interface.
-func (l *LoggerImpl) Errorf(format string, args ...interface{}) {
+func (l *LoggerImpl) Errorf(format string, args ...any) {
 	l.Log.Errorf(format, args...)
 }
 
 // Fatalf implements the Logger interface.
-func (l *LoggerImpl) Fatalf(format string, args ...interface{}) {
+func (l *LoggerImpl) Fatalf(format string, args ...any) {
 	l.Log.Fatalf(format, args...)
 }
 

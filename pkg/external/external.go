@@ -10,6 +10,7 @@ import (
 	"os/user"
 	"path/filepath"
 	"runtime"
+	"slices"
 	"strings"
 	"syscall"
 )
@@ -44,9 +45,17 @@ type Ext interface {
 	IsSymlink(path string) bool
 	// RunCommand runs a bash command.
 	RunCommand(ctx context.Context, command string, sudo bool) error
+	// GetString infers the string value of a key in a map, or returns the default if it doesn't exist or is not a string.
+	GetString(data map[string]any, key string, def string) string
+	// GetStrings infers the string array of a key in a map, or returns the default if it doesn't exist or is not a string.
+	GetStrings(data map[string]any, key string, def []string) []string
+	// GetBool infers the bool value of a key in a map, or returns the default if it doesn't exist or is not a bool.
+	GetBool(data map[string]any, key string, def bool) bool
 }
 
 // DefaultExt implements Ext.
+// DefaultExt provides OS abstraction utilities for file system operations,
+// path manipulation, and command execution.
 type DefaultExt struct{}
 
 // NewExt constructs DefaultExt.
@@ -135,10 +144,8 @@ func (u *DefaultExt) IsUserInFileGroup(filePath string) (bool, error) {
 	if err != nil {
 		return false, fmt.Errorf("failed to get user groups: %w", err)
 	}
-	for _, gid := range groups {
-		if fmt.Sprintf("%d", fileGid) == gid {
-			return true, nil
-		}
+	if slices.Contains(groups, fmt.Sprintf("%d", fileGid)) {
+		return true, nil
 	}
 	return false, fmt.Errorf("not yet implemented")
 }
@@ -231,4 +238,43 @@ func (u *DefaultExt) RunCommand(ctx context.Context, command string, sudo bool) 
 // ToAbsolutePath implements Ext.
 func (u *DefaultExt) ToAbsolutePath(path string) (string, error) {
 	return u.absolutePath(path)
+}
+
+// GetString implements Ext.
+// GetString infers the string value of a key in a map, or returns the default if it doesn't exist or is not a string.
+func (u *DefaultExt) GetString(data map[string]any, key string, def string) string {
+	if value, ok := data[key]; ok {
+		if strValue, ok := value.(string); ok {
+			return strValue
+		}
+	}
+	return def
+}
+
+// GetStrings implements Ext.
+// GetStrings infers the string array of a key in a map, or returns the default if it doesn't exist or is not a string.
+func (u *DefaultExt) GetStrings(data map[string]any, key string, def []string) []string {
+	if value, ok := data[key]; ok {
+		if generic, ok := value.([]any); ok {
+			stringValues := make([]string, 0)
+			for _, v := range generic {
+				if strValue, ok := v.(string); ok {
+					stringValues = append(stringValues, strValue)
+				}
+			}
+			return stringValues
+		}
+	}
+	return def
+}
+
+// GetBool implements Ext.
+// GetBool infers the bool value of a key in a map, or returns the default if it doesn't exist or is not a bool.
+func (u *DefaultExt) GetBool(data map[string]any, key string, def bool) bool {
+	if value, ok := data[key]; ok {
+		if boolValue, ok := value.(bool); ok {
+			return boolValue
+		}
+	}
+	return def
 }

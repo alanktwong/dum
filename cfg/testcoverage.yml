@@ -1,0 +1,30 @@
+profile: dist/cover.out
+threshold:
+  file: 0
+  package: 0
+  total: 80
+
+override:
+  - path: ^pkg/cmd$
+    threshold: 7
+  - path: ^pkg/external$
+    threshold: 1
+  - path: ^pkg/factory$
+    threshold: 5
+  - path: ^pkg/logging$
+    threshold: 4
+  - path: ^pkg/playbook$
+    threshold: 3
+  - path: ^pkg/plays$
+    threshold: 4
+  - path: ^pkg/tasks$
+    threshold: 15
+  - path: ^pkg/tasks/installer$
+    threshold: 2
+  - path: ^pkg/types$
+    threshold: 1
+
+exclude:
+  paths:
+    - \*_enum\.go$
+    - \*_mocks\.go$

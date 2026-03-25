@@ -19,15 +19,34 @@ This document provides guidelines for agentic coding agents operating in this re
 
 ### Primary Commands (via Makefile)
 ```bash
-make build      # Local build (includes tidy, fmt, vendor, generate)
-make test       # Run tests with coverage
-make lint       # Run golangci-lint
-make vet        # Go vet
-make fmt        # Go fmt
-make generate   # Run go generate and mockery
-make all        # Runs build and check (quality + build)
-make clean      # Clean generated files
+make build           # Local build (includes tidy, fmt, vendor, generate)
+make test            # Run tests with coverage
+make lint            # Run golangci-lint
+make vet             # Go vet
+make fmt             # Go fmt
+make fix             # Runs go fix to update code to new language features
+make generate        # Run go generate and mockery
+make check-coverage  # Checks coverage meets minimum threshold (default 80%)
+make all             # Runs build and check (quality + build)
+make clean           # Clean generated files
 ```
+### Code Generation
+
+We are using [go-enum](https://github.com/abice/go-enum) to generate enums from Go struct field tags.
+The generated enums, by convention, are suffixed as `_enum.go` and are gitignored.
+
+We are using [mockery](https://vektra.github.io/mockery/v3.0/) to generate
+mocks of Go interfaces for testing.
+The mockery configurations live in `cfg/mockery.*.yml` and the generated
+mocks are gitignored since they should follow the naming convention `*_mocks.go`.
+
+### Coverage Threshold
+- Default threshold is **80%**
+- Override via environment variable or command line:
+  ```bash
+  COVERAGE_THRESHOLD=90 make coverage-check
+  ```
+- `check` target enforces the threshold as part of quality checks
 
 ### Single Test Execution
 ```bash
@@ -46,7 +65,8 @@ go test -v -race ./...
 make install    # Install tools (go-enum, goimports, gocov, golangci-lint, mockery)
 make tidy       # Fix go.mod dependencies
 make vendor     # Vendor dependencies
-make coverage   # View coverage report in browser
+make coverage   # View coverage report in browser and check threshold
+make coverage-check  # Enforce coverage threshold
 ```
 
 ## Code Style Guidelines
@@ -107,7 +127,7 @@ type Task interface {
 
 ### Testing
 - Tests use `testify/assert` package
-- Mocks are generated with `mockery` (configured in `.mockery.yml`)
+- Mocks are generated with `mockery` (configured in `cfg/mockery.yml`)
 - Test files are named `*_test.go`
 - Mock files are named `*_mocks_test.go`
 
@@ -135,8 +155,9 @@ type Task interface {
 
 ## Important Files
 
-- `.golangci.yml` - Linter configuration
-- `.mockery.yml` - Mock generation config
+- `cfg/golangci.yml` - Linter configuration
+- `cfg/mockery.yml` - Mock generation config
+- `cfg/goreleaser.yaml` - GoReleaser build config
 - `.editorconfig` - Editor formatting rules
 - `Makefile` - Build and development commands
 - `installer.yml` - Playbook configuration file

@@ -30,6 +30,7 @@ brew install \
 go_install_tools=(
   "github.com/abice/go-enum@latest"
   "golang.org/x/tools/cmd/goimports@latest"
+  "github.com/vladopajic/go-test-coverage/v2@latest"
 )
 
 for tool in "${go_install_tools[@]}"; do
