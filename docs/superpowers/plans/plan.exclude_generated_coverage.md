@@ -68,15 +68,15 @@ Each phase creates a PR that stacks onto the previous one, ultimately stacking o
 
 ### Phase 4: External Package (mocks only)
 
-**PR**: TBD
+**PR**: [#9](https://github.com/alanktwong/dum/pull/9)
 **PR Title**: `refactor external package: move its interfaces to gen/`
 
-- [ ] **4.1** Create `pkg/external/gen/` directory
-- [ ] **4.2** Identify which interfaces to move (Brew, Code, Git, etc.)
-- [ ] **4.3** Move interface definitions to `pkg/external/gen/`
-- [ ] **4.4** Update imports throughout codebase
-- [ ] **4.5** Update mockery configs to generate to `gen/`
-- [ ] **4.6** Run tests to verify everything compiles
+- [x] **4.1** Create `pkg/external/gen/` directory
+- [x] **4.2** Identify which interfaces to move (Brew, Code, Git, etc.)
+- [x] **4.3** Move interface definitions to `pkg/external/gen/`
+- [x] **4.4** Update imports throughout codebase
+- [x] **4.5** Update mockery configs to generate to `gen/`
+- [x] **4.6** Run tests to verify everything compiles
 
 ---
 
