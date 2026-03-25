@@ -23,7 +23,7 @@ Each phase creates a PR that stacks onto the previous one, ultimately stacking o
 ### Phase 1: Types Package (Stacked on #5)
 
 **PR**: [#6](https://github.com/alanktwong/dum/pull/6)
-**PR Title**: `refactor(types): move enums to gen/ subpackage`
+**PR Title**: `refactor enums in types package to gen/ subpackage`
 
 - [x] **1.1** Create `pkg/types/gen/` directory
 - [x] **1.2** Move `task_type.go` to `pkg/types/gen/`
@@ -41,7 +41,7 @@ Each phase creates a PR that stacks onto the previous one, ultimately stacking o
 ### Phase 2: Plays Package
 
 **PR**: [#7](https://github.com/alanktwong/dum/pull/7)
-**PR Title**: `refactor(plays): move PlayBookInfo to gen/ subpackage`
+**PR Title**: `refactor plays package: move PlayBookInfo to gen/ subpackage`
 
 - [x] **2.1** Create `pkg/plays/gen/` directory
 - [x] **2.2** Move `playbook_info.go` to `pkg/plays/gen/`
@@ -54,7 +54,8 @@ Each phase creates a PR that stacks onto the previous one, ultimately stacking o
 
 ### Phase 3: Logging Package
 
-**PR Title**: `refactor(logging): move Logger interface to gen/ subpackage`
+**PR**: [#8](https://github.com/alanktwong/dum/pull/8)
+**PR Title**: `refactor logging package: move Logger interface to gen/ subpackage`
 
 - [x] **3.1** Create `pkg/logging/gen/` directory
 - [x] **3.2** Create `logger.go` interface in `pkg/logging/gen/`
@@ -67,7 +68,8 @@ Each phase creates a PR that stacks onto the previous one, ultimately stacking o
 
 ### Phase 4: External Package (mocks only)
 
-**PR Title**: `refactor(external): move interfaces to gen/ subpackage`
+**PR**: TBD
+**PR Title**: `refactor external package: move its interfaces to gen/`
 
 - [ ] **4.1** Create `pkg/external/gen/` directory
 - [ ] **4.2** Identify which interfaces to move (Brew, Code, Git, etc.)
@@ -80,7 +82,8 @@ Each phase creates a PR that stacks onto the previous one, ultimately stacking o
 
 ### Phase 5: Factory Package (mocks only)
 
-**PR Title**: `refactor(factory): move interfaces to gen/ subpackage`
+**PR**: TBD
+**PR Title**: `refactor factory package: move its interfaces to gen/`
 
 - [ ] **5.1** Create `pkg/factory/gen/` directory
 - [ ] **5.2** Move interfaces used for mocking to `gen/`
@@ -92,7 +95,8 @@ Each phase creates a PR that stacks onto the previous one, ultimately stacking o
 
 ### Phase 6: Tasks Package (mocks only)
 
-**PR Title**: `refactor(tasks): move interfaces to gen/ subpackage`
+**PR**: TBD
+**PR Title**: `refactor tasks package: move interfaces to gen/`
 
 - [ ] **6.1** Create `pkg/tasks/gen/` and `pkg/tasks/installer/gen/` directories
 - [ ] **6.2** Move interfaces used for mocking to `gen/`
@@ -104,7 +108,8 @@ Each phase creates a PR that stacks onto the previous one, ultimately stacking o
 
 ### Phase 7: Verification
 
-**PR Title**: `chore: verify coverage exclusion works`
+**PR**: TBD
+**PR Title**: `verify coverage exclusion works`
 
 - [ ] **7.1** Run `make coverage` to verify generated code is excluded
 - [ ] **7.2** Run full test suite to ensure nothing is broken
