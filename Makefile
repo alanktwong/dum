@@ -11,6 +11,9 @@ DUM_EXECUTABLE="$(OUT_DIR)/$(DUM_APP)"
 ALL_PACKAGES=$(shell go list ./... | grep -v /vendor)
 SHELL := /bin/bash # Use bash syntax
 
+COVERAGE_THRESHOLD ?= 80
+COVERAGE_FILTER = grep -v -E '_enum.go|_mocks.go'
+
 # Optional colors to beautify output
 BLACK   := $(shell tput -Txterm setaf 0)
 RED     := $(shell tput -Txterm setaf 1)
@@ -131,14 +134,14 @@ test: build ## runs tests and create generates coverage report
 .PHONY: coverage
 coverage: test ## displays test coverage report in html mode and checks threshold
 	@printf ${COLOR} "Checking coverage of tests ..."
-	@grep -v '_enum.go' $(OUT_DIR)/coverage.txt > $(OUT_DIR)/coverage-filtered.txt
+	@$(COVERAGE_FILTER) $(OUT_DIR)/coverage.txt > $(OUT_DIR)/coverage-filtered.txt
 	@go tool cover -html=$(OUT_DIR)/coverage-filtered.txt
 	@bash ./tools/coverage-check.sh
 
-COVERAGE_THRESHOLD ?= 80
 .PHONY: check-coverage
 check-coverage: test ## checks that test coverage meets the minimum threshold
 	@printf ${COLOR} "Checking coverage threshold ..."
+	@$(COVERAGE_FILTER) $(OUT_DIR)/coverage.txt > $(OUT_DIR)/coverage-filtered.txt
 	@bash ./tools/coverage-check.sh
 
 .PHONY: profile
