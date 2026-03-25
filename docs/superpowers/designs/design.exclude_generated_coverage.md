@@ -117,7 +117,8 @@ go test -cover -tags ignore_coverage ./...
 
 **Approach A (coverpkg)** is the simplest path forward given current codebase constraints.
 
-However, if the long-term goal is cleaner package boundaries, **Approach B** provides the best separation but requires significant migration work.
+However, if the long-term goal is cleaner package boundaries, **Approach B** provides the best
+separation but requires significant migration work.
 
 **Approach C (build tags)** is a middle ground but requires tooling changes.
 
@@ -126,4 +127,3 @@ However, if the long-term goal is cleaner package boundaries, **Approach B** pro
 1. Should we maintain the exclusion list in the Makefile or in a config file?
 2. How often do new generated packages get created? (affects maintenance burden of A)
 3. Is the team open to restructuring imports for approach B?
-4. Are tooling changes for approach C acceptable?
