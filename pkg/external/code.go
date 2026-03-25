@@ -1,18 +1,14 @@
 package external
 
 import (
+	"awong/dotfiles/pkg/external/gen"
 	"context"
 	"fmt"
 	"os/exec"
 )
 
 // Code is an abstraction for vscode.
-type Code interface {
-	// InstallExtension installs a VS Code extension.
-	InstallExtension(ctx context.Context, formula string) error
-	// ListExtensions lists the installed  VS Code extensions.
-	ListExtensions(ctx context.Context) (string, error)
-}
+type Code = gen.Code
 
 // CodeImpl implements Code.
 type CodeImpl struct{}

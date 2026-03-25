@@ -1,6 +1,7 @@
 package external
 
 import (
+	"awong/dotfiles/pkg/external/gen"
 	"context"
 	"fmt"
 	"os"
@@ -9,12 +10,7 @@ import (
 )
 
 // Git is the abstraction for cloning a repository.
-type Git interface {
-	// Clone clones a git repository identified by id and name at the path.
-	Clone(ctx context.Context, url, name, path string, sudo bool) error
-	// AlreadyExists determines whether target path already exists
-	AlreadyExists(targetPath string) bool
-}
+type Git = gen.Git
 
 // GitImpl implements Git.
 type GitImpl struct {

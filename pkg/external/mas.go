@@ -1,18 +1,14 @@
 package external
 
 import (
+	"awong/dotfiles/pkg/external/gen"
 	"context"
 	"fmt"
 	"os/exec"
 )
 
 // Mas is an abstraction for Apple app store.
-type Mas interface {
-	// Install an app store app.
-	Install(ctx context.Context, app string) error
-	// List the installed app store apps.
-	List(ctx context.Context) (string, error)
-}
+type Mas = gen.Mas
 
 // MasImpl implements Mas.
 type MasImpl struct{}
