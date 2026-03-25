@@ -4,6 +4,10 @@ threshold:
   package: 0
   total: 80
 
+base:
+  breakdown-file-name: coverage-base.json
+  threshold: -0.5
+
 override:
   - path: ^pkg/cmd$
     threshold: 7
