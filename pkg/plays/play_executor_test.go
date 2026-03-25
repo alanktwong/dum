@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"awong/dotfiles/pkg/plays/gen"
 	tk "awong/dotfiles/pkg/tasks"
 	i "awong/dotfiles/pkg/tasks/installer"
 	ty "awong/dotfiles/pkg/types"
@@ -23,7 +24,7 @@ func newPlayExecutorWithMocks(t *testing.T) (*PlayExecutor, *i.MockLogger, *i.Mo
 	}, logger, ext
 }
 
-func newPlayInput(pbi *MockPlayBookInfo) *PlayInput {
+func newPlayInput(pbi *gen.MockPlayBookInfo) *PlayInput {
 	return &PlayInput{
 		DryRun:   false,
 		Play:     "test-play",
@@ -45,7 +46,7 @@ func TestPlayExecutor_Initialize_Success(t *testing.T) {
 	ext.On("IsInstalled", "zip").Return(true)
 	ext.On("IsInstalled", "unzip").Return(true)
 
-	pbi := NewMockPlayBookInfo(t)
+	pbi := gen.NewMockPlayBookInfo(t)
 	pbi.On("GetID").Return("test-book")
 	input := newPlayInput(pbi)
 	result, err := e.Initialize(input)
@@ -58,7 +59,7 @@ func TestPlayExecutor_Initialize_MissingTar(t *testing.T) {
 	e, _, ext := newPlayExecutorWithMocks(t)
 	ext.On("IsInstalled", "tar").Return(false)
 
-	input := newPlayInput(NewMockPlayBookInfo(t))
+	input := newPlayInput(gen.NewMockPlayBookInfo(t))
 	result, err := e.Initialize(input)
 	assert.Error(t, err)
 	assert.Nil(t, result)
@@ -70,7 +71,7 @@ func TestPlayExecutor_Initialize_MissingZip(t *testing.T) {
 	ext.On("IsInstalled", "tar").Return(true)
 	ext.On("IsInstalled", "zip").Return(false)
 
-	input := newPlayInput(NewMockPlayBookInfo(t))
+	input := newPlayInput(gen.NewMockPlayBookInfo(t))
 	result, err := e.Initialize(input)
 	assert.Error(t, err)
 	assert.Nil(t, result)
@@ -83,7 +84,7 @@ func TestPlayExecutor_Initialize_MissingUnzip(t *testing.T) {
 	ext.On("IsInstalled", "zip").Return(true)
 	ext.On("IsInstalled", "unzip").Return(false)
 
-	input := newPlayInput(NewMockPlayBookInfo(t))
+	input := newPlayInput(gen.NewMockPlayBookInfo(t))
 	result, err := e.Initialize(input)
 	assert.Error(t, err)
 	assert.Nil(t, result)
@@ -94,7 +95,7 @@ func TestPlayExecutor_InstallPlay_Success(t *testing.T) {
 	e, logger, _ := newPlayExecutorWithMocks(t)
 	ctx := context.Background()
 
-	pbi := NewMockPlayBookInfo(t)
+	pbi := gen.NewMockPlayBookInfo(t)
 	pbi.On("GetID").Return("test-book")
 	pbi.On("GetJetBrainsApps").Return(map[string]string{})
 	input := newPlayInput(pbi)
@@ -123,7 +124,7 @@ func TestPlayExecutor_InstallPlay_PrintlnfError(t *testing.T) {
 	e, logger, _ := newPlayExecutorWithMocks(t)
 	ctx := context.Background()
 
-	pbi := NewMockPlayBookInfo(t)
+	pbi := gen.NewMockPlayBookInfo(t)
 	input := newPlayInput(pbi)
 
 	logger.On("Printlnf", "%v Installing play (%v) ... %v", []any{PlayEllipsis, "test-play", ""}).Return(errors.New("log failed"))
@@ -142,7 +143,7 @@ func TestPlayExecutor_InstallPlay_TaskError(t *testing.T) {
 	e, logger, _ := newPlayExecutorWithMocks(t)
 	ctx := context.Background()
 
-	pbi := NewMockPlayBookInfo(t)
+	pbi := gen.NewMockPlayBookInfo(t)
 	pbi.On("GetID").Return("test-book")
 	pbi.On("GetJetBrainsApps").Return(map[string]string{})
 	input := newPlayInput(pbi)
@@ -168,7 +169,7 @@ func TestPlayExecutor_ListPlay_Success(t *testing.T) {
 	e, logger, _ := newPlayExecutorWithMocks(t)
 	ctx := context.Background()
 
-	pbi := NewMockPlayBookInfo(t)
+	pbi := gen.NewMockPlayBookInfo(t)
 	pbi.On("GetID").Return("test-book")
 	pbi.On("GetJetBrainsApps").Return(map[string]string{})
 	input := newPlayInput(pbi)
@@ -195,7 +196,7 @@ func TestPlayExecutor_ListPlay_PrintlnfError(t *testing.T) {
 	e, logger, _ := newPlayExecutorWithMocks(t)
 	ctx := context.Background()
 
-	pbi := NewMockPlayBookInfo(t)
+	pbi := gen.NewMockPlayBookInfo(t)
 	input := newPlayInput(pbi)
 
 	logger.On("Printlnf", "%v Listing play (%v) ... %v", []any{PlayEllipsis, "test-play", ""}).Return(errors.New("log failed"))
@@ -214,7 +215,7 @@ func TestPlayExecutor_ListPlay_TaskError(t *testing.T) {
 	e, logger, _ := newPlayExecutorWithMocks(t)
 	ctx := context.Background()
 
-	pbi := NewMockPlayBookInfo(t)
+	pbi := gen.NewMockPlayBookInfo(t)
 	pbi.On("GetID").Return("test-book")
 	pbi.On("GetJetBrainsApps").Return(map[string]string{})
 	input := newPlayInput(pbi)
