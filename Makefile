@@ -12,7 +12,6 @@ ALL_PACKAGES=$(shell go list ./... | grep -v /vendor)
 SHELL := /bin/bash # Use bash syntax
 
 COVERAGE_THRESHOLD ?= 80
-COVERAGE_FILTER = grep -v -E '_enum.go|_mocks.go'
 
 # Optional colors to beautify output
 BLACK   := $(shell tput -Txterm setaf 0)
@@ -61,8 +60,6 @@ clean: ## cleans binary and other generated files
 	@printf ${COLOR} "Cleaning up ..."
 	@go clean -cache
 	@rm -rf $(OUT_DIR)
-	@rm -f coverage*.out
-	@rm -f ${OUT_DIR}/coverage-filtered.txt
 	@rm -f ./pkg/**/*_mocks.go
 	@rm -f ./pkg/**/*_enum.go
 
@@ -126,23 +123,23 @@ fix: ## runs go fix to update code to use new language features
 test: build ## runs tests and create generates coverage report
 	@printf ${COLOR} "Testing ..."
 	@go test -v -cover \
-	    -coverprofile=${OUT_DIR}/coverage.txt \
+	    -coverprofile=${OUT_DIR}/cover.out \
 	    -covermode=atomic \
 	    -coverpkg=./... \
 	    -race ./...
 
 .PHONY: coverage
-coverage: test ## displays test coverage report in html mode and checks threshold
+coverage: test ## displays test coverage report and checks threshold
 	@printf ${COLOR} "Checking coverage of tests ..."
-	@$(COVERAGE_FILTER) $(OUT_DIR)/coverage.txt > $(OUT_DIR)/coverage-filtered.txt
-	@go tool cover -html=$(OUT_DIR)/coverage-filtered.txt
-	@bash ./tools/coverage-check.sh
+	@go-test-coverage --config=./.testcoverage.yml || true
+	@printf ${COLOR} "Generating HTML report ..."
+	@go tool cover -html=${OUT_DIR}/cover.out -o ${OUT_DIR}/coverage.html
+	@printf ${COLOR} "HTML report: ${OUT_DIR}/coverage.html"
 
 .PHONY: check-coverage
 check-coverage: test ## checks that test coverage meets the minimum threshold
 	@printf ${COLOR} "Checking coverage threshold ..."
-	@$(COVERAGE_FILTER) $(OUT_DIR)/coverage.txt > $(OUT_DIR)/coverage-filtered.txt
-	@bash ./tools/coverage-check.sh
+	@go-test-coverage --config=./.testcoverage.yml
 
 .PHONY: profile
 profile: ## profiles

@@ -1,0 +1,9 @@
+profile: dist/cover.out
+threshold:
+  file: 0
+  package: 0
+  total: 80
+exclude:
+  paths:
+    - \*_enum\.go$
+    - \*_mocks\.go$

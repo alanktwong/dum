@@ -1,0 +1,37 @@
+name: Test Coverage
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test-coverage:
+    # TODO: Enable this workflow once test coverage is sufficient
+    # enabled: false
+    runs-on: ubuntu-latest
+    if: false  # Disabled by default - set to true or remove condition to enable
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.26'
+
+      - name: Install dependencies
+        run: go mod download
+
+      - name: Generate code
+        run: go generate ./...
+
+      - name: Run tests with coverage
+        run: go test -coverprofile=dist/cover.out -covermode=atomic ./...
+
+      - name: Check test coverage
+        uses: vladopajic/go-test-coverage@v2
+        with:
+          profile: cover.out
+          config: ./.testcoverage.yml
