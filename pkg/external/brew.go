@@ -1,6 +1,7 @@
 package external
 
 import (
+	"awong/dotfiles/pkg/external/gen"
 	"context"
 	"fmt"
 	"os/exec"
@@ -8,18 +9,7 @@ import (
 )
 
 // Brew is an abstraction for homebrew.
-type Brew interface {
-	// Install the formula.
-	Install(ctx context.Context, formula string) error
-	// InstallCask the formula.
-	InstallCask(ctx context.Context, formula string) error
-	// Tap taps the formula.
-	Tap(ctx context.Context, formula string) error
-	// Prefix gets the homebrew prefix.
-	Prefix(ctx context.Context) (string, error)
-	// InPath determines whether the id is in the homebrew path.
-	InPath(ctx context.Context, prefix, id string) bool
-}
+type Brew = gen.Brew
 
 // BrewImpl implements Brew.
 type BrewImpl struct {
