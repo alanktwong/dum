@@ -6,7 +6,8 @@ import (
 	l "awong/dotfiles/pkg/logging"
 	pb "awong/dotfiles/pkg/playbook"
 	pl "awong/dotfiles/pkg/plays"
-	t "awong/dotfiles/pkg/types"
+	ty "awong/dotfiles/pkg/types"
+	tyg "awong/dotfiles/pkg/types/gen"
 	"fmt"
 	"os"
 
@@ -86,7 +87,7 @@ func (f *Factory) ProvidePlayBook(yml map[string]any) (*pb.PlayBook, error) {
 	id := f.Utils.GetString(pbData, "id", "")
 	description := f.Utils.GetString(pbData, "description", id)
 	apps := f.provideJetBrainsApps(pbData)
-	attributes, err := t.NewAttributes(
+	attributes, err := ty.NewAttributes(
 		id,
 		description,
 		f.Utils.GetBool(pbData, "enabled", true),
@@ -104,7 +105,7 @@ func (f *Factory) ProvidePlayBook(yml map[string]any) (*pb.PlayBook, error) {
 
 func (f *Factory) provideJetBrainsApps(yml map[string]any) map[string]string {
 	apps := make(map[string]string)
-	appkeys := t.JetBrainsTypeNames()
+	appkeys := tyg.JetBrainsTypeNames()
 
 	if jetbrainsArray, ok := yml["jetbrains"].([]any); ok {
 		for _, each := range appkeys {
