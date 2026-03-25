@@ -19,6 +19,7 @@ func (t *testExt) IsUserInFileGroup(filePath string) (bool, error) { return fals
 func (t *testExt) CreateDirectory(ctx context.Context, path string, sudo bool) error {
 	return t.createDirError
 }
+
 func (t *testExt) SoftLink(ctx context.Context, rootPath, src, target string, sudo bool) error {
 	return nil
 }
