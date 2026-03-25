@@ -21,3 +21,6 @@ packages:
     interfaces:
       Brew: {}
       Ext: {}
+      Git: {}
+      JetBrainsApp: {}
+      Mas: {}
