@@ -89,7 +89,7 @@ build: make_out fmt vendor generate ## local build
 .PHONY: release
 release: build  ## compile binaries for many OSes and CPU architectures using goreleaser
 	@printf ${COLOR} "Compiling for every OS and Platform ..."
-	@goreleaser build --clean --snapshot --config cfg/goreleaser.yaml
+	@goreleaser release --clean --snapshot --config cfg/goreleaser.yaml
 
 ## Quality
 .PHONY: check
