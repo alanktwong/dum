@@ -5,6 +5,7 @@ import (
 	ext "awong/dotfiles/pkg/external"
 	l "awong/dotfiles/pkg/logging"
 	ty "awong/dotfiles/pkg/types"
+	tyg "awong/dotfiles/pkg/types/gen"
 	"fmt"
 )
 
@@ -55,40 +56,40 @@ func (f *TaskFactory) provideTask(yml map[string]any) (Task, error) {
 	}
 
 	typeStr := f.Utils.GetString(yml, "type", "")
-	taskType, err := ty.ParseTaskType(typeStr)
+	taskType, err := tyg.ParseTaskType(typeStr)
 	if err != nil {
 		return nil, fmt.Errorf("unknown task type %s for task %s", typeStr, id)
 	}
 	switch taskType {
-	case ty.TaskTypeDir:
+	case tyg.TaskTypeDir:
 		return NewDirTask(attributes)
-	case ty.TaskTypeMas:
+	case tyg.TaskTypeMas:
 		return NewMasTask(attributes)
-	case ty.TaskTypeVscode:
+	case tyg.TaskTypeVscode:
 		return NewVsCodePluginTask(attributes)
-	case ty.TaskTypeFunction:
+	case tyg.TaskTypeFunction:
 		return NewFunctionTask(attributes)
-	case ty.TaskTypeLink:
+	case tyg.TaskTypeLink:
 		return NewLinkTask(attributes,
 			f.Utils.GetString(yml, "root", ""),
 			f.Utils.GetString(yml, "target", ""))
-	case ty.TaskTypeGit:
+	case tyg.TaskTypeGit:
 		return NewGitTask(attributes,
 			f.Utils.GetString(yml, "root", ""),
 			f.Utils.GetString(yml, "name", ""))
-	case ty.TaskTypeJetbrains:
+	case tyg.TaskTypeJetbrains:
 		apps := f.Utils.GetStrings(yml, "apps", make([]string, 0))
 		return NewJetBrainsPluginTask(attributes, apps)
-	case ty.TaskTypeBrew:
+	case tyg.TaskTypeBrew:
 		return NewBrewTask(attributes,
 			f.Utils.GetString(yml, "tap", ""))
-	case ty.TaskTypeCask:
+	case tyg.TaskTypeCask:
 		return NewBrewCaskTask(attributes,
 			f.Utils.GetString(yml, "tap", ""))
-	case ty.TaskTypeCellar:
+	case tyg.TaskTypeCellar:
 		return NewBrewCellarTask(attributes,
 			f.Utils.GetString(yml, "tap", ""))
-	case ty.TaskTypeBash:
+	case tyg.TaskTypeBash:
 		return NewBashTask(attributes,
 			f.Utils.GetString(yml, "command", ""),
 			f.Utils.GetString(yml, "script", ""))
