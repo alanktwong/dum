@@ -95,25 +95,25 @@ Each phase creates a PR that stacks onto the previous one, ultimately stacking o
 
 ### Phase 6: Tasks Package (mocks only)
 
-**PR**: TBD
+**PR**: [#11](https://github.com/alanktwong/dum/pull/11)
 **PR Title**: `refactor tasks package: move interfaces to gen/`
 
-- [ ] **6.1** Create `pkg/tasks/gen/` and `pkg/tasks/installer/gen/` directories
-- [ ] **6.2** Move interfaces used for mocking to `gen/`
-- [ ] **6.3** Update imports throughout codebase
-- [ ] **6.4** Update mockery configs to generate to `gen/`
-- [ ] **6.5** Run tests to verify everything compiles
+- [x] **6.1** Create `pkg/tasks/gen/` and `pkg/tasks/installer/gen/` directories
+- [x] **6.2** Move interfaces used for mocking to `gen/`
+- [x] **6.3** Update imports throughout codebase
+- [x] **6.4** Update mockery configs to generate to `gen/`
+- [x] **6.5** Run tests to verify everything compiles
 
 ---
 
 ### Phase 7: Verification
 
-**PR**: TBD
-**PR Title**: `verify coverage exclusion works`
+**PR**: [#12](https://github.com/alanktwong/dum/pull/12)
+**PR Title**: `fix: remove mock_exports.go and update test imports for gen/ packages`
 
-- [ ] **7.1** Run `make coverage` to verify generated code is excluded
-- [ ] **7.2** Run full test suite to ensure nothing is broken
-- [ ] **7.3** Update coverage config if needed
+- [x] **7.1** Run `make coverage` to verify generated code is excluded
+- [x] **7.2** Run full test suite to ensure nothing is broken
+- [x] **7.3** Update coverage config if needed (no changes needed - gen/ packages properly excluded)
 
 ---
 

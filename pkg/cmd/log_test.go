@@ -5,17 +5,17 @@ import (
 	"fmt"
 	"testing"
 
-	l "awong/dotfiles/pkg/logging"
-
 	"github.com/charmbracelet/log"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+
+	gen "awong/dotfiles/pkg/logging/gen"
 )
 
-func newTestDumWithCmd(t *testing.T) (*Dum, *l.MockLogger, *cobra.Command) {
+func newTestDumWithCmd(t *testing.T) (*Dum, *gen.MockLogger, *cobra.Command) {
 	t.Helper()
-	logger := l.NewMockLogger(t)
+	logger := gen.NewMockLogger(t)
 	cmd := &cobra.Command{Use: "test"}
 	addPrefixFlag(cmd)
 	dum := &Dum{Log: logger}
@@ -94,7 +94,7 @@ func TestExecuteLogging_SuccessWithPrefix(t *testing.T) {
 	err := cmd.Flags().Set(PREFIX, "my-prefix")
 	assert.NoError(t, err)
 
-	prefixLogger := l.NewMockLogger(t)
+	prefixLogger := gen.NewMockLogger(t)
 
 	logger.On("SetLevel", mock.Anything).Return()
 	logger.On("WithPrefix", "my-prefix").Return(prefixLogger)
@@ -129,7 +129,7 @@ func TestExecuteLogging_InvalidLevel(t *testing.T) {
 }
 
 func TestNewDebugCommand_RunE(t *testing.T) {
-	logger := l.NewMockLogger(t)
+	logger := gen.NewMockLogger(t)
 	dum := &Dum{Log: logger}
 	logCmd := NewLogCommand("dum", dum)
 	debugCmd, _, err := logCmd.Find([]string{"debug"})
@@ -144,7 +144,7 @@ func TestNewDebugCommand_RunE(t *testing.T) {
 }
 
 func TestNewInfoCommand_RunE(t *testing.T) {
-	logger := l.NewMockLogger(t)
+	logger := gen.NewMockLogger(t)
 	dum := &Dum{Log: logger}
 	logCmd := NewLogCommand("dum", dum)
 	infoCmd, _, err := logCmd.Find([]string{"info"})
@@ -159,7 +159,7 @@ func TestNewInfoCommand_RunE(t *testing.T) {
 }
 
 func TestNewWarnCommand_RunE(t *testing.T) {
-	logger := l.NewMockLogger(t)
+	logger := gen.NewMockLogger(t)
 	dum := &Dum{Log: logger}
 	logCmd := NewLogCommand("dum", dum)
 	warnCmd, _, err := logCmd.Find([]string{"warn"})
@@ -174,7 +174,7 @@ func TestNewWarnCommand_RunE(t *testing.T) {
 }
 
 func TestNewErrorCommand_RunE(t *testing.T) {
-	logger := l.NewMockLogger(t)
+	logger := gen.NewMockLogger(t)
 	dum := &Dum{Log: logger}
 	logCmd := NewLogCommand("dum", dum)
 	errorCmd, _, err := logCmd.Find([]string{"error"})
@@ -189,7 +189,7 @@ func TestNewErrorCommand_RunE(t *testing.T) {
 }
 
 func TestNewSuccessCommand_RunE(t *testing.T) {
-	logger := l.NewMockLogger(t)
+	logger := gen.NewMockLogger(t)
 	dum := &Dum{Log: logger}
 	logCmd := NewLogCommand("dum", dum)
 	successCmd, _, err := logCmd.Find([]string{"success"})
