@@ -95,14 +95,14 @@ Each phase creates a PR that stacks onto the previous one, ultimately stacking o
 
 ### Phase 6: Tasks Package (mocks only)
 
-**PR**: TBD
+**PR**: [#11](https://github.com/alanktwong/dum/pull/11)
 **PR Title**: `refactor tasks package: move interfaces to gen/`
 
-- [ ] **6.1** Create `pkg/tasks/gen/` and `pkg/tasks/installer/gen/` directories
-- [ ] **6.2** Move interfaces used for mocking to `gen/`
-- [ ] **6.3** Update imports throughout codebase
-- [ ] **6.4** Update mockery configs to generate to `gen/`
-- [ ] **6.5** Run tests to verify everything compiles
+- [x] **6.1** Create `pkg/tasks/gen/` and `pkg/tasks/installer/gen/` directories
+- [x] **6.2** Move interfaces used for mocking to `gen/`
+- [x] **6.3** Update imports throughout codebase
+- [x] **6.4** Update mockery configs to generate to `gen/`
+- [x] **6.5** Run tests to verify everything compiles
 
 ---
 
