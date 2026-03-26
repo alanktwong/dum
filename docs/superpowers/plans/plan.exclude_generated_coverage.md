@@ -108,12 +108,12 @@ Each phase creates a PR that stacks onto the previous one, ultimately stacking o
 
 ### Phase 7: Verification
 
-**PR**: TBD
-**PR Title**: `verify coverage exclusion works`
+**PR**: [#12](https://github.com/alanktwong/dum/pull/12)
+**PR Title**: `fix: remove mock_exports.go and update test imports for gen/ packages`
 
-- [ ] **7.1** Run `make coverage` to verify generated code is excluded
-- [ ] **7.2** Run full test suite to ensure nothing is broken
-- [ ] **7.3** Update coverage config if needed
+- [x] **7.1** Run `make coverage` to verify generated code is excluded
+- [x] **7.2** Run full test suite to ensure nothing is broken
+- [x] **7.3** Update coverage config if needed (no changes needed - gen/ packages properly excluded)
 
 ---
 
