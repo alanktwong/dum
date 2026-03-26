@@ -31,7 +31,7 @@ linters:
     presets:
       - common-false-positives
     rules:
-      - path: pkg/utilities/expansion.go
+      - path: internal/utilities/expansion.go
         linters:
           - godox
 issues:

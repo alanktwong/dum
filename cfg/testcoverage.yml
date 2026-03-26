@@ -5,27 +5,27 @@ threshold:
   total: 40
 
 override:
-  - path: ^pkg/cmd$
+  - path: ^internal/cmd$
     threshold: 7
-  - path: ^pkg/external$
+  - path: ^internal/external$
     threshold: 1
-  - path: ^pkg/factory$
+  - path: ^internal/factory$
     threshold: 5
-  - path: ^pkg/logging$
+  - path: ^internal/logging$
     threshold: 4
-  - path: ^pkg/playbook$
+  - path: ^internal/playbook$
     threshold: 3
-  - path: ^pkg/plays$
+  - path: ^internal/plays$
     threshold: 4
-  - path: ^pkg/tasks$
+  - path: ^internal/tasks$
     threshold: 15
-  - path: ^pkg/tasks/installer$
+  - path: ^internal/tasks/installer$
     threshold: 2
-  - path: ^pkg/types$
+  - path: ^internal/types$
     threshold: 1
 
 exclude:
   paths:
     - \*_enum\.go$
     - \*_mocks\.go$
-    - ^pkg/.*/gen/
+    - ^internal/.*/gen/

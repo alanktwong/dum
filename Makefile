@@ -60,8 +60,8 @@ clean: ## cleans binary and other generated files
 	@printf ${COLOR} "Cleaning up ..."
 	@go clean -cache
 	@rm -rf $(OUT_DIR)
-	@rm -f ./pkg/**/*_mocks.go
-	@rm -f ./pkg/**/*_enum.go
+	@rm -f ./internal/**/*_mocks.go
+	@rm -f ./internal/**/*_enum.go
 
 .PHONY: tidy
 tidy: ## runs tidy to fix go.mod dependencies
@@ -84,7 +84,7 @@ generate: ## generate code
 .PHONY: build
 build: make_out fmt vendor generate ## local build
 	@printf ${COLOR} "Building ..."
-	@go build -v -ldflags "-X awong/dotfiles/pkg/cmd.version=$(DUM_VERSION)" -o $(DUM_EXECUTABLE)-${DUM_VERSION} $(DUM_SOURCE)
+	@go build -v -ldflags "-X awong/dotfiles/internal/cmd.version=$(DUM_VERSION)" -o $(DUM_EXECUTABLE)-${DUM_VERSION} $(DUM_SOURCE)
 
 .PHONY: release
 release: build  ## compile binaries for many OSes and CPU architectures using goreleaser
@@ -101,7 +101,7 @@ check: build fmt fix lint vet test check-coverage ## runs code quality checks
 lint: build ## go linting. Update and use specific lint tool and options
 	@printf ${COLOR} "Linting ..."
 	@golangci-lint run --config cfg/golangci.yml cmd/...
-	@golangci-lint run --config cfg/golangci.yml pkg/...
+	@golangci-lint run --config cfg/golangci.yml internal/...
 
 .PHONY: vet
 vet: ## go vet

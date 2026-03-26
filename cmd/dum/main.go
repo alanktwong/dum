@@ -2,7 +2,7 @@
 package main
 
 import (
-	"awong/dotfiles/pkg/cmd"
+	"awong/dotfiles/internal/cmd"
 )
 
 func main() {
