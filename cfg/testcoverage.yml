@@ -28,4 +28,3 @@ exclude:
   paths:
     - \*_enum\.go$
     - \*_mocks\.go$
-    - ^pkg/.*/gen$
