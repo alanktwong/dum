@@ -2,7 +2,7 @@ profile: dist/cover.out
 threshold:
   file: 0
   package: 0
-  total: 20
+  total: 40
 
 override:
   - path: ^pkg/cmd$
