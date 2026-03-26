@@ -12,12 +12,12 @@ require-template-schema-exists: true
 template: testify
 template-schema: '{{.Template}}.schema.json'
 packages:
-  awong/dotfiles/pkg/external:
+  awong/dotfiles/pkg/external/gen:
     config:
       all: false
-      dir: 'pkg/playbook'
-      pkgname: 'playbook'
-      filename: "external_mocks.go"
+      dir: 'pkg/external/gen'
+      pkgname: 'gen'
+      filename: "mocks.go"
     interfaces:
       Brew: {}
       Code: {}
@@ -34,11 +34,11 @@ packages:
       filename: "logging_mocks.go"
     interfaces:
       Logger: {}
-  awong/dotfiles/pkg/plays:
+  awong/dotfiles/pkg/plays/gen:
     config:
       all: false
-      dir: 'pkg/plays'
-      pkgname: 'plays'
+      dir: 'pkg/plays/gen'
+      pkgname: 'gen'
       filename: "playbook_info_mocks.go"
     interfaces:
       PlayBookInfo: {}

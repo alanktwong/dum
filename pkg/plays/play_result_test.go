@@ -1,6 +1,7 @@
 package plays
 
 import (
+	pg "awong/dotfiles/pkg/plays/gen"
 	ty "awong/dotfiles/pkg/types"
 	"testing"
 
@@ -8,7 +9,7 @@ import (
 )
 
 func newTestPlayInput(t *testing.T, playbookID string) *PlayInput {
-	pbi := NewMockPlayBookInfo(t)
+	pbi := pg.NewMockPlayBookInfo(t)
 	pbi.On("GetID").Return(playbookID)
 	return &PlayInput{
 		Play:     "test-play",

@@ -1,9 +1,9 @@
 packages:
-  awong/dotfiles/pkg/external:
+  awong/dotfiles/pkg/external/gen:
     config:
       all: false
-      dir: 'pkg/factory'
-      pkgname: 'factory'
+      dir: 'pkg/factory/gen'
+      pkgname: 'gen'
       filename: "external_mocks.go"
       include-auto-generated: false
     interfaces:
@@ -11,8 +11,8 @@ packages:
   awong/dotfiles/pkg/logging:
     config:
       all: false
-      dir: 'pkg/factory'
-      pkgname: 'factory'
+      dir: 'pkg/factory/gen'
+      pkgname: 'gen'
       filename: "logging_mocks.go"
       include-auto-generated: false
     interfaces:
