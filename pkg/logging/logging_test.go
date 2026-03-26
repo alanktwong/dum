@@ -7,6 +7,8 @@ import (
 
 	"github.com/charmbracelet/log"
 	"github.com/stretchr/testify/assert"
+
+	gen "awong/dotfiles/pkg/logging/gen"
 )
 
 // resetSingleton resets the logger singleton for testing.
@@ -286,88 +288,88 @@ func TestEnvLevel_Numeric_Over50(t *testing.T) {
 }
 
 func TestMockLogger_Debug(t *testing.T) {
-	m := NewMockLogger(t)
+	m := gen.NewMockLogger(t)
 	m.EXPECT().Debug("msg", []any{"key", "val"}).Return()
 	m.Debug("msg", "key", "val")
 }
 
 func TestMockLogger_Info(t *testing.T) {
-	m := NewMockLogger(t)
+	m := gen.NewMockLogger(t)
 	m.EXPECT().Info("msg").Return()
 	m.Info("msg")
 }
 
 func TestMockLogger_Warn(t *testing.T) {
-	m := NewMockLogger(t)
+	m := gen.NewMockLogger(t)
 	m.EXPECT().Warn("msg").Return()
 	m.Warn("msg")
 }
 
 func TestMockLogger_Error(t *testing.T) {
-	m := NewMockLogger(t)
+	m := gen.NewMockLogger(t)
 	m.EXPECT().Error("msg").Return()
 	m.Error("msg")
 }
 
 func TestMockLogger_Fatal(t *testing.T) {
-	m := NewMockLogger(t)
+	m := gen.NewMockLogger(t)
 	m.EXPECT().Fatal("msg").Return()
 	m.Fatal("msg")
 }
 
 func TestMockLogger_Debugf(t *testing.T) {
-	m := NewMockLogger(t)
+	m := gen.NewMockLogger(t)
 	m.EXPECT().Debugf("format %s", []any{"arg"}).Return()
 	m.Debugf("format %s", "arg")
 }
 
 func TestMockLogger_Infof(t *testing.T) {
-	m := NewMockLogger(t)
+	m := gen.NewMockLogger(t)
 	m.EXPECT().Infof("format %s", []any{"arg"}).Return()
 	m.Infof("format %s", "arg")
 }
 
 func TestMockLogger_Warnf(t *testing.T) {
-	m := NewMockLogger(t)
+	m := gen.NewMockLogger(t)
 	m.EXPECT().Warnf("format %s", []any{"arg"}).Return()
 	m.Warnf("format %s", "arg")
 }
 
 func TestMockLogger_Errorf(t *testing.T) {
-	m := NewMockLogger(t)
+	m := gen.NewMockLogger(t)
 	m.EXPECT().Errorf("format %s", []any{"arg"}).Return()
 	m.Errorf("format %s", "arg")
 }
 
 func TestMockLogger_Fatalf(t *testing.T) {
-	m := NewMockLogger(t)
+	m := gen.NewMockLogger(t)
 	m.EXPECT().Fatalf("format %s", []any{"arg"}).Return()
 	m.Fatalf("format %s", "arg")
 }
 
 func TestMockLogger_Printlnf(t *testing.T) {
-	m := NewMockLogger(t)
+	m := gen.NewMockLogger(t)
 	m.EXPECT().Printlnf("hello %s", []any{"world"}).Return(nil)
 	err := m.Printlnf("hello %s", "world")
 	assert.NoError(t, err)
 }
 
 func TestMockLogger_SetLevel(t *testing.T) {
-	m := NewMockLogger(t)
+	m := gen.NewMockLogger(t)
 	m.EXPECT().SetLevel(log.DebugLevel).Return()
 	m.SetLevel(log.DebugLevel)
 }
 
 func TestMockLogger_WithPrefix(t *testing.T) {
-	m := NewMockLogger(t)
-	child := NewMockLogger(t)
+	m := gen.NewMockLogger(t)
+	child := gen.NewMockLogger(t)
 	m.EXPECT().WithPrefix("child").Return(child)
 	result := m.WithPrefix("child")
 	assert.Same(t, child, result)
 }
 
 func TestMockLogger_GetPrefix(t *testing.T) {
-	m := NewMockLogger(t)
+	m := gen.NewMockLogger(t)
 	m.EXPECT().GetPrefix().Return("myprefix")
 	assert.Equal(t, "myprefix", m.GetPrefix())
 }

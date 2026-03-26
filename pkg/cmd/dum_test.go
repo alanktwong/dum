@@ -3,10 +3,10 @@ package cmd
 import (
 	"testing"
 
-	l "awong/dotfiles/pkg/logging"
-
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
+
+	gen "awong/dotfiles/pkg/logging/gen"
 )
 
 func TestNewDum_RootCommand(t *testing.T) {
@@ -108,7 +108,7 @@ func TestNewDum_DependenciesSet(t *testing.T) {
 }
 
 func TestExec_Success(t *testing.T) {
-	logger := l.NewMockLogger(t)
+	logger := gen.NewMockLogger(t)
 	cmd := &cobra.Command{Use: "test"}
 	dum := &Dum{Log: logger, Cmd: cmd}
 
