@@ -4,14 +4,14 @@ Use this guide to select the appropriate PR template for your change.
 
 ## Templates
 
-| Template | Use When |
-|----------|----------|
-| **Brief** | Small changes (under 50 lines), cosmetic fixes, obvious bug fixes, documentation updates |
-| **Build / CI** | Changes to build system, CI/CD, or tooling |
-| **Challenge-Solution-Effect** | Architectural changes, significant trade-off decisions, changes that unlock new capabilities |
-| **Situation-Action-Result** | Bug fixes where problem context matters, before/after state changes |
-| **User Story** | Feature development with clear requirements and acceptance criteria |
-| **What-Why-How** | Technical changes where context isn't obvious from the diff |
+| Template | Use When | Label |
+|----------|----------|-------|
+| **Brief** | Small changes (under 50 lines), cosmetic fixes, obvious bug fixes, documentation updates | `small` |
+| **Build / CI** | Changes to build system, CI/CD, or tooling | `build-ci` |
+| **Challenge-Solution-Effect** | Architectural changes, significant trade-off decisions, changes that unlock new capabilities | `large` |
+| **Situation-Action-Result** | Bug fixes where problem context matters, before/after state changes | `bug` |
+| **User Story** | Feature development with clear requirements and acceptance criteria | `enhancement` |
+| **What-Why-How** | Technical changes where context isn't obvious from the diff | `technical` |
 
 ## Examples
 
