@@ -1,7 +1,7 @@
 ---
 name: What-Why-How
 about: Separates the change from its rationale and implementation details
-labels: type: technical
+labels: enhancement
 ---
 
 ## What

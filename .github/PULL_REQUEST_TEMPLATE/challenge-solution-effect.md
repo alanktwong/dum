@@ -1,7 +1,7 @@
 ---
 name: Challenge-Solution-Effect
 about: Emphasizes obstacles overcome and broader impact of the change
-labels: type: architecture
+labels: enhancement
 ---
 
 ## Challenge
