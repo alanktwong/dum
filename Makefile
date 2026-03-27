@@ -89,9 +89,13 @@ build: make_out fmt vendor generate ## local build
 	@go build -v -ldflags "-X awong/dotfiles/internal/cmd.version=$(DUM_VERSION) -X awong/dotfiles/internal/cmd.commit=$(GIT_COMMIT)" -o $(DUM_EXECUTABLE)-${DUM_VERSION} $(DUM_SOURCE)
 
 .PHONY: release
-release: build  ## compile release binaries for many OSes and CPU architectures using goreleaser
+release: build  ## compile release binaries with tarballs (requires git tag)
 	@printf ${COLOR} "Compiling releases for every OS and Platform ..."
-	@goreleaser release --clean --snapshot --config cfg/goreleaser.yaml
+	@goreleaser release --clean --config cfg/goreleaser.yaml
+
+release-build: build  ## compile snapshot binaries without archives
+	@printf ${COLOR} "Compiling builds for every OS and Platform ..."
+	@goreleaser build --clean --snapshot --config cfg/goreleaser.snapshot.yaml
 
 ## Quality
 .PHONY: check

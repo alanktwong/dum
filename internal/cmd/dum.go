@@ -22,9 +22,6 @@ type Dum struct {
 
 // NewDum constructs Dum.
 func NewDum() *Dum {
-	if commit != "" {
-		version = fmt.Sprintf("%s-%s", version, commit)
-	}
 	rootUse := "dum"
 	rootCmd := &cobra.Command{
 		Use:     rootUse,

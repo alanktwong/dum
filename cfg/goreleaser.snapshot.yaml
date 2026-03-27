@@ -1,0 +1,44 @@
+version: 2
+
+before:
+  hooks:
+    - go mod tidy
+    - go generate ./...
+
+builds:
+  - id: "dum"
+    main: "./cmd/dum/main.go"
+    binary: "{{.ProjectName}}-{{.Os}}-{{.Arch}}-{{.RawVersion}}-{{.ShortCommit}}{{if .IsGitDirty}}-dirty{{end}}"
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - darwin
+    goarch:
+      - arm64
+    hooks:
+      pre:
+        - cmd: "test \"{{.Os}}\" != \"windows\" && exit 0; echo \"ERROR: Windows builds are not supported\"; exit 1"
+    ldflags:
+      - -X awong/dotfiles/internal/cmd.version={{.RawVersion}}-{{.ShortCommit}}{{if .IsGitDirty}}-dirty{{end}}
+      - -X awong/dotfiles/internal/cmd.commit={{.ShortCommit}}
+    no_unique_dist_dir: true
+
+archives:
+  - formats: ["binary"]
+
+snapshot:
+  version_template: "{{.RawVersion}}"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+
+release:
+  footer: >-
+
+    ---
+
+    Released by [GoReleaser](https://github.com/goreleaser/goreleaser).
