@@ -177,3 +177,142 @@ func TestTaskFactory_ProvideTasks_MultipleTasks(t *testing.T) {
 	assert.True(t, ok)
 	assert.Equal(t, "task-3", bashTask.ID)
 }
+
+func TestTaskFactory_ProvideTasks_MasTask(t *testing.T) {
+	factory := NewTaskFactory()
+	tasks, err := factory.ProvideTasks(map[string]any{
+		"tasks": []any{
+			map[string]any{
+				"id":   "test-mas",
+				"type": "mas",
+			},
+		},
+	})
+	assert.NoError(t, err)
+	assert.Len(t, tasks, 1)
+	masTask, ok := tasks[0].(*MasTask)
+	assert.True(t, ok)
+	assert.Equal(t, "test-mas", masTask.ID)
+}
+
+func TestTaskFactory_ProvideTasks_VsCodeTask(t *testing.T) {
+	factory := NewTaskFactory()
+	tasks, err := factory.ProvideTasks(map[string]any{
+		"tasks": []any{
+			map[string]any{
+				"id":   "test-vscode",
+				"type": "vscode",
+			},
+		},
+	})
+	assert.NoError(t, err)
+	assert.Len(t, tasks, 1)
+	vsTask, ok := tasks[0].(*VsCodePluginTask)
+	assert.True(t, ok)
+	assert.Equal(t, "test-vscode", vsTask.ID)
+}
+
+func TestTaskFactory_ProvideTasks_FunctionTask(t *testing.T) {
+	factory := NewTaskFactory()
+	tasks, err := factory.ProvideTasks(map[string]any{
+		"tasks": []any{
+			map[string]any{
+				"id":   "test-function",
+				"type": "function",
+			},
+		},
+	})
+	assert.NoError(t, err)
+	assert.Len(t, tasks, 1)
+	fnTask, ok := tasks[0].(*FunctionTask)
+	assert.True(t, ok)
+	assert.Equal(t, "test-function", fnTask.ID)
+}
+
+func TestTaskFactory_ProvideTasks_GitTask(t *testing.T) {
+	factory := NewTaskFactory()
+	tasks, err := factory.ProvideTasks(map[string]any{
+		"tasks": []any{
+			map[string]any{
+				"id":   "test-git",
+				"type": "git",
+				"name": "dotfiles",
+			},
+		},
+	})
+	assert.NoError(t, err)
+	assert.Len(t, tasks, 1)
+	gitTask, ok := tasks[0].(*GitTask)
+	assert.True(t, ok)
+	assert.Equal(t, "test-git", gitTask.ID)
+}
+
+func TestTaskFactory_ProvideTasks_JetBrainsTask(t *testing.T) {
+	factory := NewTaskFactory()
+	tasks, err := factory.ProvideTasks(map[string]any{
+		"tasks": []any{
+			map[string]any{
+				"id":   "test-jetbrains",
+				"type": "jetbrains",
+				"apps": []any{"IntelliJ IDEA", "GoLand"},
+			},
+		},
+	})
+	assert.NoError(t, err)
+	assert.Len(t, tasks, 1)
+	jbTask, ok := tasks[0].(*JetBrainsPluginTask)
+	assert.True(t, ok)
+	assert.Equal(t, "test-jetbrains", jbTask.ID)
+}
+
+func TestTaskFactory_ProvideTasks_CaskTask(t *testing.T) {
+	factory := NewTaskFactory()
+	tasks, err := factory.ProvideTasks(map[string]any{
+		"tasks": []any{
+			map[string]any{
+				"id":   "test-cask",
+				"type": "cask",
+			},
+		},
+	})
+	assert.NoError(t, err)
+	assert.Len(t, tasks, 1)
+	caskTask, ok := tasks[0].(*BrewCaskTask)
+	assert.True(t, ok)
+	assert.Equal(t, "test-cask", caskTask.ID)
+}
+
+func TestTaskFactory_ProvideTasks_CellarTask(t *testing.T) {
+	factory := NewTaskFactory()
+	tasks, err := factory.ProvideTasks(map[string]any{
+		"tasks": []any{
+			map[string]any{
+				"id":   "test-cellar",
+				"type": "cellar",
+			},
+		},
+	})
+	assert.NoError(t, err)
+	assert.Len(t, tasks, 1)
+	cellarTask, ok := tasks[0].(*BrewCellarTask)
+	assert.True(t, ok)
+	assert.Equal(t, "test-cellar", cellarTask.ID)
+}
+
+func TestTaskFactory_ProvideTasks_SudoTask(t *testing.T) {
+	factory := NewTaskFactory()
+	tasks, err := factory.ProvideTasks(map[string]any{
+		"tasks": []any{
+			map[string]any{
+				"id":   "test-sudo",
+				"type": "dir",
+				"sudo": true,
+			},
+		},
+	})
+	assert.NoError(t, err)
+	assert.Len(t, tasks, 1)
+	dirTask, ok := tasks[0].(*DirTask)
+	assert.True(t, ok)
+	assert.True(t, dirTask.Sudo)
+}
