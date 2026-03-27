@@ -410,6 +410,22 @@ func TestDefaultUtils_ToAbsolutePath(t *testing.T) {
 			want:    fmt.Sprintf("/Users/%v/go/src/test", username),
 			wantErr: assert.NoError,
 		},
+		{
+			name: "should expand env vars",
+			args: args{
+				path: "$HOME/test",
+			},
+			want:    fmt.Sprintf("/Users/%v/test", username),
+			wantErr: assert.NoError,
+		},
+		{
+			name: "should fail with empty path",
+			args: args{
+				path: "",
+			},
+			want:    "",
+			wantErr: assert.Error,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

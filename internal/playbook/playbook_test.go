@@ -80,3 +80,31 @@ func TestPlayBook_GetPlays_DisabledPlayBook(t *testing.T) {
 	result := pb.GetPlays(true)
 	assert.Equal(t, 0, result.Len())
 }
+
+func TestPlayBook_GetAttributes(t *testing.T) {
+	attr := &ty.Attributes{ID: "test-pb", Description: "test desc", Enabled: true, Sudo: false}
+	pb, err := NewPlayBook(attr, nil, nil)
+	assert.NoError(t, err)
+
+	got := pb.GetAttributes()
+	assert.Equal(t, *attr, got)
+}
+
+func TestPlayBook_GetID(t *testing.T) {
+	attr := &ty.Attributes{ID: "test-pb"}
+	pb, err := NewPlayBook(attr, nil, nil)
+	assert.NoError(t, err)
+
+	got := pb.GetID()
+	assert.Equal(t, "test-pb", got)
+}
+
+func TestPlayBook_GetJetBrainsApps(t *testing.T) {
+	attr := &ty.Attributes{ID: "test-pb"}
+	apps := map[string]string{"IntelliJ": "/Applications/IntelliJ"}
+	pb, err := NewPlayBook(attr, nil, apps)
+	assert.NoError(t, err)
+
+	got := pb.GetJetBrainsApps()
+	assert.Equal(t, apps, got)
+}
