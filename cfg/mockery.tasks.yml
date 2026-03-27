@@ -1,8 +1,8 @@
 packages:
-  awong/dotfiles/pkg/external/gen:
+  awong/dotfiles/internal/external/gen:
     config:
       all: false
-      dir: 'pkg/tasks'
+      dir: 'internal/tasks'
       pkgname: 'tasks'
       filename: "external_mocks.go"
     interfaces:

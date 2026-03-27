@@ -51,10 +51,10 @@ mocks are gitignored since they should follow the naming convention `*_mocks.go`
 ### Single Test Execution
 ```bash
 # Run specific test
-go test -v ./pkg/playbook/... -run TestBrewTask_Install
+go test -v ./internal/playbook/... -run TestBrewTask_Install
 
 # Run tests in specific package
-go test -v ./pkg/playbook/
+go test -v ./internal/playbook/
 
 # Run with race detector
 go test -v -race ./...
@@ -146,11 +146,11 @@ type Task interface {
 
 ```
 /cmd/dum/main.go       # Entry point
-/pkg/cmd/              # CLI commands (Cobra-based)
-/pkg/playbook/         # Core task execution logic
-/pkg/external/         # External tool wrappers (brew, git, etc.)
-/pkg/logging/          # Logging utilities
-/pkg/enums/            # Enum definitions
+/internal/cmd/              # CLI commands (Cobra-based)
+/internal/playbook/         # Core task execution logic
+/internal/external/         # External tool wrappers (brew, git, etc.)
+/internal/logging/          # Logging utilities
+/internal/enums/            # Enum definitions
 ```
 
 ## Important Files

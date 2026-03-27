@@ -1,8 +1,8 @@
 packages:
-  awong/dotfiles/pkg/logging/gen:
+  awong/dotfiles/internal/logging/gen:
     config:
       all: false
-      dir: 'pkg/logging/gen'
+      dir: 'internal/logging/gen'
       pkgname: 'gen'
       filename: "logging_mocks.go"
     interfaces:

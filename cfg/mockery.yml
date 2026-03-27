@@ -12,10 +12,10 @@ require-template-schema-exists: true
 template: testify
 template-schema: '{{.Template}}.schema.json'
 packages:
-  awong/dotfiles/pkg/external/gen:
+  awong/dotfiles/internal/external/gen:
     config:
       all: false
-      dir: 'pkg/external/gen'
+      dir: 'internal/external/gen'
       pkgname: 'gen'
       filename: "mocks.go"
     interfaces:
@@ -26,18 +26,18 @@ packages:
       JetBrainsApp: {}
       Mas: {}
       Runner: {}
-  awong/dotfiles/pkg/logging:
+  awong/dotfiles/internal/logging:
     config:
       all: true
-      dir: 'pkg/tasks/installer'
+      dir: 'internal/tasks/installer'
       pkgname: 'installer'
       filename: "logging_mocks.go"
     interfaces:
       Logger: {}
-  awong/dotfiles/pkg/plays/gen:
+  awong/dotfiles/internal/plays/gen:
     config:
       all: false
-      dir: 'pkg/plays/gen'
+      dir: 'internal/plays/gen'
       pkgname: 'gen'
       filename: "playbook_info_mocks.go"
     interfaces:

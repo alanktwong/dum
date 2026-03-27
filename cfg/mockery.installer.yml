@@ -12,10 +12,10 @@ require-template-schema-exists: true
 template: testify
 template-schema: '{{.Template}}.schema.json'
 packages:
-  awong/dotfiles/pkg/external/gen:
+  awong/dotfiles/internal/external/gen:
     config:
       all: false
-      dir: 'pkg/tasks/installer'
+      dir: 'internal/tasks/installer'
       pkgname: 'installer'
       filename: "external_mocks.go"
     interfaces:
