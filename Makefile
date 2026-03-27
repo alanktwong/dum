@@ -4,8 +4,10 @@ OUT_DIR="./dist"
 
 DUM_APP=dum
 DUM_SOURCE=./cmd/${DUM_APP}/main.go
-GIT_VERSION := $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
-DUM_VERSION ?= $(GIT_VERSION)
+GIT_TAG := $(shell git describe --tags --abbrev=0 2>/dev/null | sed 's/^v//')
+GIT_COMMIT := $(shell git rev-parse --short HEAD 2>/dev/null)
+GIT_DIRTY := $(shell git diff --quiet HEAD 2>/dev/null || echo "-dirty")
+DUM_VERSION ?= $(if $(GIT_TAG),$(GIT_TAG)-$(GIT_COMMIT)$(GIT_DIRTY),$(GIT_COMMIT)$(GIT_DIRTY))
 DUM_EXECUTABLE="$(OUT_DIR)/$(DUM_APP)"
 
 ALL_PACKAGES=$(shell go list ./... | grep -v /vendor)
@@ -84,11 +86,11 @@ generate: ## generate code
 .PHONY: build
 build: make_out fmt vendor generate ## local build
 	@printf ${COLOR} "Building ..."
-	@go build -v -ldflags "-X awong/dotfiles/internal/cmd.version=$(DUM_VERSION)" -o $(DUM_EXECUTABLE)-${DUM_VERSION} $(DUM_SOURCE)
+	@go build -v -ldflags "-X awong/dotfiles/internal/cmd.version=$(DUM_VERSION) -X awong/dotfiles/internal/cmd.commit=$(GIT_COMMIT)" -o $(DUM_EXECUTABLE)-${DUM_VERSION} $(DUM_SOURCE)
 
 .PHONY: release
-release: build  ## compile binaries for many OSes and CPU architectures using goreleaser
-	@printf ${COLOR} "Compiling for every OS and Platform ..."
+release: build  ## compile release binaries for many OSes and CPU architectures using goreleaser
+	@printf ${COLOR} "Compiling releases for every OS and Platform ..."
 	@goreleaser release --clean --snapshot --config cfg/goreleaser.yaml
 
 ## Quality

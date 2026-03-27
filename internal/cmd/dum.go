@@ -9,6 +9,7 @@ import (
 )
 
 var version = "dev"
+var commit = ""
 
 // Dum is the application for the dum CLI.
 type Dum struct {
@@ -21,6 +22,9 @@ type Dum struct {
 
 // NewDum constructs Dum.
 func NewDum() *Dum {
+	if commit != "" {
+		version = fmt.Sprintf("%s-%s", version, commit)
+	}
 	rootUse := "dum"
 	rootCmd := &cobra.Command{
 		Use:     rootUse,
