@@ -29,3 +29,4 @@ exclude:
     - \*_enum\.go$
     - \*_mocks\.go$
     - ^internal/.*/gen/
+    - ^cmd/

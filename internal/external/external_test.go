@@ -2,11 +2,272 @@ package external
 
 import (
 	"fmt"
+	"os"
 	"os/user"
+	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
+
+func TestDefaultExt_IsInstalled(t *testing.T) {
+	u := NewExt()
+	tests := []struct {
+		name    string
+		command string
+		want    bool
+	}{
+		{
+			name:    "bash is installed",
+			command: "bash",
+			want:    true,
+		},
+		{
+			name:    "tar is installed",
+			command: "tar",
+			want:    true,
+		},
+		{
+			name:    "nonexistent command",
+			command: "nonexistentcommand12345",
+			want:    false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := u.IsInstalled(tt.command)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestDefaultExt_IsOSX(t *testing.T) {
+	u := NewExt()
+	got := u.IsOSX()
+	assert.Equal(t, runtime.GOOS == "darwin", got)
+}
+
+func TestDefaultExt_IsLinux(t *testing.T) {
+	u := NewExt()
+	got := u.IsLinux()
+	assert.Equal(t, runtime.GOOS == "linux", got)
+}
+
+func TestDefaultExt_IsDir(t *testing.T) {
+	u := NewExt()
+	tests := []struct {
+		name string
+		path string
+		want bool
+	}{
+		{
+			name: "current directory is dir",
+			path: ".",
+			want: true,
+		},
+		{
+			name: "nonexistent path",
+			path: "/nonexistent/path/12345",
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := u.IsDir(tt.path)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestDefaultExt_IsSymlink(t *testing.T) {
+	u := NewExt()
+	tmpDir := t.TempDir()
+	symlinkPath := filepath.Join(tmpDir, "symlink")
+	err := os.Symlink("/tmp", symlinkPath)
+	assert.NoError(t, err)
+
+	tests := []struct {
+		name string
+		path string
+		want bool
+	}{
+		{
+			name: "symlink is symlink",
+			path: symlinkPath,
+			want: true,
+		},
+		{
+			name: "regular file is not symlink",
+			path: tmpDir,
+			want: false,
+		},
+		{
+			name: "nonexistent path",
+			path: "/nonexistent/path/12345",
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := u.IsSymlink(tt.path)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestDefaultExt_ExpandUser(t *testing.T) {
+	u := NewExt()
+	tests := []struct {
+		name    string
+		path    string
+		want    string
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name:    "tilde expands",
+			path:    "~/test",
+			want:    "",
+			wantErr: assert.NoError,
+		},
+		{
+			name:    "no tilde returns as is",
+			path:    "/absolute/path",
+			want:    "/absolute/path",
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := u.ExpandUser(tt.path)
+			if !tt.wantErr(t, err, fmt.Sprintf("ExpandUser(%v)", tt.path)) {
+				return
+			}
+			if tt.path == "~/test" {
+				assert.True(t, got != "")
+			} else {
+				assert.Equalf(t, tt.want, got, "ExpandUser(%v)", tt.path)
+			}
+		})
+	}
+}
+
+func TestDefaultExt_GetString(t *testing.T) {
+	u := NewExt()
+	tests := []struct {
+		name string
+		data map[string]any
+		key  string
+		def  string
+		want string
+	}{
+		{
+			name: "key exists",
+			data: map[string]any{"key": "value"},
+			key:  "key",
+			def:  "default",
+			want: "value",
+		},
+		{
+			name: "key does not exist",
+			data: map[string]any{"other": "value"},
+			key:  "key",
+			def:  "default",
+			want: "default",
+		},
+		{
+			name: "key exists but not string",
+			data: map[string]any{"key": 123},
+			key:  "key",
+			def:  "default",
+			want: "default",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := u.GetString(tt.data, tt.key, tt.def)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestDefaultExt_GetStrings(t *testing.T) {
+	u := NewExt()
+	tests := []struct {
+		name string
+		data map[string]any
+		key  string
+		def  []string
+		want []string
+	}{
+		{
+			name: "key exists",
+			data: map[string]any{"key": []any{"a", "b"}},
+			key:  "key",
+			def:  []string{"default"},
+			want: []string{"a", "b"},
+		},
+		{
+			name: "key does not exist",
+			data: map[string]any{"other": "value"},
+			key:  "key",
+			def:  []string{"default"},
+			want: []string{"default"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := u.GetStrings(tt.data, tt.key, tt.def)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestDefaultExt_GetBool(t *testing.T) {
+	u := NewExt()
+	tests := []struct {
+		name string
+		data map[string]any
+		key  string
+		def  bool
+		want bool
+	}{
+		{
+			name: "key exists true",
+			data: map[string]any{"key": true},
+			key:  "key",
+			def:  false,
+			want: true,
+		},
+		{
+			name: "key exists false",
+			data: map[string]any{"key": false},
+			key:  "key",
+			def:  true,
+			want: false,
+		},
+		{
+			name: "key does not exist",
+			data: map[string]any{"other": true},
+			key:  "key",
+			def:  true,
+			want: true,
+		},
+		{
+			name: "key exists but not bool",
+			data: map[string]any{"key": "not bool"},
+			key:  "key",
+			def:  true,
+			want: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := u.GetBool(tt.data, tt.key, tt.def)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
 
 func TestDefaultUtils_ToAbsolutePath(t *testing.T) {
 	u, err := user.Current()
