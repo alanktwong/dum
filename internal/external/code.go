@@ -22,7 +22,7 @@ func NewCode() *CodeImpl {
 func (m *CodeImpl) InstallExtension(ctx context.Context, formula string) error {
 	cmd := exec.CommandContext(ctx, "code", "--install-extension", formula)
 	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("failed to code --install-extension %s: %v", formula, err)
+		return fmt.Errorf("failed to code --install-extension %s: %w", formula, err)
 	}
 	return nil
 }
@@ -32,7 +32,7 @@ func (m *CodeImpl) ListExtensions(ctx context.Context) (string, error) {
 	cmd := exec.CommandContext(ctx, "code", "--list-extensions")
 	out, err := cmd.Output()
 	if err != nil {
-		return "", fmt.Errorf("failed to code --list-extensions: %v", err)
+		return "", fmt.Errorf("failed to code --list-extensions: %w", err)
 	}
 	return string(out), nil
 }

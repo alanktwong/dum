@@ -43,7 +43,7 @@ func (t *BrewTap) Install(ctx context.Context, input *ty.TaskInput) (*ty.TaskRes
 	t.Log.Infof("%s %s: checking tap %s", TaskEllipsis, input.Play, t.ID)
 	if !input.DryRun {
 		if err := t.Brew.Tap(ctx, t.ID); err != nil {
-			return nil, fmt.Errorf("failed to tap %s: %v", t.ID, err)
+			return nil, fmt.Errorf("failed to tap %s: %w", t.ID, err)
 		}
 	}
 	result, err := t.CreateTaskResult(input, true)

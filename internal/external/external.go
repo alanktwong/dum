@@ -57,7 +57,7 @@ func (u *DefaultExt) IsInstalled(command string) bool {
 func (u *DefaultExt) lookPath(command string) error {
 	_, err := exec.LookPath(command)
 	if err != nil {
-		return fmt.Errorf("failed to lookup path %s with error: %v", command, err)
+		return fmt.Errorf("failed to lookup path %s with error: %w", command, err)
 	}
 	return nil
 }
@@ -155,10 +155,10 @@ func (u *DefaultExt) SoftLink(ctx context.Context, rootPath, src, target string,
 func (u *DefaultExt) pushd(newDir string, fn func() error) error {
 	previousDir, err := os.Getwd()
 	if err != nil {
-		return fmt.Errorf("failed to os.Getwd: %v", err)
+		return fmt.Errorf("failed to os.Getwd: %w", err)
 	}
 	if err := os.Chdir(newDir); err != nil {
-		return fmt.Errorf("failed to os.Chdir: %v", err)
+		return fmt.Errorf("failed to os.Chdir: %w", err)
 	}
 	defer func() {
 		_ = os.Chdir(previousDir)

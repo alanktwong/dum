@@ -38,7 +38,7 @@ func (t *VimInstaller) Install(ctx context.Context, input *ty.TaskInput) (*ty.Ta
 	t.Log.Infof("%v %v: install vim", TaskEllipsis, input.Play)
 	if !input.DryRun {
 		if err := t.Brew.Install(ctx, "vim"); err != nil {
-			return nil, fmt.Errorf("fail to install vim: %v", err)
+			return nil, fmt.Errorf("fail to install vim: %w", err)
 		}
 	}
 	result, err := ty.NewTaskResult(input, true)

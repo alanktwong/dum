@@ -91,7 +91,7 @@ func (t *FunctionTask) Install(ctx context.Context, input *ty.TaskInput) (*ty.Ta
 func (t *FunctionTask) List(_ context.Context, input *ty.TaskInput) (*ty.TaskResult, error) {
 	err := t.Log.Printlnf("%v function -> %s", TaskEllipsis, t.ID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to list function: %v", err)
+		return nil, fmt.Errorf("failed to list function: %w", err)
 	}
 	result, err := t.CreateTaskResult(input, true)
 	if err != nil {

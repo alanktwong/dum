@@ -27,12 +27,12 @@ func NewGit() *GitImpl {
 // Clone implements Git.
 func (g *GitImpl) Clone(ctx context.Context, url, name, path string, sudo bool) error {
 	if err := g.Utils.CreateDirectory(ctx, path, sudo); err != nil {
-		return fmt.Errorf("failed to create root dir: %v", err)
+		return fmt.Errorf("failed to create root dir: %w", err)
 	}
 	cmd := g.createCloneCommand(ctx, url, name, sudo)
 	cmd.Dir = path
 	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("failed to git clone %s: %v", url, err)
+		return fmt.Errorf("failed to git clone %s: %w", url, err)
 	}
 	return nil
 }

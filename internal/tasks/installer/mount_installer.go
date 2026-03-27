@@ -46,7 +46,7 @@ func (t *MountInstaller) Install(ctx context.Context, input *ty.TaskInput) (*ty.
 	t.Log.Infof("%v %v: mounting a case-sensitive file system", TaskEllipsis, input.Play)
 	if !input.DryRun {
 		if err := t.Runner.Run(ctx); err != nil {
-			return nil, fmt.Errorf("fail to install a case-sensitive file system: %v", err)
+			return nil, fmt.Errorf("fail to install a case-sensitive file system: %w", err)
 		}
 	}
 	result, err := ty.NewTaskResult(input, true)

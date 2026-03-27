@@ -88,6 +88,12 @@ build: make_out fmt vendor generate ## local build
 	@printf ${COLOR} "Building ..."
 	@go build -v -ldflags "-X awong/dotfiles/internal/cmd.version=$(DUM_VERSION) -X awong/dotfiles/internal/cmd.commit=$(GIT_COMMIT)" -o $(DUM_EXECUTABLE)-${DUM_VERSION} $(DUM_SOURCE)
 
+.PHONY: linters-build
+linters-build: ## build custom linters
+	@printf ${COLOR} "Building linters ..."
+	@mkdir -p ${OUT_DIR}
+	@cd cmd/linters && go build -o ../dist/linters .
+
 .PHONY: release
 release: build  ## compile release binaries with tarballs (requires git tag)
 	@printf ${COLOR} "Compiling releases for every OS and Platform ..."

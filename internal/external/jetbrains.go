@@ -41,7 +41,7 @@ func (j *JetBrainsImpl) IsInstalled(ideName, plugin string) bool {
 func (j *JetBrainsImpl) Install(ctx context.Context, app, plugin string) error {
 	cmd := exec.CommandContext(ctx, app, "installPlugins", plugin)
 	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("failed to %s installPlugins %s: %v", app, plugin, err)
+		return fmt.Errorf("failed to %s installPlugins %s: %w", app, plugin, err)
 	}
 	return nil
 }

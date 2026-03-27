@@ -137,7 +137,7 @@ func (l *LoggerImpl) Printlnf(format string, a ...any) error {
 	formatted := fmt.Sprintf(format, a...)
 	_, err := fmt.Println(formatted)
 	if err != nil {
-		return fmt.Errorf("failed to println: %v", err)
+		return fmt.Errorf("failed to println: %w", err)
 	}
 	return nil
 }

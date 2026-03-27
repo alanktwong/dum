@@ -46,11 +46,11 @@ func NewRenameCommand(rootUse string, dum *Dum) *cobra.Command {
 			}
 			source, err := cmd.Flags().GetString(SOURCE)
 			if err != nil {
-				return fmt.Errorf("error getting %v flag: %v", SOURCE, err)
+				return fmt.Errorf("error getting %v flag: %w", SOURCE, err)
 			}
 			replace, err := cmd.Flags().GetString(REPLACE)
 			if err != nil {
-				return fmt.Errorf("error getting %v flag: %v", REPLACE, err)
+				return fmt.Errorf("error getting %v flag: %w", REPLACE, err)
 			}
 			lowercase, err := cmd.Flags().GetBool(LOWERCASE)
 			if err != nil {
@@ -187,7 +187,7 @@ func (d *Dum) rename(_ context.Context, options RenameOptions) error {
 	d.Log.Infof("%v renaming %s -> %s", ellipsis, options.FilePattern, newFilepath)
 	if !options.DryRun {
 		if err := os.Rename(options.FilePattern, newFilepath); err != nil {
-			return fmt.Errorf("error renaming file %s: %v", options.FilePattern, err)
+			return fmt.Errorf("error renaming file %s: %w", options.FilePattern, err)
 		}
 		return nil
 	}
