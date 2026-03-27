@@ -54,6 +54,13 @@ check_tools: ## Check tools
 	@printf ${COLOR} "Checking tools ..."
 	@bash ./tools/dev-env-check.sh
 
+.PHONY: ci-setup
+ci-setup: ## install tools needed for CI (Go tools only)
+	@printf ${COLOR} "Installing CI tools ..."
+	@go install github.com/abice/go-enum@latest
+	@go install github.com/vektra/mockery/v3@latest
+	@go install golang.org/x/tools/cmd/goimports@latest
+
 ## Compile
 make_out:
 	@mkdir -p ${OUT_DIR}
