@@ -72,7 +72,8 @@ dum log error <message>    # Error level log
 
 ## Configuration
 
-By default, the playbook is loaded from `~/.config/installer.yml`. You can specify a custom file with the `-f` flag or set the `INSTALLER_CONFIG` environment variable.
+By default, the playbook is loaded from `$XDG_CONFIG_HOME/dum/installer.yml` (defaults to `~/.config/dum/installer.yml`).
+You can specify a custom file with the `-f` flag or set the `INSTALLER_CONFIG` environment variable.
 
 ## Task Types
 

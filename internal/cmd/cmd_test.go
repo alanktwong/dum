@@ -10,8 +10,16 @@ import (
 
 func TestGetDefaultConfig_Default(t *testing.T) {
 	t.Setenv("INSTALLER_CONFIG", "")
+	t.Setenv("XDG_CONFIG_HOME", "")
 	result := getDefaultConfig()
-	assert.Equal(t, "~/.config/installer.yml", result)
+	assert.Equal(t, "~/.config/dum/installer.yml", result)
+}
+
+func TestGetDefaultConfig_XDGConfigHome(t *testing.T) {
+	t.Setenv("INSTALLER_CONFIG", "")
+	t.Setenv("XDG_CONFIG_HOME", "/custom/config")
+	result := getDefaultConfig()
+	assert.Equal(t, "/custom/config/dum/installer.yml", result)
 }
 
 func TestGetDefaultConfig_FromEnv(t *testing.T) {
