@@ -141,6 +141,15 @@ type Task interface {
 - nakedret, nestif, nilerr, noctx, nolintlint
 - prealloc, revive, rowserrcheck, sqlclosecheck
 - tparallel, unconvert, unparam, whitespace, wrapcheck
+- asciicheck, bidichk, errcheck, errname, errorlint
+- gocritic, gocyclo, importas, linters, staticcheck, unused
+
+### Import Alias Standards
+- **No single-letter aliases**: Aliases like `l`, `i`, `t` are banned
+- **Required aliases**: All internal and vendor packages must use standardized aliases:
+  - Internal: `cd`, `ext`, `fy`, `lg`, `pb`, `pl`, `plg`, `tk`, `ti`, `ty`, `tyg`
+  - Vendor: `clog`, `omv3`, `ca`, `tt`, `asrt`, `mck`, `yamlv3`
+- **Auto-fix**: Run `golangci-lint run ./... --fix` to fix importas violations
 
 ## Project Structure
 

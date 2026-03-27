@@ -121,3 +121,15 @@ Default minimum coverage is **80%**. Override via environment variable:
 ```shell
 COVERAGE_THRESHOLD=90 make coverage-check
 ```
+
+### Linting Principles
+
+This project enforces strict import alias standards and enables comprehensive linting:
+
+1. **No single-letter import aliases** - Aliases like `l`, `i`, `t` are banned. Use descriptive 2+ character aliases.
+2. **Standardized aliases** - All internal and vendor packages must use defined aliases:
+   - Internal: `cd`, `ext`, `fy`, `lg`, `pb`, `pl`, `plg`, `tk`, `ti`, `ty`, `tyg`
+   - Vendor: `clog`, `omv3`, `ca`, `tt`, `asrt`, `mck`, `yamlv3`
+3. **Comprehensive linting** - 34 linters enabled via golangci-lint covering correctness, security, performance, and style.
+
+Run `make lint` to lint. Use `golangci-lint run ./... --fix` to auto-fix import alias issues.
