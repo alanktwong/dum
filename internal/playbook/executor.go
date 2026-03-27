@@ -32,7 +32,7 @@ func (e *Executor) Install(ctx context.Context, input *Input) (*Result, error) {
 	pb := input.PlayBook
 	err := e.Log.Printlnf(Ellipsis+"Installing playbook (%v) ... %v", pb.ID, pb.Description)
 	if err != nil {
-		return nil, fmt.Errorf("failed to install playbook %v", err)
+		return nil, fmt.Errorf("failed to install playbook %w", err)
 	}
 	var playResults []*pl.PlayResult
 	initResult, err := e.PlayExecutor.Initialize(&pl.PlayInput{
@@ -42,7 +42,7 @@ func (e *Executor) Install(ctx context.Context, input *Input) (*Result, error) {
 		Sudo:     input.Sudo,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to Initialize %v", err)
+		return nil, fmt.Errorf("failed to Initialize %w", err)
 	}
 	playResults = append(playResults, initResult)
 
@@ -50,13 +50,13 @@ func (e *Executor) Install(ctx context.Context, input *Input) (*Result, error) {
 	if group != "" {
 		results, err := e.installGroupPlay(ctx, group, playResults, playMap, input)
 		if err != nil {
-			return nil, fmt.Errorf("failed to install group %v", err)
+			return nil, fmt.Errorf("failed to install group %w", err)
 		}
 		playResults = results
 	} else {
 		results, err := e.installAllPlays(ctx, playResults, playMap, input)
 		if err != nil {
-			return nil, fmt.Errorf("failed to install group %v", err)
+			return nil, fmt.Errorf("failed to install group %w", err)
 		}
 		playResults = results
 	}
@@ -113,20 +113,20 @@ func (e *Executor) List(ctx context.Context, input *Input) (*Result, error) {
 	pb := input.PlayBook
 	err := e.Log.Printlnf(Ellipsis+"Listing playbook (%v) ... %v", pb.ID, pb.Description)
 	if err != nil {
-		return nil, fmt.Errorf("failed to list playbook: %v", err)
+		return nil, fmt.Errorf("failed to list playbook: %w", err)
 	}
 	var playResults []*pl.PlayResult
 	playMap := pb.GetPlays(false)
 	if group != "" {
 		results, err := e.listGroupPlay(ctx, group, playResults, playMap, input)
 		if err != nil {
-			return nil, fmt.Errorf("failed to list group %v", err)
+			return nil, fmt.Errorf("failed to list group %w", err)
 		}
 		playResults = results
 	} else {
 		results, err := e.listAllPlays(ctx, playResults, playMap, input)
 		if err != nil {
-			return nil, fmt.Errorf("failed to list %v", err)
+			return nil, fmt.Errorf("failed to list %w", err)
 		}
 		playResults = results
 	}

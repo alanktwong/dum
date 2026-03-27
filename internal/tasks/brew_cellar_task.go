@@ -35,7 +35,7 @@ func NewBrewCellarTask(attributes *ty.Attributes, tap string) (*BrewCellarTask, 
 			Sudo:        attributes.Sudo,
 		})
 		if err != nil {
-			return nil, fmt.Errorf("failed to create brew tap: %v", err)
+			return nil, fmt.Errorf("failed to create brew tap: %w", err)
 		}
 		brewTap = aTap
 	}
@@ -66,7 +66,7 @@ func (t *BrewCellarTask) IsEnabled() bool {
 func (t *BrewCellarTask) List(_ context.Context, input *ty.TaskInput) (*ty.TaskResult, error) {
 	err := t.Log.Printlnf("%v brew install (Cellar) %s", TaskEllipsis, t.ID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to list brew cellar: %v", err)
+		return nil, fmt.Errorf("failed to list brew cellar: %w", err)
 	}
 	result, err := t.CreateTaskResult(input, true)
 	if err != nil {
@@ -88,7 +88,7 @@ func (t *BrewCellarTask) Install(ctx context.Context, input *ty.TaskInput) (*ty.
 	if t.Tap != nil {
 		_, err := t.Tap.Install(ctx, input)
 		if err != nil {
-			return nil, fmt.Errorf("failed to tap for %s: %v", t.ID, err)
+			return nil, fmt.Errorf("failed to tap for %s: %w", t.ID, err)
 		}
 	}
 	if t.Brew.InPath(ctx, "Cellar", t.ID) {
@@ -102,7 +102,7 @@ func (t *BrewCellarTask) Install(ctx context.Context, input *ty.TaskInput) (*ty.
 	t.Log.Infof("%s %s: brew install (cellar) %s", TaskEllipsis, input.Play, t.ID)
 	if !input.DryRun {
 		if err := t.Brew.Install(ctx, t.ID); err != nil {
-			return nil, fmt.Errorf("failed to brew install (cellar) %v: %v", t.ID, err)
+			return nil, fmt.Errorf("failed to brew install (cellar) %v: %w", t.ID, err)
 		}
 	}
 	result, err := t.CreateTaskResult(input, true)

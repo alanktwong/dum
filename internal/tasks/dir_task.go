@@ -58,7 +58,7 @@ func (t *DirTask) Install(ctx context.Context, input *ty.TaskInput) (*ty.TaskRes
 	}
 	path, err := t.Utils.ExpandUser(t.ID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to expand user for %s: %v", t.ID, err)
+		return nil, fmt.Errorf("failed to expand user for %s: %w", t.ID, err)
 	}
 	if t.Utils.IsDir(path) {
 		t.Log.Infof("%s %s: %s already exists", TaskEllipsis, input.Play, t.ID)
@@ -72,7 +72,7 @@ func (t *DirTask) Install(ctx context.Context, input *ty.TaskInput) (*ty.TaskRes
 	if !input.DryRun {
 		err = t.Utils.CreateDirectory(ctx, path, t.Sudo)
 		if err != nil {
-			return nil, fmt.Errorf("failed to mkdir -p %v: %v", t.ID, err)
+			return nil, fmt.Errorf("failed to mkdir -p %v: %w", t.ID, err)
 		}
 	}
 	result, err := t.CreateTaskResult(input, true)
@@ -86,7 +86,7 @@ func (t *DirTask) Install(ctx context.Context, input *ty.TaskInput) (*ty.TaskRes
 func (t *DirTask) List(_ context.Context, input *ty.TaskInput) (*ty.TaskResult, error) {
 	err := t.Log.Printlnf("%v mkdir -p %s", TaskEllipsis, t.ID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to list dir: %v", err)
+		return nil, fmt.Errorf("failed to list dir: %w", err)
 	}
 	result, err := t.CreateTaskResult(input, true)
 	if err != nil {

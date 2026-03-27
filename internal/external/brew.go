@@ -27,7 +27,7 @@ func NewBrew() *BrewImpl {
 func (b *BrewImpl) Install(ctx context.Context, formula string) error {
 	cmd := exec.CommandContext(ctx, "brew", "install", formula)
 	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("failed to brew install %s: %v", formula, err)
+		return fmt.Errorf("failed to brew install %s: %w", formula, err)
 	}
 	return nil
 }
@@ -36,7 +36,7 @@ func (b *BrewImpl) Install(ctx context.Context, formula string) error {
 func (b *BrewImpl) InstallCask(ctx context.Context, formula string) error {
 	cmd := exec.CommandContext(ctx, "brew", "install", "--cask", formula)
 	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("failed to brew install --cask %s: %v", formula, err)
+		return fmt.Errorf("failed to brew install --cask %s: %w", formula, err)
 	}
 	return nil
 }
@@ -46,7 +46,7 @@ func (b *BrewImpl) Prefix(ctx context.Context) (string, error) {
 	cmd := exec.CommandContext(ctx, "brew", "--prefix")
 	out, err := cmd.Output()
 	if err != nil {
-		return "", fmt.Errorf("failed to brew --prefix: %v", err)
+		return "", fmt.Errorf("failed to brew --prefix: %w", err)
 	}
 	return string(out), nil
 }
@@ -55,7 +55,7 @@ func (b *BrewImpl) Prefix(ctx context.Context) (string, error) {
 func (b *BrewImpl) Tap(ctx context.Context, tap string) error {
 	cmd := exec.CommandContext(ctx, "brew", "tap", tap)
 	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("failed to brew tap %s: %v", tap, err)
+		return fmt.Errorf("failed to brew tap %s: %w", tap, err)
 	}
 	return nil
 }

@@ -71,7 +71,7 @@ func (t *GitTask) Install(ctx context.Context, input *ty.TaskInput) (*ty.TaskRes
 		return result, nil
 	}
 	providedName := provideName(t.ID, t.Name)
-	rootPath := filepath.Join(os.ExpandEnv(t.Root))
+	rootPath := os.ExpandEnv(t.Root)
 	targetPath := filepath.Join(rootPath, providedName)
 
 	if t.Git.AlreadyExists(targetPath) {
@@ -85,7 +85,7 @@ func (t *GitTask) Install(ctx context.Context, input *ty.TaskInput) (*ty.TaskRes
 	t.Log.Infof("%s %s: git clone %s %s", TaskEllipsis, input.Play, t.ID, providedName)
 	if !input.DryRun {
 		if err := t.Git.Clone(ctx, t.ID, t.Name, rootPath, t.Sudo); err != nil {
-			return nil, fmt.Errorf("failed to git clone %v: %v", t.ID, err)
+			return nil, fmt.Errorf("failed to git clone %v: %w", t.ID, err)
 		}
 	}
 	result, err := t.CreateTaskResult(input, true)
@@ -100,7 +100,7 @@ func (t *GitTask) List(_ context.Context, input *ty.TaskInput) (*ty.TaskResult, 
 	name := provideName(t.ID, t.Name)
 	err := t.Log.Printlnf("%v at %v, git clone %v %v", TaskEllipsis, t.Root, t.ID, name)
 	if err != nil {
-		return nil, fmt.Errorf("failed to list git: %v", err)
+		return nil, fmt.Errorf("failed to list git: %w", err)
 	}
 	result, err := t.CreateTaskResult(input, true)
 	if err != nil {

@@ -67,8 +67,11 @@ func addPrefixFlag(debugCmd *cobra.Command) {
 func getDefaultConfig() string {
 	installerConfig := os.Getenv("INSTALLER_CONFIG")
 	if installerConfig == "" {
-		// Look in XDG_CONFIG
-		installerConfig = fmt.Sprintf("~/.config/%v", "installer.yml")
+		xdgConfig := os.Getenv("XDG_CONFIG_HOME")
+		if xdgConfig == "" {
+			xdgConfig = "~/.config"
+		}
+		installerConfig = fmt.Sprintf("%s/dum/%v", xdgConfig, "installer.yml")
 	}
 	return installerConfig
 }

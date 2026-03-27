@@ -8,8 +8,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var version = "dev"
-var commit = ""
+var (
+	version = "dev"
+	_       = func() bool { // ldflags: -X awong/dotfiles/internal/cmd.commit=$(GIT_COMMIT)
+		return false
+	}()
+)
 
 // Dum is the application for the dum CLI.
 type Dum struct {

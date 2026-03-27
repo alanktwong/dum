@@ -94,7 +94,7 @@ func (t *MasTask) Install(ctx context.Context, input *ty.TaskInput) (*ty.TaskRes
 func (t *MasTask) List(_ context.Context, input *ty.TaskInput) (*ty.TaskResult, error) {
 	err := t.Log.Printlnf("%v mas install %s ... desc: %s", TaskEllipsis, t.ID, t.Description)
 	if err != nil {
-		return nil, fmt.Errorf("failed to list mas: %v", err)
+		return nil, fmt.Errorf("failed to list mas: %w", err)
 	}
 	result, err := t.CreateTaskResult(input, true)
 	if err != nil {

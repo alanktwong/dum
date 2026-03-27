@@ -65,7 +65,7 @@ func NewInstallCommand(rootUse string, dum *Dum) *cobra.Command {
 				"The 'jetbrains' task installs JetBrains plugins by its ID given a collection of apps such as `idea`.",
 				"Each app must be executable from the command line as the install command will run `idea installPlugin`.",
 				"",
-				"A playbook file by default is at '~/.config/installer.yml`.",
+				"A playbook file by default is at '$XDG_CONFIG_HOME/dum/installer.yml' (defaults to '~/.config/dum/installer.yml').",
 				"This command can load the file by its 'file' flag or by environment variable INSTALLER_CONFIG.",
 				"",
 				"The log level is initialized by an environment variable but overridden by by the verbose flag.",

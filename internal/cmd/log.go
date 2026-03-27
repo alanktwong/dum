@@ -85,12 +85,12 @@ func (d *Dum) executeLogging(cmd *cobra.Command, args []string, level log.Level)
 			// this is not in the implementation of Printlnf b/c we only want prefix
 			// for log4sh.
 			if err := d.Log.Printlnf("%v %v", prefix, message); err != nil {
-				return fmt.Errorf("failed to println %v: %v", message, err)
+				return fmt.Errorf("failed to println %v: %w", message, err)
 			}
 			return nil
 		}
 		if err := d.Log.Printlnf("%v", message); err != nil {
-			return fmt.Errorf("failed to println %v: %v", message, err)
+			return fmt.Errorf("failed to println %v: %w", message, err)
 		}
 		return nil
 	default:

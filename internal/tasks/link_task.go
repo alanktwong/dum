@@ -87,7 +87,7 @@ func (t *LinkTask) Install(ctx context.Context, input *ty.TaskInput) (*ty.TaskRe
 	t.Log.Infof("%v %v: planning to link %v -> %s/%s", TaskEllipsis, input.Play, t.ID, t.Root, target)
 	if !input.DryRun {
 		if t.Utils.SoftLink(ctx, rootPath, t.ID, target, t.Sudo) != nil {
-			return nil, fmt.Errorf("failed to link %v -> %s/%s: %v", t.ID, t.Root, target, err)
+			return nil, fmt.Errorf("failed to link %v -> %s/%s: %w", t.ID, t.Root, target, err)
 		}
 	}
 	result, err := t.CreateTaskResult(input, true)
@@ -102,7 +102,7 @@ func (t *LinkTask) List(_ context.Context, input *ty.TaskInput) (*ty.TaskResult,
 	target := t.ProvideTarget()
 	err := t.Log.Printlnf("%v linking %v -> %s/%s", TaskEllipsis, t.ID, t.Root, target)
 	if err != nil {
-		return nil, fmt.Errorf("failed to list link: %v", err)
+		return nil, fmt.Errorf("failed to list link: %w", err)
 	}
 	result, err := t.CreateTaskResult(input, true)
 	if err != nil {

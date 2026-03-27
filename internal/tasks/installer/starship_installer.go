@@ -90,15 +90,16 @@ func (t *StarshipInstaller) Install(ctx context.Context, input *ty.TaskInput) (*
 
 // Run runs the Starship installer based on the OS.
 func (t *StarshipInstaller) Run(ctx context.Context) error {
-	if t.Utils.IsOSX() {
+	switch {
+	case t.Utils.IsOSX():
 		if err := t.Curl.Run(ctx); err != nil {
 			return fmt.Errorf("failed to install starship for OSX: %w", err)
 		}
-	} else if t.Utils.IsLinux() {
+	case t.Utils.IsLinux():
 		if err := t.LinuxCurl.Run(ctx); err != nil {
 			return fmt.Errorf("failed to install starship for linux: %w", err)
 		}
-	} else {
+	default:
 		return fmt.Errorf("fail to install starship since this is neither linux nor OSX")
 	}
 	return nil

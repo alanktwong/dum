@@ -98,7 +98,7 @@ func (t *JetBrainsPluginTask) List(_ context.Context, input *ty.TaskInput) (*ty.
 	for _, app := range t.activeApps() {
 		err := t.Log.Printlnf("%v %s installPlugins  %s", TaskEllipsis, app, t.ID)
 		if err != nil {
-			return nil, fmt.Errorf("failed to list jetbrains: %v", err)
+			return nil, fmt.Errorf("failed to list jetbrains: %w", err)
 		}
 	}
 	result, err := t.CreateTaskResult(input, t.Enabled)

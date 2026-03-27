@@ -1,0 +1,102 @@
+version: "2"
+run:
+  tests: false
+linters:
+  enable:
+    - bodyclose
+    - exhaustive
+    - goconst
+    - godot
+    - godox
+    - gomoddirectives
+    - goprintffuncname
+    - gosec
+    - misspell
+    - nakedret
+    - nestif
+    - nilerr
+    - noctx
+    - nolintlint
+    - prealloc
+    - revive
+    - rowserrcheck
+    - sqlclosecheck
+    - tparallel
+    - unconvert
+    - unparam
+    - whitespace
+    - wrapcheck
+    - asciicheck
+    - bidichk
+    - errcheck
+    - errname
+    - errorlint
+    - gocritic
+    - gocyclo
+    - importas
+    - staticcheck
+    - unused
+  exclusions:
+    generated: lax
+    presets:
+      - common-false-positives
+    rules:
+      - path: internal/utilities/expansion.go
+        linters:
+          - godox
+
+linters-settings:
+  importas:
+    no-unaliased: true
+    no-extra-aliases: true
+    alias:
+      - prefix: awong/dotfiles/internal/cmd
+        alias: cd
+      - prefix: awong/dotfiles/internal/external
+        alias: ext
+      - prefix: awong/dotfiles/internal/factory
+        alias: fy
+      - prefix: awong/dotfiles/internal/logging
+        alias: lg
+      - prefix: awong/dotfiles/internal/playbook
+        alias: pb
+      - prefix: awong/dotfiles/internal/plays
+        alias: pl
+      - prefix: awong/dotfiles/internal/plays/gen
+        alias: plg
+      - prefix: awong/dotfiles/internal/tasks
+        alias: tk
+      - prefix: awong/dotfiles/internal/tasks/installer
+        alias: ti
+      - prefix: awong/dotfiles/internal/types
+        alias: ty
+      - prefix: awong/dotfiles/internal/types/gen
+        alias: tyg
+      - prefix: github.com/charmbracelet/log
+        alias: clog
+      - prefix: github.com/elliotchance/orderedmap/v3
+        alias: omv3
+      - prefix: github.com/spf13/cobra
+        alias: ca
+      - prefix: github.com/stretchr/testify
+        alias: tt
+      - prefix: github.com/stretchr/testify/assert
+        alias: asrt
+      - prefix: github.com/stretchr/testify/mock
+        alias: mck
+      - prefix: gopkg.in/yaml.v3
+        alias: yamlv3
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+  exclusions:
+    rules:
+      - path: .*_test\.go
+        linters:
+          - importas
+formatters:
+  enable:
+    - gofumpt
+    - goimports
+  exclusions:
+    generated: lax
