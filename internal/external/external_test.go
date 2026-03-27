@@ -1,6 +1,7 @@
 package external
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/user"
@@ -265,6 +266,100 @@ func TestDefaultExt_GetBool(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got := u.GetBool(tt.data, tt.key, tt.def)
 			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestDefaultExt_RunCommand(t *testing.T) {
+	u := NewExt()
+	tests := []struct {
+		name    string
+		command string
+		sudo    bool
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name:    "echo command succeeds",
+			command: "echo hello",
+			sudo:    false,
+			wantErr: assert.NoError,
+		},
+		{
+			name:    "false command fails",
+			command: "false",
+			sudo:    false,
+			wantErr: assert.Error,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := u.RunCommand(context.Background(), tt.command, tt.sudo)
+			tt.wantErr(t, err, fmt.Sprintf("RunCommand(%v)", tt.command))
+		})
+	}
+}
+
+func TestDefaultExt_CreateDirectory(t *testing.T) {
+	u := NewExt()
+	tmpDir := t.TempDir()
+	testPath := filepath.Join(tmpDir, "testdir")
+
+	tests := []struct {
+		name    string
+		path    string
+		sudo    bool
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name:    "create directory succeeds",
+			path:    testPath,
+			sudo:    false,
+			wantErr: assert.NoError,
+		},
+		{
+			name:    "create existing directory succeeds",
+			path:    tmpDir,
+			sudo:    false,
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := u.CreateDirectory(context.Background(), tt.path, tt.sudo)
+			tt.wantErr(t, err, fmt.Sprintf("CreateDirectory(%v)", tt.path))
+		})
+	}
+}
+
+func TestDefaultExt_SoftLink(t *testing.T) {
+	u := NewExt()
+	tmpDir := t.TempDir()
+	targetPath := filepath.Join(tmpDir, "target")
+
+	err := os.WriteFile(targetPath, []byte("test"), 0644)
+	assert.NoError(t, err)
+
+	tests := []struct {
+		name    string
+		root    string
+		src     string
+		target  string
+		sudo    bool
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name:    "create symlink succeeds",
+			root:    tmpDir,
+			src:     targetPath,
+			target:  "link",
+			sudo:    false,
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := u.SoftLink(context.Background(), tt.root, tt.src, tt.target, tt.sudo)
+			tt.wantErr(t, err, fmt.Sprintf("SoftLink(%v, %v, %v)", tt.root, tt.src, tt.target))
 		})
 	}
 }
