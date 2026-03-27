@@ -1,3 +1,14 @@
+// Package main provides a custom linter for detecting single-character import aliases.
+//
+// This is a standalone Go analysis tool (golang.org/x/tools/go/analysis) with its own
+// go.mod because:
+//   - It's designed to run independently: go run ./cmd/linters
+//   - It can be integrated with golangci-lint v2 as a custom linter plugin
+//   - It has minimal dependencies (only golang.org/x/tools) separate from the main project
+//
+// When golangci-lint v2 plugin support matures, this could potentially be consolidated
+// into the main module if desired.
+
 package main
 
 import (
