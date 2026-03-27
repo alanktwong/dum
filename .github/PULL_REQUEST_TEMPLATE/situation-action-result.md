@@ -1,7 +1,7 @@
 ---
 name: Situation-Action-Result
 about: Narrative structure leading through problem context, action, and outcome
-labels: type: bugfix
+labels: bug
 ---
 
 ## Situation

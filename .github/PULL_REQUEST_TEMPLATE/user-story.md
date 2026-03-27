@@ -1,7 +1,7 @@
 ---
 name: User Story
 about: Requirements-focused structure with explicit acceptance criteria
-labels: type: feature
+labels: enhancement
 ---
 
 ## User Story

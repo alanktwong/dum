@@ -1,7 +1,7 @@
 ---
 name: Brief
 about: A concise format for small, straightforward changes
-labels: type: small
+labels: small
 ---
 
 ## Summary
