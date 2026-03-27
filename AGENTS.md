@@ -155,7 +155,7 @@ type Task interface {
 
 ## Important Files
 
-- `cfg/golangci.yml` - Linter configuration
+- `.golangci.yml` - Linter configuration
 - `cfg/mockery.yml` - Mock generation config
 - `cfg/goreleaser.yaml` - GoReleaser build config
 - `.editorconfig` - Editor formatting rules
