@@ -21,7 +21,7 @@ func TestNewFactory(t *testing.T) {
 func TestFactory_Provide_HappyPath(t *testing.T) {
 	f := NewFactory()
 	input, err := f.Provide(InputOptions{
-		File:   "../testdata/test_installer.yml",
+		File:   "testdata/test_installer.yml",
 		Group:  "play-1",
 		DryRun: true,
 	})
@@ -242,7 +242,7 @@ func TestFactory_ProvidePlayBook_EmptyID(t *testing.T) {
 
 func TestFactory_getYaml_Success(t *testing.T) {
 	f := NewFactory()
-	yml, err := f.getYaml("../testdata/test_installer.yml")
+	yml, err := f.getYaml("testdata/test_installer.yml")
 	assert.NoError(t, err)
 	assert.NotNil(t, yml)
 
@@ -278,7 +278,7 @@ func TestFactory_getYaml_EmptyPath(t *testing.T) {
 func TestFactory_Provide_SudoFlag(t *testing.T) {
 	f := NewFactory()
 	input, err := f.Provide(InputOptions{
-		File:  "../testdata/test_installer.yml",
+		File:  "testdata/test_installer.yml",
 		Group: "play-1",
 	})
 	assert.NoError(t, err)
@@ -291,7 +291,7 @@ func TestFactory_Provide_SudoFlag(t *testing.T) {
 func TestFactory_Provide_DryRunFalse(t *testing.T) {
 	f := NewFactory()
 	input, err := f.Provide(InputOptions{
-		File:   "../testdata/test_installer.yml",
+		File:   "testdata/test_installer.yml",
 		Group:  "play-1",
 		DryRun: false,
 	})
@@ -330,7 +330,7 @@ func TestFactory_ProvidePlayBook_InvalidTaskType(t *testing.T) {
 func TestFactory_Provide_HappyPath_Plays(t *testing.T) {
 	f := NewFactory()
 	input, err := f.Provide(InputOptions{
-		File: "../testdata/test_installer.yml",
+		File: "testdata/test_installer.yml",
 	})
 	assert.NoError(t, err)
 	assert.NotNil(t, input)
@@ -350,7 +350,7 @@ func TestFactory_Provide_HappyPath_Plays(t *testing.T) {
 func TestFactory_Provide_HappyPath_TaskTypes(t *testing.T) {
 	f := NewFactory()
 	input, err := f.Provide(InputOptions{
-		File: "../testdata/test_installer.yml",
+		File: "testdata/test_installer.yml",
 	})
 	assert.NoError(t, err)
 
@@ -384,7 +384,7 @@ func TestFactory_Provide_HappyPath_TaskTypes(t *testing.T) {
 func TestFactory_Provide_HappyPath_JetBrainsApps(t *testing.T) {
 	f := NewFactory()
 	input, err := f.Provide(InputOptions{
-		File: "../testdata/test_installer.yml",
+		File: "testdata/test_installer.yml",
 	})
 	assert.NoError(t, err)
 
