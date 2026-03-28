@@ -8,6 +8,7 @@ import (
 	pl "awong/dotfiles/internal/plays"
 	ty "awong/dotfiles/internal/types"
 	tyg "awong/dotfiles/internal/types/gen"
+	yml "awong/dotfiles/internal/yaml"
 	"fmt"
 	"os"
 
@@ -120,4 +121,13 @@ func (f *Factory) provideJetBrainsApps(yml map[string]any) map[string]string {
 		}
 	}
 	return apps
+}
+
+//nolint:unused
+func (f *Factory) loadFromTypedYAML(file string) (*yml.Config, error) {
+	cfg, err := yml.Load(file)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load typed YAML from %s: %w", file, err)
+	}
+	return cfg, nil
 }
