@@ -1,5 +1,7 @@
 // Package yaml provides typed structs for parsing and validating
 // the installer.yml configuration file.
+
+//go:generate go run -tags gen_schema ./gen_schema/main.go
 package yaml
 
 import (

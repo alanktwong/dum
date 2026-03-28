@@ -770,6 +770,7 @@ nvim/lazy-lock.json
 vendor
 *_mocks.go
 *_enum.go
+cfg/installer.schema.json
 
 ######################
 # development
