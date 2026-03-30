@@ -33,7 +33,27 @@ func NewListCommand(rootUse string, dum *Dum) *cobra.Command {
 		Use:     use,
 		Aliases: []string{alias},
 		Short:   fmt.Sprintf("%v-%v (or %v) lists plays and tasks", rootUse, use, alias),
-		Long:    fmt.Sprintf("%v-%v (or %v) lists plays and tasks for software installations and configurations.", rootUse, use, alias),
+		Long: fmt.Sprintf(`%v-%v (or %v) lists plays and tasks for software installations and configurations.
+
+Config:
+  Default:   $XDG_CONFIG_HOME/dum/installer.yml (or ~/.config/dum/installer.yml)
+  Override:  --file flag or INSTALLER_CONFIG env var
+
+Logging:
+  Set ZSH_LOG_LEVEL env var to 'info' or 'debug', or use --verbose flag`,
+			rootUse, use, alias),
+		Example: `
+  # List all plays and tasks from default config
+  dum list
+
+  # List with verbose output
+  dum list -v
+
+  # List a specific group of plays
+  dum list --group work
+
+  # Use a custom config file
+  dum list --file ~/my-install.yml`,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			return dum.runList(cmd)
 		},

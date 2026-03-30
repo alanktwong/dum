@@ -21,12 +21,25 @@ func NewLogCommand(rootUse string, dum *Dum) *cobra.Command {
 			[]string{
 				fmt.Sprintf("%v-%v (or %v) is a command line interface (cli) that helps your shell log.",
 					rootUse, use, alias),
-				"The log level is printed out to standard output if it exceed the environment log level.",
-				"The environment log level is the ZSH_LOG_LEVEL.",
-				"ZSH_LOG_LEVEL can be set to 'info' or 'debug'.",
+				"",
+				"Log levels:",
+				"  debug  - debug messages (lowest)",
+				"  info   - informational messages",
+				"  warn   - warning messages",
+				"  error  - error messages",
+				"  success - success messages (printed without log prefix)",
+				"",
+				"Logging:",
+				"  Set ZSH_LOG_LEVEL env var to 'info' or 'debug' to filter output",
+				"  Messages below the threshold are suppressed",
 			},
 			"\n"),
-		Example: fmt.Sprintf("'%v %v %v hi world' produces 'hi world' at %v level", rootUse, use, "d", "debug"),
+		Example: strings.Join([]string{
+			"# Print debug message",
+			"# Print info message",
+			"# Print success message",
+			"# Print with prefix",
+		}, "\n"),
 	}
 
 	debugCmd := newDebugCommand(rootUse, use, dum)

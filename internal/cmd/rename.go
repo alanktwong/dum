@@ -22,12 +22,25 @@ func NewRenameCommand(rootUse string, dum *Dum) *cobra.Command {
 		Use:     use,
 		Aliases: []string{alias},
 		Short:   fmt.Sprintf("%v-%v (or %v) files based on input options", rootUse, use, alias),
-		Long: fmt.Sprintf("%v-%v (or %v) is a command line tool that renames files based on input flags",
+		Long: fmt.Sprintf(`%v-%v (or %v) is a command line tool that renames files based on input flags.
+
+Flags:
+  -s, --source      String to find in filename
+  -r, --replace     String to replace source with
+  -l, --lowercase   Convert filename to lowercase
+  -f, --trim-front   Trim N characters from front of filename
+  -b, --trim-back    Trim N characters from back of filename
+  -i, --iterate      Add sequential suffix starting from N
+  -d, --dryrun       Preview changes without renaming
+
+Logging:
+  Set ZSH_LOG_LEVEL env var to 'info' or 'debug', or use --verbose flag`,
 			rootUse, use, alias),
 		Example: strings.Join([]string{
-			fmt.Sprintf("%v %v -v -l -s _DSC -r bar *.NEF *.JPG", rootUse, use),
-			"",
-			"Will rename files matching *.NEF and *.JPG and replace '_DSC' with 'bar'",
+			"# Replace '_DSC' with 'bar' in filenames (verbose + lowercase)",
+			"# Trim 4 characters from front of filename",
+			"# Add sequential numbers to files",
+			"# Dry run to preview changes",
 		}, "\n"),
 		Args: cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {

@@ -12,9 +12,9 @@ func NewSchemaCommand(_ string, dum *Dum) *cobra.Command {
 	use := "schema"
 	alias := "s"
 	cmd := &cobra.Command{
-		Use:   use,
+		Use:     use,
 		Aliases: []string{alias},
-		Short: "Output or extract the JSON schema for installer.yml",
+		Short:   "Output or extract the JSON schema for installer.yml",
 		Long: `Outputs the JSON schema for installer.yml configuration file
 
 This can be used for IDE autocomplete and validation in editors like
@@ -48,5 +48,9 @@ func (d *Dum) runSchema(cmd *cobra.Command) error {
 		return nil
 	}
 
-	return os.WriteFile(outputPath, schemaData, 0o600)
+	if err := os.WriteFile(outputPath, schemaData, 0o600); err != nil {
+		return fmt.Errorf("error writing schema to %s: %w", outputPath, err)
+	}
+
+	return nil
 }

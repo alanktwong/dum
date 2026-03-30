@@ -53,26 +53,48 @@ func NewInstallCommand(rootUse string, dum *Dum) *cobra.Command {
 		Long: strings.Join(
 			[]string{
 				fmt.Sprintf("%v-%v (or %v) runs plays and tasks for software installations and configurations.", rootUse, use, alias),
+				"",
 				"A playbook is a group of plays specified by a YAML file. A play is a group of tasks.",
-				"A task is specific work that can be done to install or configure something on the computer.",
-				"Tasks have types and an ID.",
-				"The 'dir' task runs 'mkdir -p {ID}'",
-				"The 'brew', 'cellar' and 'cask' task types runs 'brew install' with the formula specified by its ID.",
-				"The 'link' task runs 'ln -s {ID}'",
-				"The 'git' task runs 'git clone {ID}'",
-				"The 'vscode' task runs 'code --install-extension {ID}'",
-				"The 'mas' task runs the Apple Store CLI: 'mas install {ID}'",
-				"The 'jetbrains' task installs JetBrains plugins by its ID given a collection of apps such as `idea`.",
-				"Each app must be executable from the command line as the install command will run `idea installPlugin`.",
+				"A task is specific work to install or configure something on the computer.",
 				"",
-				"A playbook file by default is at '$XDG_CONFIG_HOME/dum/installer.yml' (defaults to '~/.config/dum/installer.yml').",
-				"This command can load the file by its 'file' flag or by environment variable INSTALLER_CONFIG.",
+				"Task types:",
+				"  dir       - runs 'mkdir -p {ID}'",
+				"  link      - runs 'ln -s {ID} {target}'",
+				"  git       - runs 'git clone {ID} {target}'",
+				"  brew      - runs 'brew install {ID}'",
+				"  cask      - runs 'brew install --cask {ID}'",
+				"  cellar    - runs 'brew cellar'",
+				"  vscode    - runs 'code --install-extension {ID}'",
+				"  mas       - runs 'mas install {ID}'",
+				"  jetbrains - runs '{app} installPlugin {ID}' for JetBrains apps",
+				"  function  - runs a custom function from the playbook",
 				"",
-				"The log level is initialized by an environment variable but overridden by by the verbose flag.",
-				"The environment log level is the ZSH_LOG_LEVEL.",
-				"ZSH_LOG_LEVEL can be set to 'info' or 'debug'.",
+				"Config:",
+				"  Default:   $XDG_CONFIG_HOME/dum/installer.yml (or ~/.config/dum/installer.yml)",
+				"  Override:  --file flag or INSTALLER_CONFIG env var",
+				"",
+				"Logging:",
+				"  Set ZSH_LOG_LEVEL env var to 'info' or 'debug', or use --verbose flag",
 			},
 			"\n"),
+		Example: `
+  # Run all plays and tasks from default config
+  dum install
+
+  # Run with verbose output
+  dum install -v
+
+  # Dry run (preview what would happen)
+  dum install --dry-run
+
+  # Run a specific group of plays
+  dum install --group work
+
+  # Use a custom config file
+  dum install --file ~/my-install.yml
+
+  # Combine flags
+  dum install --group work -v --dry-run`,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			return dum.runInstall(cmd)
 		},
