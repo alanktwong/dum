@@ -3,6 +3,7 @@ package plays
 import (
 	tk "awong/dotfiles/internal/tasks"
 	ty "awong/dotfiles/internal/types"
+	yml "awong/dotfiles/internal/yaml"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -79,14 +80,12 @@ func TestNewPlay_Success_Tasks(t *testing.T) {
 	}
 	f := NewPlayFactory()
 
-	tasks, err := f.TaskFactory.ProvideTasks(map[string]any{
-		"tasks": []any{
-			map[string]any{
-				"id":     "test-link",
-				"type":   "link",
-				"root":   "/tmp/root",
-				"target": "/tmp/target",
-			},
+	tasks, err := f.TaskFactory.ProvideTasks([]yml.TaskYAML{
+		{
+			ID:     "test-link",
+			Type:   "link",
+			Root:   "/tmp/root",
+			Target: "/tmp/target",
 		},
 	})
 	assert.NoError(t, err)

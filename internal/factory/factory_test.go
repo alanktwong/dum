@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"awong/dotfiles/internal/tasks"
+	yml "awong/dotfiles/internal/yaml"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -63,24 +64,23 @@ func TestFactory_Provide_InvalidYaml(t *testing.T) {
 
 func TestFactory_ProvidePlayBook_Success(t *testing.T) {
 	f := NewFactory()
-	yml := map[string]any{
-		"playbook": map[string]any{
-			"id":          "test-pb",
-			"description": "a test playbook",
-			"plays": []any{
-				map[string]any{
-					"id": "play-1",
-					"tasks": []any{
-						map[string]any{
-							"id":   "dir-1",
-							"type": "dir",
-						},
+	pbYAML := &yml.PlayBookYAML{
+		ID:          "test-pb",
+		Description: "a test playbook",
+		Enabled:     true,
+		Plays: []yml.PlayYAML{
+			{
+				ID: "play-1",
+				Tasks: []yml.TaskYAML{
+					{
+						ID:   "dir-1",
+						Type: "dir",
 					},
 				},
 			},
 		},
 	}
-	result, err := f.ProvidePlayBook(yml)
+	result, err := f.ProvidePlayBook(pbYAML)
 	assert.NoError(t, err)
 	assert.NotNil(t, result)
 	assert.Equal(t, "test-pb", result.ID)
@@ -89,35 +89,33 @@ func TestFactory_ProvidePlayBook_Success(t *testing.T) {
 	assert.Len(t, result.Plays, 1)
 }
 
-func TestFactory_ProvidePlayBook_MissingPlaybookKey(t *testing.T) {
+func TestFactory_ProvidePlayBook_MissingID(t *testing.T) {
 	f := NewFactory()
-	yml := map[string]any{
-		"other": "data",
+	pbYAML := &yml.PlayBookYAML{
+		Plays: []yml.PlayYAML{
+			{
+				ID: "play-1",
+				Tasks: []yml.TaskYAML{
+					{
+						ID:   "dir-1",
+						Type: "dir",
+					},
+				},
+			},
+		},
 	}
-	_, err := f.ProvidePlayBook(yml)
+	_, err := f.ProvidePlayBook(pbYAML)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "playbook key not found")
-}
-
-func TestFactory_ProvidePlayBook_InvalidPlaybookFormat(t *testing.T) {
-	f := NewFactory()
-	yml := map[string]any{
-		"playbook": "not a map",
-	}
-	_, err := f.ProvidePlayBook(yml)
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "playbook key not found or invalid format")
+	assert.Contains(t, err.Error(), "attribute ID cannot be empty")
 }
 
 func TestFactory_ProvidePlayBook_NoPlays(t *testing.T) {
 	f := NewFactory()
-	yml := map[string]any{
-		"playbook": map[string]any{
-			"id":          "no-plays",
-			"description": "empty playbook",
-		},
+	pbYAML := &yml.PlayBookYAML{
+		ID:          "no-plays",
+		Description: "empty playbook",
 	}
-	result, err := f.ProvidePlayBook(yml)
+	result, err := f.ProvidePlayBook(pbYAML)
 	assert.NoError(t, err)
 	assert.NotNil(t, result)
 	assert.Equal(t, "no-plays", result.ID)
@@ -126,26 +124,24 @@ func TestFactory_ProvidePlayBook_NoPlays(t *testing.T) {
 
 func TestFactory_ProvidePlayBook_MultiplePlays(t *testing.T) {
 	f := NewFactory()
-	yml := map[string]any{
-		"playbook": map[string]any{
-			"id": "multi",
-			"plays": []any{
-				map[string]any{
-					"id": "play-a",
-					"tasks": []any{
-						map[string]any{"id": "t1", "type": "dir"},
-					},
+	pbYAML := &yml.PlayBookYAML{
+		ID: "multi",
+		Plays: []yml.PlayYAML{
+			{
+				ID: "play-a",
+				Tasks: []yml.TaskYAML{
+					{ID: "t1", Type: "dir"},
 				},
-				map[string]any{
-					"id": "play-b",
-					"tasks": []any{
-						map[string]any{"id": "t2", "type": "dir"},
-					},
+			},
+			{
+				ID: "play-b",
+				Tasks: []yml.TaskYAML{
+					{ID: "t2", Type: "dir"},
 				},
 			},
 		},
 	}
-	result, err := f.ProvidePlayBook(yml)
+	result, err := f.ProvidePlayBook(pbYAML)
 	assert.NoError(t, err)
 	assert.Len(t, result.Plays, 2)
 	assert.Equal(t, "play-a", result.Plays[0].ID)
@@ -154,21 +150,19 @@ func TestFactory_ProvidePlayBook_MultiplePlays(t *testing.T) {
 
 func TestFactory_ProvidePlayBook_DisabledPlay(t *testing.T) {
 	f := NewFactory()
-	yml := map[string]any{
-		"playbook": map[string]any{
-			"id": "with-disabled",
-			"plays": []any{
-				map[string]any{
-					"id":      "disabled-play",
-					"enabled": false,
-					"tasks": []any{
-						map[string]any{"id": "t1", "type": "dir"},
-					},
+	pbYAML := &yml.PlayBookYAML{
+		ID: "with-disabled",
+		Plays: []yml.PlayYAML{
+			{
+				ID:      "disabled-play",
+				Enabled: false,
+				Tasks: []yml.TaskYAML{
+					{ID: "t1", Type: "dir"},
 				},
 			},
 		},
 	}
-	result, err := f.ProvidePlayBook(yml)
+	result, err := f.ProvidePlayBook(pbYAML)
 	assert.NoError(t, err)
 	assert.Len(t, result.Plays, 1)
 	assert.False(t, result.Plays[0].Enabled)
@@ -176,45 +170,41 @@ func TestFactory_ProvidePlayBook_DisabledPlay(t *testing.T) {
 
 func TestFactory_ProvidePlayBook_Sudo(t *testing.T) {
 	f := NewFactory()
-	yml := map[string]any{
-		"playbook": map[string]any{
-			"id":   "sudo-pb",
-			"sudo": true,
-			"plays": []any{
-				map[string]any{
-					"id": "play-1",
-					"tasks": []any{
-						map[string]any{"id": "t1", "type": "dir"},
-					},
+	pbYAML := &yml.PlayBookYAML{
+		ID:   "sudo-pb",
+		Sudo: true,
+		Plays: []yml.PlayYAML{
+			{
+				ID: "play-1",
+				Tasks: []yml.TaskYAML{
+					{ID: "t1", Type: "dir"},
 				},
 			},
 		},
 	}
-	result, err := f.ProvidePlayBook(yml)
+	result, err := f.ProvidePlayBook(pbYAML)
 	assert.NoError(t, err)
 	assert.True(t, result.Sudo)
 }
 
 func TestFactory_ProvidePlayBook_JetBrainsApps(t *testing.T) {
 	f := NewFactory()
-	yml := map[string]any{
-		"playbook": map[string]any{
-			"id": "jetbrains-pb",
-			"jetbrains": []any{
-				map[string]any{"goland": "GoLand2025.1"},
-				map[string]any{"idea": "IntelliJIdea2025.1"},
-			},
-			"plays": []any{
-				map[string]any{
-					"id": "play-1",
-					"tasks": []any{
-						map[string]any{"id": "t1", "type": "dir"},
-					},
+	pbYAML := &yml.PlayBookYAML{
+		ID: "jetbrains-pb",
+		JetBrains: []map[string]string{
+			{"goland": "GoLand2025.1"},
+			{"idea": "IntelliJIdea2025.1"},
+		},
+		Plays: []yml.PlayYAML{
+			{
+				ID: "play-1",
+				Tasks: []yml.TaskYAML{
+					{ID: "t1", Type: "dir"},
 				},
 			},
 		},
 	}
-	result, err := f.ProvidePlayBook(yml)
+	result, err := f.ProvidePlayBook(pbYAML)
 	assert.NoError(t, err)
 	assert.Equal(t, "GoLand2025.1", result.JetBrainsApps["goland"])
 	assert.Equal(t, "IntelliJIdea2025.1", result.JetBrainsApps["idea"])
@@ -223,41 +213,36 @@ func TestFactory_ProvidePlayBook_JetBrainsApps(t *testing.T) {
 
 func TestFactory_ProvidePlayBook_EmptyID(t *testing.T) {
 	f := NewFactory()
-	yml := map[string]any{
-		"playbook": map[string]any{
-			"plays": []any{
-				map[string]any{
-					"id": "play-1",
-					"tasks": []any{
-						map[string]any{"id": "t1", "type": "dir"},
-					},
+	pbYAML := &yml.PlayBookYAML{
+		Plays: []yml.PlayYAML{
+			{
+				ID: "play-1",
+				Tasks: []yml.TaskYAML{
+					{ID: "t1", Type: "dir"},
 				},
 			},
 		},
 	}
-	_, err := f.ProvidePlayBook(yml)
+	_, err := f.ProvidePlayBook(pbYAML)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "attribute ID cannot be empty")
 }
 
-func TestFactory_getYaml_Success(t *testing.T) {
+func TestFactory_loadFromTypedYAML_Success(t *testing.T) {
 	f := NewFactory()
-	yml, err := f.getYaml("testdata/test_installer.yml")
+	cfg, err := f.loadFromTypedYAML("testdata/test_installer.yml")
 	assert.NoError(t, err)
-	assert.NotNil(t, yml)
-
-	pbData, ok := yml["playbook"].(map[string]any)
-	assert.True(t, ok)
-	assert.Equal(t, "my-test-playbook", pbData["id"])
+	assert.NotNil(t, cfg)
+	assert.Equal(t, "my-test-playbook", cfg.PlayBook.ID)
 }
 
-func TestFactory_getYaml_FileNotFound(t *testing.T) {
+func TestFactory_loadFromTypedYAML_FileNotFound(t *testing.T) {
 	f := NewFactory()
-	_, err := f.getYaml("/nonexistent/path/installer.yml")
+	_, err := f.loadFromTypedYAML("/nonexistent/path/installer.yml")
 	assert.Error(t, err)
 }
 
-func TestFactory_getYaml_InvalidYaml(t *testing.T) {
+func TestFactory_loadFromTypedYAML_InvalidYaml(t *testing.T) {
 	f := NewFactory()
 
 	tmpDir := t.TempDir()
@@ -265,13 +250,7 @@ func TestFactory_getYaml_InvalidYaml(t *testing.T) {
 	err := os.WriteFile(badFile, []byte("{{invalid: [}"), 0644)
 	assert.NoError(t, err)
 
-	_, err = f.getYaml(badFile)
-	assert.Error(t, err)
-}
-
-func TestFactory_getYaml_EmptyPath(t *testing.T) {
-	f := NewFactory()
-	_, err := f.getYaml("")
+	_, err = f.loadFromTypedYAML(badFile)
 	assert.Error(t, err)
 }
 
@@ -301,29 +280,25 @@ func TestFactory_Provide_DryRunFalse(t *testing.T) {
 
 func TestFactory_ProvidePlayBook_EmptyPlayBook(t *testing.T) {
 	f := NewFactory()
-	yml := map[string]any{
-		"playbook": map[string]any{},
-	}
-	_, err := f.ProvidePlayBook(yml)
+	pbYAML := &yml.PlayBookYAML{}
+	_, err := f.ProvidePlayBook(pbYAML)
 	assert.Error(t, err)
 }
 
 func TestFactory_ProvidePlayBook_InvalidTaskType(t *testing.T) {
 	f := NewFactory()
-	yml := map[string]any{
-		"playbook": map[string]any{
-			"id": "bad-task",
-			"plays": []any{
-				map[string]any{
-					"id": "play-1",
-					"tasks": []any{
-						map[string]any{"id": "t1", "type": "unknown-type"},
-					},
+	pbYAML := &yml.PlayBookYAML{
+		ID: "bad-task",
+		Plays: []yml.PlayYAML{
+			{
+				ID: "play-1",
+				Tasks: []yml.TaskYAML{
+					{ID: "t1", Type: "unknown-type"},
 				},
 			},
 		},
 	}
-	_, err := f.ProvidePlayBook(yml)
+	_, err := f.ProvidePlayBook(pbYAML)
 	assert.Error(t, err)
 }
 
