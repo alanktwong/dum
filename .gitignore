@@ -747,7 +747,6 @@ tags
 #####################################################################################
 # End of https://www.toptal.com/developers/gitignore/api/eclipse,intellij,pycharm,goland,vim,emacs,macos,python,windows,gradle,maven
 #####################################################################################
-.envrc
 
 ######################
 # Others
