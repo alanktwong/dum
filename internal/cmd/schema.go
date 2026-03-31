@@ -41,7 +41,6 @@ func NewSchemaCommand(rootUse string, dum *Dum) *cobra.Command {
 }
 
 func (d *Dum) runSchema(cmd *cobra.Command) error {
-	// ctx := cmd.Context()
 	outputPath, err := cmd.Flags().GetString("output")
 	if err != nil {
 		return fmt.Errorf("error getting output flag: %w", err)
