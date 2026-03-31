@@ -77,24 +77,25 @@ func NewInstallCommand(rootUse string, dum *Dum) *cobra.Command {
 				"  Set ZSH_LOG_LEVEL env var to 'info' or 'debug', or use --verbose flag",
 			},
 			"\n"),
-		Example: `
-  # Run all plays and tasks from default config
-  dum install
-
-  # Run with verbose output
-  dum install -v
-
-  # Dry run (preview what would happen)
-  dum install --dry-run
-
-  # Run a specific group of plays
-  dum install --group work
-
-  # Use a custom config file
-  dum install --file ~/my-install.yml
-
-  # Combine flags
-  dum install --group work -v --dry-run`,
+		Example: strings.Join([]string{
+			"# Run all plays and tasks from default config",
+			"dum install",
+			"",
+			"# Run with verbose output",
+			"dum install -v",
+			"",
+			"# Dry run (preview what would happen)",
+			"dum install --dry-run",
+			"",
+			"# Run a specific group of plays",
+			"dum install --group work",
+			"",
+			"# Use a custom config file",
+			"dum install --file ~/my-install.yml",
+			"",
+			"# Combine flags",
+			"dum install --group work -v --dry-run",
+		}, "\n"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			return dum.runInstall(cmd)
 		},
