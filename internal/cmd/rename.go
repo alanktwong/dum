@@ -18,21 +18,17 @@ import (
 func NewRenameCommand(rootUse string, dum *Dum) *cobra.Command {
 	use := "rename"
 	alias := "r"
+	fundamental := "replaces SOURCE with REPLACE in the PAT. See example."
+	lowerCaseUsage := "convert the filename to lowercase. E.g. FILE.JPG -> file.jpg"
+	frontUsage := "trims N characters from the front of the filename. E.g. file.jpg -> le.jpg if N = 2"
+	backUsage := "trims N characters from the back of the filename. E.g. file.jpg -> fi.jpg if N = 2"
+	iterateUsage := "suffix an integer to the filename starting from N. E.g. file.jpg -> file_1.jpg if N = 1"
 	cmd := &cobra.Command{
 		Use:     use,
 		Aliases: []string{alias},
 		Short:   fmt.Sprintf("%v-%v (or %v) files based on input options", rootUse, use, alias),
 		Long: strings.Join([]string{
 			fmt.Sprintf("%v-%v (or %v) is a command line tool that renames files based on input flags.", rootUse, use, alias),
-			"",
-			"Flags:",
-			"  -s, --source      String to find in filename",
-			"  -r, --replace     String to replace source with",
-			"  -l, --lowercase   Convert filename to lowercase",
-			"  -f, --trim-front   Trim N characters from front of filename",
-			"  -b, --trim-back    Trim N characters from back of filename",
-			"  -i, --iterate      Add sequential suffix starting from N",
-			"  -d, --dryrun       Preview changes without renaming",
 			"",
 			"Logging:",
 			"  Set ZSH_LOG_LEVEL env var to 'info' or 'debug', or use --verbose flag",
@@ -137,24 +133,19 @@ func NewRenameCommand(rootUse string, dum *Dum) *cobra.Command {
 		},
 	}
 
-	fundamental := "Replaces SOURCE with REPLACE in the PAT. See example."
 	cmd.Flags().StringP(REPLACE, "r", "", fundamental)
 	cmd.Flags().StringP(SOURCE, "s", "", fundamental)
 
 	addVerboseFlag(cmd)
 
-	lowerCaseUsage := "Convert the filename to lowercase. E.g. FILE.JPG -> file.jpg"
 	cmd.Flags().BoolP(LOWERCASE, "l", false, lowerCaseUsage)
 
 	addDryRunFlag(cmd)
 
-	frontUsage := "Trims N characters from the front of the filename. E.g. file.jpg -> le.jpg if N = 2"
 	cmd.Flags().Uint16P(TRIMFRONT, "f", 0, frontUsage)
 
-	backUsage := "Trims N characters from the back of the filename. E.g. file.jpg -> fi.jpg if N = 2"
 	cmd.Flags().Uint16P(TRIMBACK, "b", 0, backUsage)
 
-	iterateUsage := "Suffix an integer to the filename starting from N. E.g. file.jpg -> file_1.jpg if N = 1"
 	cmd.Flags().Uint16P(ITERATE, "i", 0, iterateUsage)
 	return cmd
 }
