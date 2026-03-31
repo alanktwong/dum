@@ -64,6 +64,7 @@ func NewInstallCommand(rootUse string, dum *Dum) *cobra.Command {
 				"  brew      - runs 'brew install {ID}'",
 				"  cask      - runs 'brew install --cask {ID}'",
 				"  cellar    - runs 'brew cellar'",
+				"  bash      - runs a bash command or script",
 				"  vscode    - runs 'code --install-extension {ID}'",
 				"  mas       - runs 'mas install {ID}'",
 				"  jetbrains - runs '{app} installPlugin {ID}' for JetBrains apps",
