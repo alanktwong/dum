@@ -46,16 +46,16 @@ func NewListCommand(rootUse string, dum *Dum) *cobra.Command {
 		}, "\n"),
 		Example: strings.Join([]string{
 			"# List all plays and tasks from default config",
-			"dum list",
+			fmt.Sprintf("%v %v", rootUse, use),
 			"",
 			"# List with verbose output",
-			"dum list -v",
+			fmt.Sprintf("%v %v -v", rootUse, use),
 			"",
 			"# List a specific group of plays",
-			"dum list --group work",
+			fmt.Sprintf("%v %v -v --group work", rootUse, use),
 			"",
 			"# Use a custom config file",
-			"dum list --file ~/my-install.yml",
+			fmt.Sprintf("%v %v -v --file ~/my-install.yml", rootUse, use),
 		}, "\n"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			return dum.runList(cmd)

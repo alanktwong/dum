@@ -3,29 +3,32 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
 
 // NewSchemaCommand creates a new schema command for outputting the JSON schema.
-func NewSchemaCommand(_ string, dum *Dum) *cobra.Command {
+func NewSchemaCommand(rootUse string, dum *Dum) *cobra.Command {
 	use := "schema"
 	alias := "s"
 	cmd := &cobra.Command{
 		Use:     use,
 		Aliases: []string{alias},
-		Short:   "Output or extract the JSON schema for installer.yml",
-		Long: `Outputs the JSON schema for installer.yml configuration file
-
-This can be used for IDE autocomplete and validation in editors like
-VS Code and JetBrains IDEs.`,
-		Example: `
-  # Print schema to stdout
-  dum schema
-
-  # Save schema to a file
-  dum schema --output installer.schema.json
-`,
+		Short:   fmt.Sprintf("%v-%v (or %v) output or extract the JSON schema for installer.yml", rootUse, use, alias),
+		Long: strings.Join([]string{
+			fmt.Sprintf("%v-%v (or %v) is a command line tool that outputs the JSON schema for installer.yml configuration.", rootUse, use, alias),
+			"",
+			"This can be used for IDE autocomplete and validation in editors like",
+			"VS Code and JetBrains IDEs.",
+		}, "\n"),
+		Example: strings.Join([]string{
+			"# Print schema to stdout",
+			fmt.Sprintf("%v %v", rootUse, use),
+			"",
+			"# Save schema to a file",
+			fmt.Sprintf("%v %v --output installer.schema.json", rootUse, use),
+		}, "\n"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			return dum.runSchema(cmd)
 		},
