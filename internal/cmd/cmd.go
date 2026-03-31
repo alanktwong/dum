@@ -31,6 +31,8 @@ const (
 	TRIMBACK = "trimback"
 	// ITERATE is the key to 'iterate' flag in Cobra.
 	ITERATE = "iterate"
+	// OUTPUT is the key to 'output' flag in Cobra.
+	OUTPUT = "output"
 	// PREFIX is the key to 'prefix' flag in Cobra.
 	PREFIX = "prefix"
 	// SuccessLevel is the level for success.
@@ -61,6 +63,11 @@ func addDryRunFlag(cmd *cobra.Command) {
 func addPrefixFlag(debugCmd *cobra.Command) {
 	prefixUsage := "add a prefix to the logger"
 	debugCmd.Flags().StringP(PREFIX, "p", "", prefixUsage)
+}
+
+func addOutputFlag(cmd *cobra.Command) {
+	outputUsage := "Output file path (default: stdout)"
+	cmd.Flags().StringP(OUTPUT, "o", "", outputUsage)
 }
 
 // getDefaultConfig fetches the default config file akin to how starship looks for its config file.
