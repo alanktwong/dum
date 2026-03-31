@@ -36,6 +36,8 @@ archives:
       {{- else }}{{ .Arch }}{{ end }}_
       {{- if .Arm }}v{{ .Arm }}{{ end }}_
       {{- .Version }}-{{ .ShortCommit }}
+    files:
+      - cfg/installer.schema.json
     format_overrides:
       - goos: windows
         formats: ["zip"]

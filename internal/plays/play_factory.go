@@ -5,6 +5,7 @@ import (
 	l "awong/dotfiles/internal/logging"
 	t "awong/dotfiles/internal/tasks"
 	"awong/dotfiles/internal/types"
+	yml "awong/dotfiles/internal/yaml"
 	"fmt"
 )
 
@@ -24,41 +25,33 @@ func NewPlayFactory() *PlayFactory {
 	}
 }
 
-// ProvidePlays creates multiple Play instances from YML configuration.
-func (f *PlayFactory) ProvidePlays(yml map[string]any) ([]*Play, error) {
+// ProvidePlays creates multiple Play instances from typed YML configuration.
+func (f *PlayFactory) ProvidePlays(playsYAML []yml.PlayYAML) ([]*Play, error) {
 	var plays []*Play
-	if arr, ok := yml["plays"].([]any); ok {
-		for _, each := range arr {
-			if m, ok := each.(map[string]any); ok {
-				play, err := f.ProvidePlay(m)
-				if err != nil {
-					return nil, fmt.Errorf("failed to provide play: %w", err)
-				}
-				plays = append(plays, play)
-			} else {
-				return nil, fmt.Errorf("play is not a map[string]interface{}")
-			}
+	for _, playYAML := range playsYAML {
+		play, err := f.providePlay(playYAML)
+		if err != nil {
+			return nil, fmt.Errorf("failed to provide play: %w", err)
 		}
+		plays = append(plays, play)
 	}
 	return plays, nil
 }
 
-// ProvidePlay creates a single Play instance from YML configuration.
-func (f *PlayFactory) ProvidePlay(yml map[string]any) (*Play, error) {
-	tasks, err := f.TaskFactory.ProvideTasks(yml)
+// ProvidePlay creates a single Play instance from typed YML configuration.
+func (f *PlayFactory) providePlay(playYAML yml.PlayYAML) (*Play, error) {
+	tasks, err := f.TaskFactory.ProvideTasks(playYAML.Tasks)
 	if err != nil {
 		return nil, fmt.Errorf("failed to provide tasks: %w", err)
 	}
-	id := f.getString(yml, "id", "")
-	description := f.getString(yml, "description", id)
 	if len(tasks) == 0 {
-		return nil, fmt.Errorf("play %v has no tasks", id)
+		return nil, fmt.Errorf("play %v has no tasks", playYAML.ID)
 	}
 	attributes, err := types.NewAttributes(
-		id,
-		description,
-		f.getBool(yml, "enabled", true),
-		f.getBool(yml, "sudo", false),
+		playYAML.ID,
+		playYAML.Description,
+		playYAML.Enabled,
+		false,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create attributes: %w", err)
@@ -68,12 +61,4 @@ func (f *PlayFactory) ProvidePlay(yml map[string]any) (*Play, error) {
 		return nil, fmt.Errorf("failed to create play: %w", err)
 	}
 	return play, nil
-}
-
-func (f *PlayFactory) getString(data map[string]any, key string, def string) string {
-	return f.Utils.GetString(data, key, def)
-}
-
-func (f *PlayFactory) getBool(data map[string]any, key string, def bool) bool {
-	return f.Utils.GetBool(data, key, def)
 }

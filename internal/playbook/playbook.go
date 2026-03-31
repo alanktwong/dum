@@ -67,7 +67,7 @@ func (p *PlayBook) GetPlays(active bool) *om.OrderedMap[string, *pl.Play] {
 		for _, play := range p.Plays {
 			plays.Set(play.GetID(), play)
 		}
-	} else if p.Enabled {
+	} else {
 		for _, play := range p.Plays {
 			if play.IsEnabled() {
 				plays.Set(play.GetID(), play)

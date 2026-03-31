@@ -8,10 +8,8 @@ import (
 	pl "awong/dotfiles/internal/plays"
 	ty "awong/dotfiles/internal/types"
 	tyg "awong/dotfiles/internal/types/gen"
+	yml "awong/dotfiles/internal/yaml"
 	"fmt"
-	"os"
-
-	"gopkg.in/yaml.v3"
 )
 
 // Factory provides the Factory for constructing Input from YML files.
@@ -39,11 +37,11 @@ type InputOptions struct {
 
 // Provide constructs a Input given Input Options.
 func (f *Factory) Provide(options InputOptions) (*pb.Input, error) {
-	yml, err := f.getYaml(options.File)
+	cfg, err := f.loadFromTypedYAML(options.File)
 	if err != nil {
 		return nil, err
 	}
-	playBook, err := f.ProvidePlayBook(yml)
+	playBook, err := f.ProvidePlayBook(&cfg.PlayBook)
 	if err != nil {
 		return nil, fmt.Errorf("failed to provide playbook: %w", err)
 	}
@@ -55,43 +53,18 @@ func (f *Factory) Provide(options InputOptions) (*pb.Input, error) {
 	}, nil
 }
 
-func (f *Factory) getYaml(file string) (map[string]any, error) {
-	f.Log.Debug("Loading playbook from file", "file", file)
-	absPath, err := f.Utils.ToAbsolutePath(file)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get absolute path for file %s: %w", file, err)
-	}
-	byteArray, err := os.ReadFile(absPath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get read file %s: %w", absPath, err)
-	}
-	var yamlMap map[string]any
-	err = yaml.Unmarshal(byteArray, &yamlMap)
-	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal playbook from file %s: %w", file, err)
-	}
-	return yamlMap, nil
-}
-
-// ProvidePlayBook constructs a PlayBook given a map that expresses the YML.
-func (f *Factory) ProvidePlayBook(yml map[string]any) (*pb.PlayBook, error) {
-	pbData, ok := yml["playbook"].(map[string]any)
-	if !ok {
-		return nil, fmt.Errorf("playbook key not found or invalid format in YAML")
-	}
-
-	plays, err := f.PlayFactory.ProvidePlays(pbData)
+// ProvidePlayBook constructs a PlayBook given a PlayBookYAML.
+func (f *Factory) ProvidePlayBook(pbYAML *yml.PlayBookYAML) (*pb.PlayBook, error) {
+	plays, err := f.PlayFactory.ProvidePlays(pbYAML.Plays)
 	if err != nil {
 		return nil, fmt.Errorf("failed to provide plays: %w", err)
 	}
-	id := f.Utils.GetString(pbData, "id", "")
-	description := f.Utils.GetString(pbData, "description", id)
-	apps := f.provideJetBrainsApps(pbData)
+	apps := f.provideJetBrainsAppsFromYAML(pbYAML.JetBrains)
 	attributes, err := ty.NewAttributes(
-		id,
-		description,
-		f.Utils.GetBool(pbData, "enabled", true),
-		f.Utils.GetBool(pbData, "sudo", false),
+		pbYAML.ID,
+		pbYAML.Description,
+		pbYAML.Enabled,
+		pbYAML.Sudo,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create attributes: %w", err)
@@ -103,21 +76,25 @@ func (f *Factory) ProvidePlayBook(yml map[string]any) (*pb.PlayBook, error) {
 	return playBook, nil
 }
 
-func (f *Factory) provideJetBrainsApps(yml map[string]any) map[string]string {
+func (f *Factory) provideJetBrainsAppsFromYAML(jetbrains []map[string]string) map[string]string {
 	apps := make(map[string]string)
 	appkeys := tyg.JetBrainsTypeNames()
 
-	if jetbrainsArray, ok := yml["jetbrains"].([]any); ok {
-		for _, each := range appkeys {
-			for _, it := range jetbrainsArray {
-				if m, ok2 := it.(map[string]any); ok2 {
-					version := f.Utils.GetString(m, each, "")
-					if version != "" {
-						apps[each] = version
-					}
-				}
+	for _, each := range appkeys {
+		for _, m := range jetbrains {
+			version := m[each]
+			if version != "" {
+				apps[each] = version
 			}
 		}
 	}
 	return apps
+}
+
+func (f *Factory) loadFromTypedYAML(file string) (*yml.Config, error) {
+	cfg, err := yml.Load(file)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load typed YAML from %s: %w", file, err)
+	}
+	return cfg, nil
 }

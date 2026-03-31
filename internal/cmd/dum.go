@@ -55,6 +55,9 @@ func NewDum() *Dum {
 	logCmd := NewLogCommand(rootUse, dum)
 	rootCmd.AddCommand(logCmd)
 
+	schemaCmd := NewSchemaCommand(rootUse, dum)
+	rootCmd.AddCommand(schemaCmd)
+
 	return dum
 }
 

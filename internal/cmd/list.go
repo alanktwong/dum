@@ -5,6 +5,7 @@ import (
 	pb "awong/dotfiles/internal/playbook"
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -33,7 +34,45 @@ func NewListCommand(rootUse string, dum *Dum) *cobra.Command {
 		Use:     use,
 		Aliases: []string{alias},
 		Short:   fmt.Sprintf("%v-%v (or %v) lists plays and tasks", rootUse, use, alias),
-		Long:    fmt.Sprintf("%v-%v (or %v) lists plays and tasks for software installations and configurations.", rootUse, use, alias),
+		Long: strings.Join([]string{
+			fmt.Sprintf("%v-%v (or %v) lists plays and tasks for software installations and configurations.", rootUse, use, alias),
+			"",
+			"A playbook is a group of plays specified by a YAML file. A play is a group of tasks.",
+			"A task is specific work to install or configure something on the computer.",
+			"",
+			"Task types:",
+			"  dir       - runs 'mkdir -p {ID}'",
+			"  link      - runs 'ln -s {ID} {target}'",
+			"  git       - runs 'git clone {ID} {target}'",
+			"  brew      - runs 'brew install {ID}'",
+			"  cask      - runs 'brew install --cask {ID}'",
+			"  cellar    - runs 'brew cellar'",
+			"  bash      - runs a bash command or script",
+			"  vscode    - runs 'code --install-extension {ID}'",
+			"  mas       - runs 'mas install {ID}'",
+			"  jetbrains - runs '{app} installPlugin {ID}' for JetBrains apps",
+			"  function  - runs a custom function from the playbook",
+			"",
+			"Config:",
+			"  Default:   $XDG_CONFIG_HOME/dum/installer.yml (or ~/.config/dum/installer.yml)",
+			"  Override:  --file flag or INSTALLER_CONFIG env var",
+			"",
+			"Logging:",
+			"  Set ZSH_LOG_LEVEL env var to 'info' or 'debug', or use --verbose flag",
+		}, "\n"),
+		Example: strings.Join([]string{
+			"# List all plays and tasks from default config",
+			fmt.Sprintf("%v %v", rootUse, use),
+			"",
+			"# List with verbose output",
+			fmt.Sprintf("%v %v -v", rootUse, use),
+			"",
+			"# List a specific group of plays",
+			fmt.Sprintf("%v %v -v --group work", rootUse, use),
+			"",
+			"# Use a custom config file",
+			fmt.Sprintf("%v %v -v --file ~/my-install.yml", rootUse, use),
+		}, "\n"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			return dum.runList(cmd)
 		},

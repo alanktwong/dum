@@ -3,6 +3,8 @@ package plays
 import (
 	"testing"
 
+	yml "awong/dotfiles/internal/yaml"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -16,20 +18,20 @@ func TestNewPlayFactory_NoArgs(t *testing.T) {
 
 func TestPlayFactory_ProvidePlay_Success(t *testing.T) {
 	f := NewPlayFactory()
-	yml := map[string]any{
-		"id":          "test-play",
-		"description": "a test play",
-		"enabled":     true,
-		"tasks": []any{
-			map[string]any{
-				"id":     "test-link",
-				"type":   "link",
-				"root":   "/tmp/root",
-				"target": "/tmp/target",
+	playYAML := yml.PlayYAML{
+		ID:          "test-play",
+		Description: "a test play",
+		Enabled:     true,
+		Tasks: []yml.TaskYAML{
+			{
+				ID:     "test-link",
+				Type:   "link",
+				Root:   "/tmp/root",
+				Target: "/tmp/target",
 			},
 		},
 	}
-	play, err := f.ProvidePlay(yml)
+	play, err := f.providePlay(playYAML)
 	assert.NoError(t, err)
 	assert.NotNil(t, play)
 	assert.Equal(t, "test-play", play.ID)
@@ -40,11 +42,12 @@ func TestPlayFactory_ProvidePlay_Success(t *testing.T) {
 
 func TestPlayFactory_ProvidePlay_NoTasks(t *testing.T) {
 	f := NewPlayFactory()
-	yml := map[string]any{
-		"id":          "test-play",
-		"description": "a test play",
+	playYAML := yml.PlayYAML{
+		ID:          "test-play",
+		Description: "a test play",
+		Tasks:       []yml.TaskYAML{},
 	}
-	play, err := f.ProvidePlay(yml)
+	play, err := f.providePlay(playYAML)
 	assert.Error(t, err)
 	assert.Nil(t, play)
 	assert.Contains(t, err.Error(), "has no tasks")
@@ -52,19 +55,19 @@ func TestPlayFactory_ProvidePlay_NoTasks(t *testing.T) {
 
 func TestPlayFactory_ProvidePlay_Disabled(t *testing.T) {
 	f := NewPlayFactory()
-	yml := map[string]any{
-		"id":      "test-play",
-		"enabled": false,
-		"tasks": []any{
-			map[string]any{
-				"id":     "test-link",
-				"type":   "link",
-				"root":   "/tmp/root",
-				"target": "/tmp/target",
+	playYAML := yml.PlayYAML{
+		ID:      "test-play",
+		Enabled: false,
+		Tasks: []yml.TaskYAML{
+			{
+				ID:     "test-link",
+				Type:   "link",
+				Root:   "/tmp/root",
+				Target: "/tmp/target",
 			},
 		},
 	}
-	play, err := f.ProvidePlay(yml)
+	play, err := f.providePlay(playYAML)
 	assert.NoError(t, err)
 	assert.NotNil(t, play)
 	assert.False(t, play.IsEnabled())
@@ -72,41 +75,39 @@ func TestPlayFactory_ProvidePlay_Disabled(t *testing.T) {
 
 func TestPlayFactory_ProvidePlays_Empty(t *testing.T) {
 	f := NewPlayFactory()
-	yml := map[string]any{}
-	plays, err := f.ProvidePlays(yml)
+	playsYAML := []yml.PlayYAML{}
+	plays, err := f.ProvidePlays(playsYAML)
 	assert.NoError(t, err)
 	assert.Empty(t, plays)
 }
 
 func TestPlayFactory_ProvidePlays_Multiple(t *testing.T) {
 	f := NewPlayFactory()
-	yml := map[string]any{
-		"plays": []any{
-			map[string]any{
-				"id": "play-1",
-				"tasks": []any{
-					map[string]any{
-						"id":     "link-1",
-						"type":   "link",
-						"root":   "/tmp/root1",
-						"target": "/tmp/target1",
-					},
+	playsYAML := []yml.PlayYAML{
+		{
+			ID: "play-1",
+			Tasks: []yml.TaskYAML{
+				{
+					ID:     "link-1",
+					Type:   "link",
+					Root:   "/tmp/root1",
+					Target: "/tmp/target1",
 				},
 			},
-			map[string]any{
-				"id": "play-2",
-				"tasks": []any{
-					map[string]any{
-						"id":     "link-2",
-						"type":   "link",
-						"root":   "/tmp/root2",
-						"target": "/tmp/target2",
-					},
+		},
+		{
+			ID: "play-2",
+			Tasks: []yml.TaskYAML{
+				{
+					ID:     "link-2",
+					Type:   "link",
+					Root:   "/tmp/root2",
+					Target: "/tmp/target2",
 				},
 			},
 		},
 	}
-	plays, err := f.ProvidePlays(yml)
+	plays, err := f.ProvidePlays(playsYAML)
 	assert.NoError(t, err)
 	assert.Equal(t, 2, len(plays))
 	assert.Equal(t, "play-1", plays[0].ID)

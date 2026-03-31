@@ -85,6 +85,44 @@ You can specify a custom file with the `-f` flag or set the `INSTALLER_CONFIG` e
 - `mas` - Mac App Store apps
 - `jetbrains` - JetBrains IDE plugins
 
+## Editor Integration
+
+For IDE autocomplete and validation when editing `installer.yml`, you can use the JSON schema:
+
+### VS Code
+
+Add to your `settings.json`:
+
+```json
+{
+  "yaml.schemas": {
+    "installer.schema.json": "installer.yml"
+  }
+}
+```
+
+Extract the schema:
+```bash
+dum schema --output installer.schema.json
+```
+
+### JetBrains IDEs
+
+Place the schema in your IDE config directory:
+- macOS: `~/Library/Application Support/JetBrains/<IDE>/schemas`
+- Linux: `~/.config/JetBrains/<IDE>/schemas`
+
+The IDE should automatically detect and use the schema for `installer.yml` files.
+
+### Other Editors
+
+Extract the schema and configure your editor:
+```bash
+dum schema --output installer.schema.json
+```
+
+Most YAML-aware editors support JSON Schema validation.
+
 ## Development
 
 ### Build Commands

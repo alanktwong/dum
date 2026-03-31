@@ -3,6 +3,8 @@ package tasks
 import (
 	"testing"
 
+	yml "awong/dotfiles/internal/yaml"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -15,54 +17,19 @@ func TestNewTaskFactory(t *testing.T) {
 
 func TestTaskFactory_ProvideTasks_EmptyInput(t *testing.T) {
 	factory := NewTaskFactory()
-	tasks, err := factory.ProvideTasks(map[string]any{})
+	tasks, err := factory.ProvideTasks([]yml.TaskYAML{})
 	assert.NoError(t, err)
 	assert.Empty(t, tasks)
-}
-
-func TestTaskFactory_ProvideTasks_NoTasksKey(t *testing.T) {
-	factory := NewTaskFactory()
-	tasks, err := factory.ProvideTasks(map[string]any{
-		"other": "data",
-	})
-	assert.NoError(t, err)
-	assert.Empty(t, tasks)
-}
-
-func TestTaskFactory_ProvideTasks_InvalidTaskFormat(t *testing.T) {
-	factory := NewTaskFactory()
-	_, err := factory.ProvideTasks(map[string]any{
-		"tasks": []any{
-			"not a map",
-		},
-	})
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "not a map[string]interface{}")
-}
-
-func TestTaskFactory_ProvideTasks_UnknownTaskType(t *testing.T) {
-	factory := NewTaskFactory()
-	_, err := factory.ProvideTasks(map[string]any{
-		"tasks": []any{
-			map[string]any{
-				"id":   "test-task",
-				"type": "unknown-type",
-			},
-		},
-	})
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "unknown task type")
 }
 
 func TestTaskFactory_ProvideTasks_DirTask(t *testing.T) {
 	factory := NewTaskFactory()
-	tasks, err := factory.ProvideTasks(map[string]any{
-		"tasks": []any{
-			map[string]any{
-				"id":          "test-dir",
-				"type":        "dir",
-				"description": "test directory",
-			},
+	tasks, err := factory.ProvideTasks([]yml.TaskYAML{
+		{
+			ID:          "test-dir",
+			Type:        "dir",
+			Description: "test directory",
+			Enabled:     true,
 		},
 	})
 	assert.NoError(t, err)
@@ -74,14 +41,12 @@ func TestTaskFactory_ProvideTasks_DirTask(t *testing.T) {
 
 func TestTaskFactory_ProvideTasks_LinkTask(t *testing.T) {
 	factory := NewTaskFactory()
-	tasks, err := factory.ProvideTasks(map[string]any{
-		"tasks": []any{
-			map[string]any{
-				"id":     "test-link",
-				"type":   "link",
-				"root":   "/tmp/root",
-				"target": "/tmp/target",
-			},
+	tasks, err := factory.ProvideTasks([]yml.TaskYAML{
+		{
+			ID:     "test-link",
+			Type:   "link",
+			Root:   "/tmp/root",
+			Target: "/tmp/target",
 		},
 	})
 	assert.NoError(t, err)
@@ -93,13 +58,11 @@ func TestTaskFactory_ProvideTasks_LinkTask(t *testing.T) {
 
 func TestTaskFactory_ProvideTasks_BrewTask(t *testing.T) {
 	factory := NewTaskFactory()
-	tasks, err := factory.ProvideTasks(map[string]any{
-		"tasks": []any{
-			map[string]any{
-				"id":   "test-brew",
-				"type": "brew",
-				"tap":  "homebrew/cask",
-			},
+	tasks, err := factory.ProvideTasks([]yml.TaskYAML{
+		{
+			ID:   "test-brew",
+			Type: "brew",
+			Tap:  "homebrew/cask",
 		},
 	})
 	assert.NoError(t, err)
@@ -111,13 +74,11 @@ func TestTaskFactory_ProvideTasks_BrewTask(t *testing.T) {
 
 func TestTaskFactory_ProvideTasks_BashTask(t *testing.T) {
 	factory := NewTaskFactory()
-	tasks, err := factory.ProvideTasks(map[string]any{
-		"tasks": []any{
-			map[string]any{
-				"id":      "test-bash",
-				"type":    "bash",
-				"command": "echo hello",
-			},
+	tasks, err := factory.ProvideTasks([]yml.TaskYAML{
+		{
+			ID:      "test-bash",
+			Type:    "bash",
+			Command: "echo hello",
 		},
 	})
 	assert.NoError(t, err)
@@ -129,13 +90,11 @@ func TestTaskFactory_ProvideTasks_BashTask(t *testing.T) {
 
 func TestTaskFactory_ProvideTasks_DisabledTask(t *testing.T) {
 	factory := NewTaskFactory()
-	tasks, err := factory.ProvideTasks(map[string]any{
-		"tasks": []any{
-			map[string]any{
-				"id":      "test-disabled",
-				"type":    "dir",
-				"enabled": false,
-			},
+	tasks, err := factory.ProvideTasks([]yml.TaskYAML{
+		{
+			ID:      "test-disabled",
+			Type:    "dir",
+			Enabled: false,
 		},
 	})
 	assert.NoError(t, err)
@@ -147,22 +106,20 @@ func TestTaskFactory_ProvideTasks_DisabledTask(t *testing.T) {
 
 func TestTaskFactory_ProvideTasks_MultipleTasks(t *testing.T) {
 	factory := NewTaskFactory()
-	tasks, err := factory.ProvideTasks(map[string]any{
-		"tasks": []any{
-			map[string]any{
-				"id":   "task-1",
-				"type": "dir",
-			},
-			map[string]any{
-				"id":   "task-2",
-				"type": "link",
-				"root": "/tmp",
-			},
-			map[string]any{
-				"id":      "task-3",
-				"type":    "bash",
-				"command": "echo hello",
-			},
+	tasks, err := factory.ProvideTasks([]yml.TaskYAML{
+		{
+			ID:   "task-1",
+			Type: "dir",
+		},
+		{
+			ID:   "task-2",
+			Type: "link",
+			Root: "/tmp",
+		},
+		{
+			ID:      "task-3",
+			Type:    "bash",
+			Command: "echo hello",
 		},
 	})
 	assert.NoError(t, err)
@@ -178,14 +135,24 @@ func TestTaskFactory_ProvideTasks_MultipleTasks(t *testing.T) {
 	assert.Equal(t, "task-3", bashTask.ID)
 }
 
+func TestTaskFactory_ProvideTasks_UnknownTaskType(t *testing.T) {
+	factory := NewTaskFactory()
+	_, err := factory.ProvideTasks([]yml.TaskYAML{
+		{
+			ID:   "test-task",
+			Type: "unknown-type",
+		},
+	})
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "unknown task type")
+}
+
 func TestTaskFactory_ProvideTasks_MasTask(t *testing.T) {
 	factory := NewTaskFactory()
-	tasks, err := factory.ProvideTasks(map[string]any{
-		"tasks": []any{
-			map[string]any{
-				"id":   "test-mas",
-				"type": "mas",
-			},
+	tasks, err := factory.ProvideTasks([]yml.TaskYAML{
+		{
+			ID:   "test-mas",
+			Type: "mas",
 		},
 	})
 	assert.NoError(t, err)
@@ -197,12 +164,10 @@ func TestTaskFactory_ProvideTasks_MasTask(t *testing.T) {
 
 func TestTaskFactory_ProvideTasks_VsCodeTask(t *testing.T) {
 	factory := NewTaskFactory()
-	tasks, err := factory.ProvideTasks(map[string]any{
-		"tasks": []any{
-			map[string]any{
-				"id":   "test-vscode",
-				"type": "vscode",
-			},
+	tasks, err := factory.ProvideTasks([]yml.TaskYAML{
+		{
+			ID:   "test-vscode",
+			Type: "vscode",
 		},
 	})
 	assert.NoError(t, err)
@@ -214,12 +179,10 @@ func TestTaskFactory_ProvideTasks_VsCodeTask(t *testing.T) {
 
 func TestTaskFactory_ProvideTasks_FunctionTask(t *testing.T) {
 	factory := NewTaskFactory()
-	tasks, err := factory.ProvideTasks(map[string]any{
-		"tasks": []any{
-			map[string]any{
-				"id":   "test-function",
-				"type": "function",
-			},
+	tasks, err := factory.ProvideTasks([]yml.TaskYAML{
+		{
+			ID:   "test-function",
+			Type: "function",
 		},
 	})
 	assert.NoError(t, err)
@@ -231,13 +194,11 @@ func TestTaskFactory_ProvideTasks_FunctionTask(t *testing.T) {
 
 func TestTaskFactory_ProvideTasks_GitTask(t *testing.T) {
 	factory := NewTaskFactory()
-	tasks, err := factory.ProvideTasks(map[string]any{
-		"tasks": []any{
-			map[string]any{
-				"id":   "test-git",
-				"type": "git",
-				"name": "dotfiles",
-			},
+	tasks, err := factory.ProvideTasks([]yml.TaskYAML{
+		{
+			ID:   "test-git",
+			Type: "git",
+			Name: "dotfiles",
 		},
 	})
 	assert.NoError(t, err)
@@ -249,13 +210,11 @@ func TestTaskFactory_ProvideTasks_GitTask(t *testing.T) {
 
 func TestTaskFactory_ProvideTasks_JetBrainsTask(t *testing.T) {
 	factory := NewTaskFactory()
-	tasks, err := factory.ProvideTasks(map[string]any{
-		"tasks": []any{
-			map[string]any{
-				"id":   "test-jetbrains",
-				"type": "jetbrains",
-				"apps": []any{"IntelliJ IDEA", "GoLand"},
-			},
+	tasks, err := factory.ProvideTasks([]yml.TaskYAML{
+		{
+			ID:   "test-jetbrains",
+			Type: "jetbrains",
+			Apps: []string{"IntelliJ IDEA", "GoLand"},
 		},
 	})
 	assert.NoError(t, err)
@@ -267,12 +226,10 @@ func TestTaskFactory_ProvideTasks_JetBrainsTask(t *testing.T) {
 
 func TestTaskFactory_ProvideTasks_CaskTask(t *testing.T) {
 	factory := NewTaskFactory()
-	tasks, err := factory.ProvideTasks(map[string]any{
-		"tasks": []any{
-			map[string]any{
-				"id":   "test-cask",
-				"type": "cask",
-			},
+	tasks, err := factory.ProvideTasks([]yml.TaskYAML{
+		{
+			ID:   "test-cask",
+			Type: "cask",
 		},
 	})
 	assert.NoError(t, err)
@@ -284,12 +241,10 @@ func TestTaskFactory_ProvideTasks_CaskTask(t *testing.T) {
 
 func TestTaskFactory_ProvideTasks_CellarTask(t *testing.T) {
 	factory := NewTaskFactory()
-	tasks, err := factory.ProvideTasks(map[string]any{
-		"tasks": []any{
-			map[string]any{
-				"id":   "test-cellar",
-				"type": "cellar",
-			},
+	tasks, err := factory.ProvideTasks([]yml.TaskYAML{
+		{
+			ID:   "test-cellar",
+			Type: "cellar",
 		},
 	})
 	assert.NoError(t, err)
@@ -301,13 +256,11 @@ func TestTaskFactory_ProvideTasks_CellarTask(t *testing.T) {
 
 func TestTaskFactory_ProvideTasks_SudoTask(t *testing.T) {
 	factory := NewTaskFactory()
-	tasks, err := factory.ProvideTasks(map[string]any{
-		"tasks": []any{
-			map[string]any{
-				"id":   "test-sudo",
-				"type": "dir",
-				"sudo": true,
-			},
+	tasks, err := factory.ProvideTasks([]yml.TaskYAML{
+		{
+			ID:   "test-sudo",
+			Type: "dir",
+			Root: "/some/path",
 		},
 	})
 	assert.NoError(t, err)

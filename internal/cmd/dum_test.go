@@ -30,6 +30,7 @@ func TestNewDum_Subcommands(t *testing.T) {
 	assert.True(t, subcommands["list"])
 	assert.True(t, subcommands["rename"])
 	assert.True(t, subcommands["log"])
+	assert.True(t, subcommands["schema"])
 }
 
 func TestNewDum_SubcommandAliases(t *testing.T) {
@@ -43,6 +44,7 @@ func TestNewDum_SubcommandAliases(t *testing.T) {
 		{"list", "ls"},
 		{"rename", "r"},
 		{"log", "lg"},
+		{"schema", "s"},
 	}
 
 	for _, tt := range tests {

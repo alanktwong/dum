@@ -6,6 +6,7 @@ import (
 	l "awong/dotfiles/internal/logging"
 	ty "awong/dotfiles/internal/types"
 	tyg "awong/dotfiles/internal/types/gen"
+	yml "awong/dotfiles/internal/yaml"
 	"fmt"
 )
 
@@ -23,42 +24,33 @@ func NewTaskFactory() *TaskFactory {
 	}
 }
 
-// ProvideTasks creates multiple Task instances from YML configuration.
-func (f *TaskFactory) ProvideTasks(yml map[string]any) ([]Task, error) {
+// ProvideTasks creates multiple Task instances from typed YML configuration.
+func (f *TaskFactory) ProvideTasks(tasksYAML []yml.TaskYAML) ([]Task, error) {
 	var tasks []Task
-	if arr, ok := yml["tasks"].([]any); ok {
-		for _, it := range arr {
-			if m, ok := it.(map[string]any); ok {
-				task, err := f.provideTask(m)
-				if err != nil {
-					return nil, fmt.Errorf("failed to provide task: %w", err)
-				}
-				tasks = append(tasks, task)
-			} else {
-				return nil, fmt.Errorf("task is not a map[string]interface{}")
-			}
+	for _, taskYAML := range tasksYAML {
+		task, err := f.provideTask(taskYAML)
+		if err != nil {
+			return nil, fmt.Errorf("failed to provide task: %w", err)
 		}
+		tasks = append(tasks, task)
 	}
 	return tasks, nil
 }
 
-func (f *TaskFactory) provideTask(yml map[string]any) (Task, error) {
-	id := f.Utils.GetString(yml, "id", "")
-	description := f.Utils.GetString(yml, "description", id)
+func (f *TaskFactory) provideTask(taskYAML yml.TaskYAML) (Task, error) {
 	attributes, err := ty.NewAttributes(
-		id,
-		description,
-		f.Utils.GetBool(yml, "enabled", true),
-		f.Utils.GetBool(yml, "sudo", false),
+		taskYAML.ID,
+		taskYAML.Description,
+		taskYAML.Enabled,
+		taskYAML.Root != "",
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create attributes: %w", err)
 	}
 
-	typeStr := f.Utils.GetString(yml, "type", "")
-	taskType, err := tyg.ParseTaskType(typeStr)
+	taskType, err := tyg.ParseTaskType(taskYAML.Type)
 	if err != nil {
-		return nil, fmt.Errorf("unknown task type %s for task %s", typeStr, id)
+		return nil, fmt.Errorf("unknown task type %s for task %s", taskYAML.Type, taskYAML.ID)
 	}
 	switch taskType {
 	case tyg.TaskTypeDir:
@@ -71,29 +63,28 @@ func (f *TaskFactory) provideTask(yml map[string]any) (Task, error) {
 		return NewFunctionTask(attributes)
 	case tyg.TaskTypeLink:
 		return NewLinkTask(attributes,
-			f.Utils.GetString(yml, "root", ""),
-			f.Utils.GetString(yml, "target", ""))
+			taskYAML.Root,
+			taskYAML.Target)
 	case tyg.TaskTypeGit:
 		return NewGitTask(attributes,
-			f.Utils.GetString(yml, "root", ""),
-			f.Utils.GetString(yml, "name", ""))
+			taskYAML.Root,
+			taskYAML.Name)
 	case tyg.TaskTypeJetbrains:
-		apps := f.Utils.GetStrings(yml, "apps", make([]string, 0))
-		return NewJetBrainsPluginTask(attributes, apps)
+		return NewJetBrainsPluginTask(attributes, taskYAML.Apps)
 	case tyg.TaskTypeBrew:
 		return NewBrewTask(attributes,
-			f.Utils.GetString(yml, "tap", ""))
+			taskYAML.Tap)
 	case tyg.TaskTypeCask:
 		return NewBrewCaskTask(attributes,
-			f.Utils.GetString(yml, "tap", ""))
+			taskYAML.Tap)
 	case tyg.TaskTypeCellar:
 		return NewBrewCellarTask(attributes,
-			f.Utils.GetString(yml, "tap", ""))
+			taskYAML.Tap)
 	case tyg.TaskTypeBash:
 		return NewBashTask(attributes,
-			f.Utils.GetString(yml, "command", ""),
-			f.Utils.GetString(yml, "script", ""))
+			taskYAML.Command,
+			taskYAML.Script)
 	default:
-		return nil, fmt.Errorf("unknown task type %s for task %s", taskType, id)
+		return nil, fmt.Errorf("unknown task type %s for task %s", taskType, taskYAML.ID)
 	}
 }

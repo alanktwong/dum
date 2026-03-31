@@ -31,36 +31,44 @@ const (
 	TRIMBACK = "trimback"
 	// ITERATE is the key to 'iterate' flag in Cobra.
 	ITERATE = "iterate"
+	// OUTPUT is the key to 'output' flag in Cobra.
+	OUTPUT = "output"
 	// PREFIX is the key to 'prefix' flag in Cobra.
 	PREFIX = "prefix"
 	// SuccessLevel is the level for success.
 	SuccessLevel log.Level = math.MaxInt
+	// VerboseUsage documents how to use verbose flag.
+	VerboseUsage = "increase output verbosity. E.g. --vv is debug and -v is info"
 )
 
 func addGroupFlag(cmd *cobra.Command) {
-	groupUsage := "Select GROUP to run"
+	groupUsage := "select GROUP to run"
 	cmd.Flags().StringP(GROUP, "g", "", groupUsage)
 }
 
 func addFileFlag(cmd *cobra.Command) {
 	defaultConfig := getDefaultConfig()
-	fileUsage := "Select config FILE to use"
+	fileUsage := "select config FILE to use"
 	cmd.Flags().StringP(FILE, "f", defaultConfig, fileUsage)
 }
 
 func addVerboseFlag(cmd *cobra.Command) {
-	verboseUsage := "Increase output verbosity. E.g. --vv is debug and -v is info"
-	cmd.Flags().CountP(VERBOSE, "v", verboseUsage)
+	cmd.Flags().CountP(VERBOSE, "v", VerboseUsage)
 }
 
 func addDryRunFlag(cmd *cobra.Command) {
-	dryRunUsage := fmt.Sprintf("Dry run of %s", cmd.Use)
+	dryRunUsage := fmt.Sprintf("dry run of %s", cmd.Use)
 	cmd.Flags().BoolP(DRYRUN, "d", false, dryRunUsage)
 }
 
 func addPrefixFlag(debugCmd *cobra.Command) {
 	prefixUsage := "add a prefix to the logger"
 	debugCmd.Flags().StringP(PREFIX, "p", "", prefixUsage)
+}
+
+func addOutputFlag(cmd *cobra.Command) {
+	outputUsage := "output file path (default: stdout)"
+	cmd.Flags().StringP(OUTPUT, "o", "", outputUsage)
 }
 
 // getDefaultConfig fetches the default config file akin to how starship looks for its config file.

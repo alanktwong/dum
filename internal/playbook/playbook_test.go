@@ -69,7 +69,7 @@ func TestPlayBook_GetPlays_Active(t *testing.T) {
 	assert.False(t, result.Has("play-2"))
 }
 
-func TestPlayBook_GetPlays_DisabledPlayBook(t *testing.T) {
+func TestPlayBook_GetPlays_PlayBookDisabled_PlayEnabled(t *testing.T) {
 	attr := &ty.Attributes{ID: "test-pb", Enabled: false}
 	plays := []*pl.Play{
 		{Attributes: ty.Attributes{ID: "play-1", Enabled: true}},
@@ -78,7 +78,8 @@ func TestPlayBook_GetPlays_DisabledPlayBook(t *testing.T) {
 	assert.NoError(t, err)
 
 	result := pb.GetPlays(true)
-	assert.Equal(t, 0, result.Len())
+	assert.Equal(t, 1, result.Len())
+	assert.True(t, result.Has("play-1"))
 }
 
 func TestPlayBook_GetAttributes(t *testing.T) {

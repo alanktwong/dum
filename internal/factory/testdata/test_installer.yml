@@ -1,6 +1,7 @@
 playbook:
   id: "my-test-playbook"
   description: "My test playbook"
+  enabled: true
   jetbrains:
     - datagrip: "DataGrip2025.1"
     - goland: "GoLand2025.1"
