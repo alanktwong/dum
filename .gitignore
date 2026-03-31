@@ -747,8 +747,7 @@ tags
 #####################################################################################
 # End of https://www.toptal.com/developers/gitignore/api/eclipse,intellij,pycharm,goland,vim,emacs,macos,python,windows,gradle,maven
 #####################################################################################
-
-zsh/config.zsh
+.envrc
 
 ######################
 # Others
@@ -759,10 +758,6 @@ zsh/config.zsh
 *~
 .merge_file*
 
-######################
-# neovim
-######################
-nvim/lazy-lock.json
 
 ######################
 # go
@@ -771,7 +766,6 @@ vendor
 *_mocks.go
 *_enum.go
 cfg/installer.schema.json
-
 ######################
 # development
 ######################
