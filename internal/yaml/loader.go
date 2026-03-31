@@ -1,3 +1,5 @@
+// Package yaml provides typed structs for parsing and validating
+// the installer.yml configuration file.
 package yaml
 
 import (
