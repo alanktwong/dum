@@ -22,42 +22,43 @@ func NewRenameCommand(rootUse string, dum *Dum) *cobra.Command {
 		Use:     use,
 		Aliases: []string{alias},
 		Short:   fmt.Sprintf("%v-%v (or %v) files based on input options", rootUse, use, alias),
-		Long: fmt.Sprintf(`%v-%v (or %v) is a command line tool that renames files based on input flags.
-
-Flags:
-  -s, --source      String to find in filename
-  -r, --replace     String to replace source with
-  -l, --lowercase   Convert filename to lowercase
-  -f, --trim-front   Trim N characters from front of filename
-  -b, --trim-back    Trim N characters from back of filename
-  -i, --iterate      Add sequential suffix starting from N
-  -d, --dryrun       Preview changes without renaming
-
-Logging:
-  Set ZSH_LOG_LEVEL env var to 'info' or 'debug', or use --verbose flag`,
-			rootUse, use, alias),
+		Long: strings.Join([]string{
+			fmt.Sprintf("%v-%v (or %v) is a command line tool that renames files based on input flags.", rootUse, use, alias),
+			"",
+			"Flags:",
+			"  -s, --source      String to find in filename",
+			"  -r, --replace     String to replace source with",
+			"  -l, --lowercase   Convert filename to lowercase",
+			"  -f, --trim-front   Trim N characters from front of filename",
+			"  -b, --trim-back    Trim N characters from back of filename",
+			"  -i, --iterate      Add sequential suffix starting from N",
+			"  -d, --dryrun       Preview changes without renaming",
+			"",
+			"Logging:",
+			"  Set ZSH_LOG_LEVEL env var to 'info' or 'debug', or use --verbose flag",
+		}, "\n"),
 		Example: strings.Join([]string{
 			"# Replace '_DSC' with 'photo' in all jpg files",
-			"dum r -s _DSC -r photo *.jpg",
+			fmt.Sprintf("%v %v -s _DSC -r photo *.jpg", rootUse, alias),
 			"",
 			"# Rename files to lowercase",
-			"dum rename --lowercase *.JPG",
+			fmt.Sprintf("%v %v --lowercase *.jpg", rootUse, use),
 			"",
 			"# Trim 4 characters from front of filename",
-			"dum rename --trim-front 4 IMG_1234.jpg",
+			fmt.Sprintf("%v %v --trim-front 4 IMG_1234.jpg", rootUse, use),
 			"",
 			"# Trim 3 characters from back of filename (before extension)",
-			"dum rename --trim-back 3 file.bak.txt",
+			fmt.Sprintf("%v %v --trim-back 4 file.bak.txt", rootUse, use),
 			"",
 			"# Add sequential numbers starting from 1",
-			"dum rename --iterate 1 photo.jpg vacation.png",
+			fmt.Sprintf("%v %v --iterate 1 photo.jpg vacation.png", rootUse, use),
 			"# Result: photo_1.jpg, vacation_2.png",
 			"",
 			"# Preview changes with verbose output",
-			"dum rename -v -s old -r new *.txt",
+			fmt.Sprintf("%v %v --v -s old -r new *.txt", rootUse, use),
 			"",
 			"# Preview changes without actually renaming",
-			"dum rename -s old -r new -d *.txt",
+			fmt.Sprintf("%v %v -s old -r new -d *.txt", rootUse, use),
 		}, "\n"),
 		Args: cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
