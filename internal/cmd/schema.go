@@ -31,7 +31,7 @@ VS Code and JetBrains IDEs.`,
 		},
 	}
 
-	cmd.Flags().StringP("output", "o", "", "Output file path (default: stdout)")
+	addOutputFlag(cmd)
 	return cmd
 }
 
