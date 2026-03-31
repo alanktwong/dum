@@ -21,6 +21,8 @@ func NewSchemaCommand(rootUse string, dum *Dum) *cobra.Command {
 			"",
 			"This can be used for IDE autocomplete and validation in editors like",
 			"VS Code and JetBrains IDEs.",
+			"",
+			"For more info about playbooks, plays and tasks, see the help the install or list command.",
 		}, "\n"),
 		Example: strings.Join([]string{
 			"# Print schema to stdout",
