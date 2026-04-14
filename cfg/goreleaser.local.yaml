@@ -13,11 +13,13 @@ builds:
       - CGO_ENABLED=0
     goos:
       - darwin
+      - linux
     goarch:
       - arm64
+      - amd64
     hooks:
       pre:
-        - cmd: "test \"{{.Os}}\" != \"windows\" && exit 0; echo \"ERROR: Windows builds are not supported\"; exit 1"
+        - cmd: 'test "{{.Os}}" != "windows" && exit 0; echo "ERROR: Windows builds are not supported"; exit 1'
     ldflags:
       - -X awong/dotfiles/internal/cmd.version={{.RawVersion}}-{{.ShortCommit}}{{if .IsGitDirty}}-dirty{{end}}
       - -X awong/dotfiles/internal/cmd.commit={{.ShortCommit}}
@@ -32,13 +34,3 @@ changelog:
     exclude:
       - "^docs:"
       - "^test:"
-
-snapshot:
-  version_template: "{{.RawVersion}}"
-
-release:
-  footer: >-
-
-    ---
-
-    Released by [GoReleaser](https://github.com/goreleaser/goreleaser).

@@ -102,9 +102,9 @@ linters-build: ## build custom linters
 	@cd cmd/linters && go build -o ../dist/linters .
 
 .PHONY: release
-release: build  ## compile release binaries with tarballs (requires git tag)
+release: ## compile release binaries for all platforms (darwin/linux, arm64/amd64/386)
 	@printf ${COLOR} "Compiling releases for every OS and Platform ..."
-	@goreleaser release --clean --config cfg/goreleaser.yaml
+	@goreleaser build --clean --snapshot --config cfg/goreleaser.local.yaml
 
 release-build: build  ## compile snapshot binaries without archives
 	@printf ${COLOR} "Compiling builds for every OS and Platform ..."
