@@ -22,11 +22,11 @@ func newDebugCommand(rootUse, logUse string, dum *Dum) *cobra.Command {
 			"Messages are only printed if ZSH_LOG_LEVEL is set to 'debug'.",
 		}, "\n"),
 		Example: strings.Join([]string{
-			"# Print debug message",
-			fmt.Sprintf("%v %v %v \"Starting process\"", rootUse, logUse, use),
+			"  # Print debug message",
+			fmt.Sprintf("  %v %v %v \"Starting process\"", rootUse, logUse, use),
 			"",
-			"# With prefix",
-			fmt.Sprintf("%v %v %v -p myapp \"Loading config\"", rootUse, logUse, use),
+			"  # With prefix",
+			fmt.Sprintf("  %v %v %v -p myapp \"Loading config\"", rootUse, logUse, use),
 		}, "\n"),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return dum.executeLogging(cmd, args, log.DebugLevel)
