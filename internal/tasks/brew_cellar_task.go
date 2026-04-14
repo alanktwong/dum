@@ -92,14 +92,14 @@ func (t *BrewCellarTask) Install(ctx context.Context, input *ty.TaskInput) (*ty.
 		}
 	}
 	if t.Brew.InPath(ctx, "Cellar", t.ID) {
-		t.Log.Debugf("%s %s: %s is already installed", TaskEllipsis, input.Play, t.ID)
+		t.Log.Debugf("%s %s: %s is already installed", TaskEllipsis, TaskTypeName(t), t.ID)
 		result, err := t.CreateTaskResult(input, false)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create task result: %w", err)
 		}
 		return result, nil
 	}
-	t.Log.Infof("%s %s: brew install (cellar) %s", TaskEllipsis, input.Play, t.ID)
+	t.Log.Infof("%s %s: brew install (cellar) %s", TaskEllipsis, TaskTypeName(t), t.ID)
 	if !input.DryRun {
 		if err := t.Brew.Install(ctx, t.ID); err != nil {
 			return nil, fmt.Errorf("failed to brew install (cellar) %v: %w", t.ID, err)
