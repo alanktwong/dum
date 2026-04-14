@@ -53,7 +53,7 @@ func (t *LinkTask) IsEnabled() bool {
 
 // Install installs the task.
 func (t *LinkTask) Install(ctx context.Context, input *ty.TaskInput) (*ty.TaskResult, error) {
-	t.Log.Debugf("%s START ... play: %s taskID: %s", TaskEllipsis, input.Play, t.ID)
+	t.Log.Debugf("%s %s START ... play: %s taskID: %s", TaskEllipsis, TaskTypeName(t), input.Play, t.ID)
 	if t.Root == "" {
 		result, err := t.CreateTaskResult(input, false)
 		if err != nil {
@@ -100,7 +100,7 @@ func (t *LinkTask) Install(ctx context.Context, input *ty.TaskInput) (*ty.TaskRe
 // List lists the task.
 func (t *LinkTask) List(_ context.Context, input *ty.TaskInput) (*ty.TaskResult, error) {
 	target := t.ProvideTarget()
-	err := t.Log.Printlnf("%v linking %v -> %s/%s", TaskEllipsis, t.ID, t.Root, target)
+	err := t.Log.Printlnf("%v %s: linking %v -> %s/%s", TaskEllipsis, TaskTypeName(t), t.ID, t.Root, target)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list link: %w", err)
 	}

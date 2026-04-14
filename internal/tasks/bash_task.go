@@ -55,7 +55,7 @@ func (t *BashTask) IsEnabled() bool {
 
 // Install installs the task.
 func (t *BashTask) Install(ctx context.Context, input *ty.TaskInput) (*ty.TaskResult, error) {
-	t.Log.Debugf("%s START ... play: %s taskID: %s", TaskEllipsis, input.Play, t.ID)
+	t.Log.Debugf("%s %s START ... play: %s taskID: %s", TaskEllipsis, TaskTypeName(t), input.Play, t.ID)
 	if !t.Enabled {
 		result, err := t.CreateTaskResult(input, false)
 		if err != nil {
@@ -89,7 +89,7 @@ func (t *BashTask) List(_ context.Context, input *ty.TaskInput) (*ty.TaskResult,
 	if cmd == "" {
 		cmd = t.Script
 	}
-	err := t.Log.Printlnf("%s %s", TaskEllipsis, cmd)
+	err := t.Log.Printlnf("%s %s: %s", TaskEllipsis, TaskTypeName(t), cmd)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list command: %w", err)
 	}

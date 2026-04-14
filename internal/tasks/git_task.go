@@ -59,7 +59,7 @@ func (t *GitTask) IsEnabled() bool {
 
 // Install installs the task.
 func (t *GitTask) Install(ctx context.Context, input *ty.TaskInput) (*ty.TaskResult, error) {
-	t.Log.Debugf("%s START ... play: %s taskID: %s", TaskEllipsis, input.Play, t.ID)
+	t.Log.Debugf("%s %s START ... play: %s taskID: %s", TaskEllipsis, TaskTypeName(t), input.Play, t.ID)
 	if t.Root == "" {
 		return nil, fmt.Errorf("task root cannot be empty")
 	}
@@ -98,7 +98,7 @@ func (t *GitTask) Install(ctx context.Context, input *ty.TaskInput) (*ty.TaskRes
 // List lists the task.
 func (t *GitTask) List(_ context.Context, input *ty.TaskInput) (*ty.TaskResult, error) {
 	name := provideName(t.ID, t.Name)
-	err := t.Log.Printlnf("%v at %v, git clone %v %v", TaskEllipsis, t.Root, t.ID, name)
+	err := t.Log.Printlnf("%v %s: at %v, git clone %v %v", TaskEllipsis, TaskTypeName(t), t.Root, t.ID, name)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list git: %w", err)
 	}

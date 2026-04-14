@@ -5,6 +5,7 @@ import (
 	i "awong/dotfiles/internal/tasks/installer"
 	ty "awong/dotfiles/internal/types"
 	"context"
+	"reflect"
 )
 
 const (
@@ -16,4 +17,9 @@ const (
 type Task interface {
 	i.Installer
 	List(ctx context.Context, input *ty.TaskInput) (*ty.TaskResult, error)
+}
+
+// TaskTypeName returns the struct name of a task.
+func TaskTypeName(t any) string {
+	return reflect.TypeOf(t).Elem().Name()
 }

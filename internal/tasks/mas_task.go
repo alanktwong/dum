@@ -49,7 +49,7 @@ func (t *MasTask) IsEnabled() bool {
 
 // Install installs the task.
 func (t *MasTask) Install(ctx context.Context, input *ty.TaskInput) (*ty.TaskResult, error) {
-	t.Log.Debugf("%s START ... play: %s taskID: %s", TaskEllipsis, input.Play, t.ID)
+	t.Log.Debugf("%s %s START ... play: %s taskID: %s", TaskEllipsis, TaskTypeName(t), input.Play, t.ID)
 	if t.Description == "" {
 		result, err := t.CreateTaskResult(input, false)
 		if err != nil {
@@ -92,7 +92,7 @@ func (t *MasTask) Install(ctx context.Context, input *ty.TaskInput) (*ty.TaskRes
 
 // List lists the task.
 func (t *MasTask) List(_ context.Context, input *ty.TaskInput) (*ty.TaskResult, error) {
-	err := t.Log.Printlnf("%v mas install %s ... desc: %s", TaskEllipsis, t.ID, t.Description)
+	err := t.Log.Printlnf("%v %s: mas install %s ... desc: %s", TaskEllipsis, TaskTypeName(t), t.ID, t.Description)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list mas: %w", err)
 	}
