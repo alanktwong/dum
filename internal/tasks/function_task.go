@@ -60,7 +60,7 @@ func (t *FunctionTask) IsEnabled() bool {
 
 // Install installs the task.
 func (t *FunctionTask) Install(ctx context.Context, input *ty.TaskInput) (*ty.TaskResult, error) {
-	t.Log.Debugf("%s START ... play: %s taskID: %s", TaskEllipsis, input.Play, t.ID)
+	t.Log.Debugf("%s %s START ... play: %s taskID: %s", TaskEllipsis, TaskTypeName(t), input.Play, t.ID)
 	if !t.Enabled {
 		result, err := t.CreateTaskResult(input, false)
 		if err != nil {
@@ -89,7 +89,7 @@ func (t *FunctionTask) Install(ctx context.Context, input *ty.TaskInput) (*ty.Ta
 
 // List lists the task.
 func (t *FunctionTask) List(_ context.Context, input *ty.TaskInput) (*ty.TaskResult, error) {
-	err := t.Log.Printlnf("%v function -> %s", TaskEllipsis, t.ID)
+	err := t.Log.Printlnf("%v %s: function -> %s", TaskEllipsis, TaskTypeName(t), t.ID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list function: %w", err)
 	}

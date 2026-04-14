@@ -25,11 +25,11 @@ func NewSchemaCommand(rootUse string, dum *Dum) *cobra.Command {
 			"For more info about playbooks, plays and tasks, see the help the install or list command.",
 		}, "\n"),
 		Example: strings.Join([]string{
-			"# Print schema to stdout",
-			fmt.Sprintf("%v %v", rootUse, use),
+			"  # Print schema to stdout",
+			fmt.Sprintf("  %v %v", rootUse, use),
 			"",
-			"# Save schema to a file",
-			fmt.Sprintf("%v %v --output installer.schema.json", rootUse, use),
+			"  # Save schema to a file",
+			fmt.Sprintf("  %v %v --output installer.schema.json", rootUse, use),
 		}, "\n"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			return dum.runSchema(cmd)

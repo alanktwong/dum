@@ -55,7 +55,7 @@ func (t *JetBrainsPluginTask) IsEnabled() bool {
 
 // Install installs the task.
 func (t *JetBrainsPluginTask) Install(ctx context.Context, input *ty.TaskInput) (*ty.TaskResult, error) {
-	t.Log.Debugf("%s START ... play: %s taskID: %s", TaskEllipsis, input.Play, t.ID)
+	t.Log.Debugf("%s %s START ... play: %s taskID: %s", TaskEllipsis, TaskTypeName(t), input.Play, t.ID)
 	if !t.Enabled {
 		result, err := t.CreateTaskResult(input, false)
 		if err != nil {
@@ -96,7 +96,7 @@ func (t *JetBrainsPluginTask) Install(ctx context.Context, input *ty.TaskInput) 
 // List lists the task.
 func (t *JetBrainsPluginTask) List(_ context.Context, input *ty.TaskInput) (*ty.TaskResult, error) {
 	for _, app := range t.activeApps() {
-		err := t.Log.Printlnf("%v %s installPlugins  %s", TaskEllipsis, app, t.ID)
+		err := t.Log.Printlnf("%v %s: %s installPlugins %s", TaskEllipsis, TaskTypeName(t), app, t.ID)
 		if err != nil {
 			return nil, fmt.Errorf("failed to list jetbrains: %w", err)
 		}

@@ -21,11 +21,11 @@ func newSuccessCommand(rootUse, logUse string, dum *Dum) *cobra.Command {
 			"Success messages are printed without the standard log prefix.",
 		}, "\n"),
 		Example: strings.Join([]string{
-			"# Print success message",
-			fmt.Sprintf("%v %v %v \"All tasks complete\"", rootUse, logUse, use),
+			"  # Print success message",
+			fmt.Sprintf("  %v %v %v \"All tasks complete\"", rootUse, logUse, use),
 			"",
-			"# With prefix",
-			fmt.Sprintf("%v %v %v -p myapp \"Build finished\"", rootUse, logUse, use),
+			"  # With prefix",
+			fmt.Sprintf("  %v %v %v -p myapp \"Build finished\"", rootUse, logUse, use),
 		}, "\n"),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return dum.executeLogging(cmd, args, SuccessLevel)

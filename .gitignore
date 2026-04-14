@@ -769,3 +769,4 @@ cfg/installer.schema.json
 # development
 ######################
 bin
+.opencode/package-lock.json

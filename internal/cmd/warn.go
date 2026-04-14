@@ -22,11 +22,11 @@ func newWarnCommand(rootUse, logUse string, dum *Dum) *cobra.Command {
 			"Messages are only printed if ZSH_LOG_LEVEL is set to 'info' or 'debug'.",
 		}, "\n"),
 		Example: strings.Join([]string{
-			"# Print warning message",
-			"dum log warn \"Disk space running low\"",
+			"  # Print warning message",
+			fmt.Sprintf("  %v %v %v \"Disk space running low\"", rootUse, logUse, use),
 			"",
-			"# With prefix",
-			"dum log warn -p myapp \"Deprecated feature used\"",
+			"  # With prefix",
+			fmt.Sprintf("  %v %v %v -p myapp \"Deprecated featured used\"", rootUse, logUse, use),
 		}, "\n"),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return dum.executeLogging(cmd, args, log.WarnLevel)
