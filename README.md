@@ -123,6 +123,21 @@ dum schema --output installer.schema.json
 
 Most YAML-aware editors support JSON Schema validation.
 
+## Similar Tools
+
+Dum sits in the space between Ansible (full configuration management) and shell-based bootstrap scripts (one-shot setup). Here are related projects:
+
+| Tool | Language | Approach | Platform |
+|------|----------|----------|----------|
+| [Preflight](https://github.com/felixgeelhaar/preflight) | Go | Declarative YAML, compiler model (`plan → apply`), multi-platform package management | macOS, Linux |
+| [Omakub](https://github.com/basecamp/omakub) | Shell | Opinionated Ubuntu setup via `wget \| bash`, curated tool selections | Ubuntu |
+| [Omarchy](https://omarchy.org) | Shell | Ambitious take on Linux setup (companion to Omakub) | Linux |
+| [dotfiles-cli](https://github.com/wsoule/dotfiles-cli) | Go | Cross-platform package management (Homebrew/apt/pacman/yum), GNU Stow integration, JSON config | macOS, Linux |
+| [Chezmoi](https://www.chezmoi.io/) | Go | Declarative dotfile manager with templating, encryption, and host-specific configs | macOS, Linux, Windows |
+| [Ansible](https://github.com/ansible/ansible) | Python | Full configuration management with YAML playbooks, idempotent tasks, and a large module ecosystem | macOS, Linux |
+
+**What makes Dum different:** Dum combines Go performance with an Ansible-like playbook/task model specifically tailored for personal workstation setup. It offers JSON schema validation for config files, a `--dry-run` preview mode, and a growing set of opinionated task types (brew, git, vscode, jetbrains, mas) without the overhead of a full configuration management tool.
+
 ## Development
 
 ### Build Commands
