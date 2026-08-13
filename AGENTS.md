@@ -79,9 +79,9 @@ make coverage-check  # Enforce coverage threshold
 
 ### Formatting
 
-- **Indentation**: Use tabs for Go files (per `.editorconfig`)
+- **Indentation**: Use tabs for Go files and Makefile recipes; respect `.editorconfig`
 - **Line endings**: LF (Unix-style)
-- **Formatter**: Uses `gofumpt` and `goimports` (configured in `.golangci.yml`)
+- **Formatter**: Uses `gofumpt`, `goimports`, and `golines` through `.golangci.yml`
 
 ### Import Order
 

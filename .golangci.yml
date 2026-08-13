@@ -121,5 +121,13 @@ formatters:
   enable:
     - gofumpt
     - goimports
+    - golines
+  settings:
+    golines:
+      max-len: 120
+      tab-len: 4
+      shorten-comments: false
+      reformat-tags: false
+      chain-split-dots: false
   exclusions:
     generated: lax

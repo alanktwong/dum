@@ -30,7 +30,6 @@ brew install \
 go_install_tools=(
   "github.com/abice/go-enum@latest"
   "golang.org/x/tools/cmd/goimports@latest"
-  "mvdan.cc/gofumpt@latest"
   "github.com/vladopajic/go-test-coverage/v2@latest"
 )
 
