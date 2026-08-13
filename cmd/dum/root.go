@@ -1,6 +1,7 @@
 package main
 
 import (
+	"awong/dotfiles/cmd/dum/cli"
 	"awong/dotfiles/cmd/dum/install"
 	"awong/dotfiles/cmd/dum/list"
 	"awong/dotfiles/cmd/dum/rename"
@@ -11,7 +12,6 @@ import (
 
 	lg "awong/dotfiles/internal/logging"
 
-	clog "github.com/charmbracelet/log"
 	"github.com/spf13/cobra"
 )
 
@@ -39,7 +39,7 @@ func NewDum() *Dum {
 		Long:    fmt.Sprintf("%v is a command line tool for your utilites such as managing software installations and configurations.", rootUse),
 		Version: version,
 	}
-	logger := lg.NewLogger(lg.Options{Prefix: "", Level: clog.InfoLevel})
+	logger := lg.NewLogger(lg.Options{Prefix: "", Level: cli.GetLogLevel()})
 	installDum := install.NewCommand(logger)
 	listDum := list.NewCommand(logger)
 	logDum := logcmd.NewCommand(logger)

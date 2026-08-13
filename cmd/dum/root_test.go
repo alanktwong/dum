@@ -1,6 +1,10 @@
 package main
 
 import (
+	"bytes"
+	"os"
+	"os/exec"
+	"strings"
 	"testing"
 
 	"github.com/spf13/cobra"
@@ -116,6 +120,58 @@ func TestExec_Success(t *testing.T) {
 
 	// Should not panic; Exec() calls Cmd.Execute() which succeeds with no RunE.
 	dum.Exec()
+}
+
+func TestNewDum_LogLevelSubprocess(t *testing.T) {
+	const helperEnv = "DUM_ROOT_LOG_LEVEL_HELPER"
+
+	for _, tc := range []struct {
+		name      string
+		level     string
+		wantDebug bool
+	}{
+		{name: "debug threshold", level: "debug", wantDebug: true},
+		{name: "warn threshold", level: "warn", wantDebug: false},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			command := exec.Command(os.Args[0], "-test.run=^TestNewDum_LogLevelHelper$")
+			env := make([]string, 0, len(os.Environ())+2)
+			for _, value := range os.Environ() {
+				if strings.HasPrefix(value, "ZSH_LOG_LEVEL=") || strings.HasPrefix(value, helperEnv+"=") {
+					continue
+				}
+				env = append(env, value)
+			}
+			command.Env = append(env, helperEnv+"=1", "ZSH_LOG_LEVEL="+tc.level)
+
+			var stderr bytes.Buffer
+			command.Stderr = &stderr
+			assert.NoError(t, command.Run())
+
+			if tc.wantDebug {
+				assert.Contains(t, stderr.String(), "debug-message")
+			} else {
+				assert.NotContains(t, stderr.String(), "debug-message")
+			}
+			assert.Contains(t, stderr.String(), "warn-message")
+		})
+	}
+}
+
+func TestNewDum_LogLevelHelper(t *testing.T) {
+	if os.Getenv("DUM_ROOT_LOG_LEVEL_HELPER") != "1" {
+		return
+	}
+
+	dum := NewDum()
+	dum.Cmd.SetArgs([]string{"log", "debug", "debug-message"})
+	if err := dum.Cmd.Execute(); err != nil {
+		t.Fatal(err)
+	}
+	dum.Cmd.SetArgs([]string{"log", "warn", "warn-message"})
+	if err := dum.Cmd.Execute(); err != nil {
+		t.Fatal(err)
+	}
 }
 
 func findCommand(cmds []*cobra.Command, name string) *cobra.Command {
