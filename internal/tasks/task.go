@@ -20,6 +20,6 @@ type Task interface {
 }
 
 // TaskTypeName returns the struct name of a task.
-func TaskTypeName(t any) string {
+func TaskTypeName(t Task) string {
 	return reflect.TypeOf(t).Elem().Name()
 }

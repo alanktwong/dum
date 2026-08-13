@@ -4,14 +4,17 @@ import (
 	"fmt"
 )
 
+// JetBrainsYAML represents one IDE-to-version mapping in the playbook.
+type JetBrainsYAML map[string]string
+
 // PlayBookYAML represents the top-level playbook configuration.
 type PlayBookYAML struct {
-	ID          string              `yaml:"book"`
-	Description string              `yaml:"description"`
-	Enabled     bool                `yaml:"enabled"`
-	Sudo        bool                `yaml:"sudo"`
-	JetBrains   []map[string]string `yaml:"jetbrains"`
-	Plays       []PlayYAML          `yaml:"plays"`
+	ID          string          `yaml:"book"`
+	Description string          `yaml:"description"`
+	Enabled     bool            `yaml:"enabled"`
+	Sudo        bool            `yaml:"sudo"`
+	JetBrains   []JetBrainsYAML `yaml:"jetbrains"`
+	Plays       []PlayYAML      `yaml:"plays"`
 }
 
 // Validate checks that the PlayBookYAML is valid.

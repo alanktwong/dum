@@ -36,6 +36,7 @@ linters:
     - importas
     - staticcheck
     - unused
+    - forbidigo
   exclusions:
     generated: lax
     presets:
@@ -47,6 +48,18 @@ linters:
       - path: internal/cmd/.*\.go
         linters:
           - goconst
+      - path: internal/logging/.*\.go
+        linters:
+          - forbidigo
+      - path: internal/.*/mocks\.go
+        linters:
+          - forbidigo
+      - path: .*_test\.go
+        linters:
+          - forbidigo
+      - path: cmd/linters/main\.go
+        linters:
+          - forbidigo
 
 linters-settings:
   importas:
@@ -89,6 +102,12 @@ linters-settings:
         alias: mck
       - prefix: gopkg.in/yaml.v3
         alias: yamlv3
+  forbidigo:
+    forbid:
+      - pattern: '^any$'
+        msg: use a concrete type instead of any
+      - pattern: '^interface\{\}$'
+        msg: use a concrete type instead of interface{}
 issues:
   max-issues-per-linter: 0
   max-same-issues: 0

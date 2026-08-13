@@ -191,7 +191,7 @@ func TestFactory_ProvidePlayBook_JetBrainsApps(t *testing.T) {
 	f := NewFactory()
 	pbYAML := &yml.PlayBookYAML{
 		ID: "jetbrains-pb",
-		JetBrains: []map[string]string{
+		JetBrains: []yml.JetBrainsYAML{
 			{"goland": "GoLand2025.1"},
 			{"idea": "IntelliJIdea2025.1"},
 		},

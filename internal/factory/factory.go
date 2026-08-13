@@ -76,7 +76,7 @@ func (f *Factory) ProvidePlayBook(pbYAML *yml.PlayBookYAML) (*pb.PlayBook, error
 	return playBook, nil
 }
 
-func (f *Factory) provideJetBrainsAppsFromYAML(jetbrains []map[string]string) map[string]string {
+func (f *Factory) provideJetBrainsAppsFromYAML(jetbrains []yml.JetBrainsYAML) map[string]string {
 	apps := make(map[string]string)
 	appkeys := tyg.JetBrainsTypeNames()
 
