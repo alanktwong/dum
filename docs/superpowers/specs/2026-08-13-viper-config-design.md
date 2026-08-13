@@ -69,9 +69,10 @@ Update or add `cmd/dum` tests for:
 - empty environment values
 - explicit `--file` override
 - isolated resolver calls
-- named and numeric log-level parsing
-- invalid and over-50 log-level fallback
-- logger initialization with resolved level
+- named log-level parsing
+- numeric boundary matrix at `10`, `20`, `30`, `40`, `50`, negative values, and over-50 values
+- invalid and empty log-level fallback to warn
+- subprocess/integration coverage proving root-time logger wiring by asserting log-command output under relevant `ZSH_LOG_LEVEL` values; avoid same-process singleton contamination
 
 Remove obsolete `internal/logging.EnvLevel` tests. Verify with:
 
