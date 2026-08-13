@@ -60,6 +60,7 @@ ci-setup: ## install tools needed for CI (Go tools only)
 	@go install github.com/abice/go-enum@latest
 	@go install github.com/vektra/mockery/v3@latest
 	@go install golang.org/x/tools/cmd/goimports@latest
+	@go install mvdan.cc/gofumpt@latest
 
 ## Compile
 make_out:
@@ -131,6 +132,7 @@ vet: ## go vet
 fmt: ## runs go formatter
 	@printf ${COLOR} "Formatting ..."
 	@go fmt ./...
+	@gofumpt -w $$(go list -f '{{.Dir}}' ./...)
 
 .PHONY: fix
 fix: ## runs go fix to update code to use new language features
