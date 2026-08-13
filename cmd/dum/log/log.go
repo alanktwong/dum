@@ -28,7 +28,52 @@ func addPrefixFlag(cmd *cobra.Command)     { cli.AddPrefixFlag(cmd) }
 // NewLogCommand constructs the log Cobra command.
 func NewLogCommand(rootUse string, dum *Command) *cobra.Command {
 	use, alias := "log", "lg"
-	cmd := &cobra.Command{Use: use, Aliases: []string{alias}, Short: fmt.Sprintf("%v-%v (or %v) logs for the shell", rootUse, use, alias), Long: strings.Join([]string{fmt.Sprintf("%v-%v (or %v) is a command line interface (cli) that helps your shell log.", rootUse, use, alias), "", "Log levels:", "  debug (or d)   - debug messages (lowest)", "  info (or i)    - informational messages", "  warn (or w)    - warning messages", "  error (or e)   - error messages", "  success (or s) - success messages (printed without log prefix)", "", "Logging:", "  Set ZSH_LOG_LEVEL env var to 'info' or 'debug' to filter output", "  Messages below the threshold are suppressed"}, "\n"), Example: strings.Join([]string{"  # Print a debug message", fmt.Sprintf("  %v %v debug \"Starting process\"", rootUse, use), "", "  # Print an info message", fmt.Sprintf("  %v %v i \"Installation complete\"", rootUse, use), "", "  # Print a success message (no log prefix)", fmt.Sprintf("  %v %v success \"All done!\"", rootUse, use), "", "  # Print with a prefix", fmt.Sprintf("  %v %v warn -p myapp \"Disk space low\"", rootUse, use), "", "  # Print an error message", fmt.Sprintf("  %v %v e \"Connection failed\"", rootUse, use)}, "\n")}
+	cmd := &cobra.Command{
+		Use:     use,
+		Aliases: []string{alias},
+		Short:   fmt.Sprintf("%v-%v (or %v) logs for the shell", rootUse, use, alias),
+		Long: strings.Join(
+			[]string{
+				fmt.Sprintf(
+					"%v-%v (or %v) is a command line interface (cli) that helps your shell log.",
+					rootUse,
+					use,
+					alias,
+				),
+				"",
+				"Log levels:",
+				"  debug (or d)   - debug messages (lowest)",
+				"  info (or i)    - informational messages",
+				"  warn (or w)    - warning messages",
+				"  error (or e)   - error messages",
+				"  success (or s) - success messages (printed without log prefix)",
+				"",
+				"Logging:",
+				"  Set ZSH_LOG_LEVEL env var to 'info' or 'debug' to filter output",
+				"  Messages below the threshold are suppressed",
+			},
+			"\n",
+		),
+		Example: strings.Join(
+			[]string{
+				"  # Print a debug message",
+				fmt.Sprintf("  %v %v debug \"Starting process\"", rootUse, use),
+				"",
+				"  # Print an info message",
+				fmt.Sprintf("  %v %v i \"Installation complete\"", rootUse, use),
+				"",
+				"  # Print a success message (no log prefix)",
+				fmt.Sprintf("  %v %v success \"All done!\"", rootUse, use),
+				"",
+				"  # Print with a prefix",
+				fmt.Sprintf("  %v %v warn -p myapp \"Disk space low\"", rootUse, use),
+				"",
+				"  # Print an error message",
+				fmt.Sprintf("  %v %v e \"Connection failed\"", rootUse, use),
+			},
+			"\n",
+		),
+	}
 	debugCmd := newDebugCommand(rootUse, use, dum)
 	addPrefixFlag(debugCmd)
 	cmd.AddCommand(debugCmd)

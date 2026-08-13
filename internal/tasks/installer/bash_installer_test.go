@@ -21,7 +21,11 @@ func TestBashInstaller_Install_NonOSX(t *testing.T) {
 	}
 
 	mockExt.On("IsOSX").Return(false).Maybe()
-	mockLog.On("Infof", "%v %v: there is no need to reinstall bash outside of Mac OSX", []any{"...........", "test-play"}).Return().Maybe()
+	mockLog.On(
+		"Infof",
+		"%v %v: there is no need to reinstall bash outside of Mac OSX",
+		[]any{"...........", "test-play"},
+	).Return().Maybe()
 
 	input := &ty.TaskInput{
 		Play:   "test-play",

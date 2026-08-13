@@ -34,9 +34,12 @@ func NewDum() *Dum {
 	_ = commit
 	rootUse := "dum"
 	rootCmd := &cobra.Command{
-		Use:     rootUse,
-		Short:   fmt.Sprintf("%v is a command line tool for your utilities", rootUse),
-		Long:    fmt.Sprintf("%v is a command line tool for your utilites such as managing software installations and configurations.", rootUse),
+		Use:   rootUse,
+		Short: fmt.Sprintf("%v is a command line tool for your utilities", rootUse),
+		Long: fmt.Sprintf(
+			"%v is a command line tool for your utilites such as managing software installations and configurations.",
+			rootUse,
+		),
 		Version: version,
 	}
 	logger := lg.NewLogger(lg.Options{Prefix: "", Level: cli.GetLogLevel()})

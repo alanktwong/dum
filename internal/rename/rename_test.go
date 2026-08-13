@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	lg "awong/dotfiles/internal/logging"
+
 	clog "github.com/charmbracelet/log"
 	"github.com/stretchr/testify/assert"
 )
@@ -22,12 +23,22 @@ func TestRenamer_RenameTransformsFilename(t *testing.T) {
 		output  string
 		options Options
 	}{
-		{name: "basic", input: "source.txt", output: "renamed.txt", options: Options{Source: "source", Replace: "renamed"}},
+		{
+			name:    "basic",
+			input:   "source.txt",
+			output:  "renamed.txt",
+			options: Options{Source: "source", Replace: "renamed"},
+		},
 		{name: "trim front", input: "abcdef.txt", output: "cdef.txt", options: Options{TrimFront: 2}},
 		{name: "trim back", input: "abcdef.txt", output: "abcd.txt", options: Options{TrimBack: 2}},
 		{name: "lowercase", input: "FILE.JPG", output: "file.jpg", options: Options{Lowercase: true}},
 		{name: "iterate", input: "photo.jpg", output: "photo_3.jpg", options: Options{Index: 2, Iterate: 1}},
-		{name: "combined", input: "_DSC1234.NEF", output: "bar1234.nef", options: Options{Source: "_DSC", Replace: "bar", Lowercase: true}},
+		{
+			name:    "combined",
+			input:   "_DSC1234.NEF",
+			output:  "bar1234.nef",
+			options: Options{Source: "_DSC", Replace: "bar", Lowercase: true},
+		},
 	}
 
 	for _, tt := range tests {

@@ -25,7 +25,7 @@ func TestLoad_FileNotFound(t *testing.T) {
 func TestLoad_InvalidYaml(t *testing.T) {
 	tmpDir := t.TempDir()
 	badFile := filepath.Join(tmpDir, "bad.yml")
-	err := os.WriteFile(badFile, []byte("{{invalid yaml: [}"), 0644)
+	err := os.WriteFile(badFile, []byte("{{invalid yaml: [}"), 0o644)
 	assert.NoError(t, err)
 
 	_, err = Load(badFile)
@@ -36,7 +36,7 @@ func TestLoad_InvalidYaml(t *testing.T) {
 func TestLoad_ValidationError(t *testing.T) {
 	tmpDir := t.TempDir()
 	badFile := filepath.Join(tmpDir, "invalid.yml")
-	err := os.WriteFile(badFile, []byte("playbook:\n  plays:\n    - id: \"\"\n"), 0644)
+	err := os.WriteFile(badFile, []byte("playbook:\n  plays:\n    - id: \"\"\n"), 0o644)
 	assert.NoError(t, err)
 
 	_, err = Load(badFile)

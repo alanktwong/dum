@@ -236,7 +236,16 @@ func TestLinkTask_Install_Error(t *testing.T) {
 	mockExt := new(MockExt)
 	mockExt.On("ExpandUser", "~/dotfiles").Return("/Users/testuser/dotfiles", nil)
 	mockExt.On("IsSymlink", mock.Anything).Return(false)
-	mockExt.On("SoftLink", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(assert.AnError)
+	mockExt.On(
+		"SoftLink",
+		mock.Anything,
+		mock.Anything,
+		mock.Anything,
+		mock.Anything,
+		mock.Anything,
+	).Return(
+		assert.AnError,
+	)
 
 	task := &LinkTask{
 		Attributes: *attrs,

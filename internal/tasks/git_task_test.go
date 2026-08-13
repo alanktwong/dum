@@ -223,7 +223,16 @@ func TestGitTask_Install_CloneError(t *testing.T) {
 	}
 	mockGit := new(MockGit)
 	mockGit.On("AlreadyExists", mock.Anything).Return(false)
-	mockGit.On("Clone", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(assert.AnError)
+	mockGit.On(
+		"Clone",
+		mock.Anything,
+		mock.Anything,
+		mock.Anything,
+		mock.Anything,
+		mock.Anything,
+	).Return(
+		assert.AnError,
+	)
 
 	task := &GitTask{
 		Attributes: *attrs,

@@ -115,7 +115,11 @@ func TestBashTask_Install_Success(t *testing.T) {
 	mockExt.On("RunCommand", context.Background(), "echo hello", false).Return(nil)
 
 	mockLog := i.NewMockLogger(t)
-	mockLog.On("Debugf", "%s %s START ... play: %s taskID: %s", []any{"...........", "BashTask", "test-play", "test-bash"}).Return()
+	mockLog.On(
+		"Debugf",
+		"%s %s START ... play: %s taskID: %s",
+		[]any{"...........", "BashTask", "test-play", "test-bash"},
+	).Return()
 	mockLog.On("Infof", "%s %s: %s", []any{"...........", "test-play", "echo hello"}).Return()
 
 	task := &BashTask{
@@ -148,7 +152,11 @@ func TestBashTask_Install_Failure(t *testing.T) {
 	mockExt.On("RunCommand", context.Background(), "echo hello", false).Return(assert.AnError)
 
 	mockLog := i.NewMockLogger(t)
-	mockLog.On("Debugf", "%s %s START ... play: %s taskID: %s", []any{"...........", "BashTask", "test-play", "test-bash"}).Return()
+	mockLog.On(
+		"Debugf",
+		"%s %s START ... play: %s taskID: %s",
+		[]any{"...........", "BashTask", "test-play", "test-bash"},
+	).Return()
 	mockLog.On("Infof", "%s %s: %s", []any{"...........", "test-play", "echo hello"}).Return()
 
 	task := &BashTask{

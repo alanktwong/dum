@@ -140,7 +140,15 @@ func TestExecutor_Install_GroupPlay_Success(t *testing.T) {
 	playExec.On("Initialize", mock.AnythingOfType("*plays.PlayInput")).Return(initResult, nil)
 
 	playResult := &pl.PlayResult{PlayBook: "test-book", Play: "play-1", Success: true}
-	playExec.On("InstallPlay", ctx, mock.AnythingOfType("*plays.Play"), mock.AnythingOfType("*plays.PlayInput")).Return(playResult, nil)
+	playExec.On(
+		"InstallPlay",
+		ctx,
+		mock.AnythingOfType("*plays.Play"),
+		mock.AnythingOfType("*plays.PlayInput"),
+	).Return(
+		playResult,
+		nil,
+	)
 
 	result, err := e.Install(ctx, input)
 	assert.NoError(t, err)
@@ -164,7 +172,15 @@ func TestExecutor_Install_AllPlays_Success(t *testing.T) {
 	playExec.On("Initialize", mock.AnythingOfType("*plays.PlayInput")).Return(initResult, nil)
 
 	playResult := &pl.PlayResult{PlayBook: "test-book", Play: "play-1", Success: true}
-	playExec.On("InstallPlay", ctx, mock.AnythingOfType("*plays.Play"), mock.AnythingOfType("*plays.PlayInput")).Return(playResult, nil)
+	playExec.On(
+		"InstallPlay",
+		ctx,
+		mock.AnythingOfType("*plays.Play"),
+		mock.AnythingOfType("*plays.PlayInput"),
+	).Return(
+		playResult,
+		nil,
+	)
 
 	result, err := e.Install(ctx, input)
 	assert.NoError(t, err)
@@ -214,7 +230,15 @@ func TestExecutor_Install_InstallPlayError(t *testing.T) {
 
 	initResult := &pl.PlayResult{PlayBook: "test-book", Play: "initialize", Success: true}
 	playExec.On("Initialize", mock.AnythingOfType("*plays.PlayInput")).Return(initResult, nil)
-	playExec.On("InstallPlay", ctx, mock.AnythingOfType("*plays.Play"), mock.AnythingOfType("*plays.PlayInput")).Return(nil, fmt.Errorf("install failed"))
+	playExec.On(
+		"InstallPlay",
+		ctx,
+		mock.AnythingOfType("*plays.Play"),
+		mock.AnythingOfType("*plays.PlayInput"),
+	).Return(
+		nil,
+		fmt.Errorf("install failed"),
+	)
 
 	result, err := e.Install(ctx, input)
 	assert.Error(t, err)
@@ -233,7 +257,15 @@ func TestExecutor_List_GroupPlay_Success(t *testing.T) {
 	logger.On("Infof", "...END: listing playbook (%v) ... %v", "test-book", "test").Return(nil)
 
 	playResult := &pl.PlayResult{PlayBook: "test-book", Play: "play-1", Success: true}
-	playExec.On("ListPlay", ctx, mock.AnythingOfType("*plays.Play"), mock.AnythingOfType("*plays.PlayInput")).Return(playResult, nil)
+	playExec.On(
+		"ListPlay",
+		ctx,
+		mock.AnythingOfType("*plays.Play"),
+		mock.AnythingOfType("*plays.PlayInput"),
+	).Return(
+		playResult,
+		nil,
+	)
 
 	result, err := e.List(ctx, input)
 	assert.NoError(t, err)
@@ -253,7 +285,15 @@ func TestExecutor_List_AllPlays_Success(t *testing.T) {
 	logger.On("Infof", "...END: listing playbook (%v) ... %v", "test-book", "test").Return(nil)
 
 	playResult := &pl.PlayResult{PlayBook: "test-book", Play: "play-1", Success: true}
-	playExec.On("ListPlay", ctx, mock.AnythingOfType("*plays.Play"), mock.AnythingOfType("*plays.PlayInput")).Return(playResult, nil)
+	playExec.On(
+		"ListPlay",
+		ctx,
+		mock.AnythingOfType("*plays.Play"),
+		mock.AnythingOfType("*plays.PlayInput"),
+	).Return(
+		playResult,
+		nil,
+	)
 
 	result, err := e.List(ctx, input)
 	assert.NoError(t, err)
@@ -284,7 +324,15 @@ func TestExecutor_List_ListPlayError(t *testing.T) {
 	input := &Input{Play: "play-1", PlayBook: pb}
 
 	logger.On("Printlnf", "...Listing playbook (%v) ... %v", "test-book", "test").Return(nil)
-	playExec.On("ListPlay", ctx, mock.AnythingOfType("*plays.Play"), mock.AnythingOfType("*plays.PlayInput")).Return(nil, fmt.Errorf("list failed"))
+	playExec.On(
+		"ListPlay",
+		ctx,
+		mock.AnythingOfType("*plays.Play"),
+		mock.AnythingOfType("*plays.PlayInput"),
+	).Return(
+		nil,
+		fmt.Errorf("list failed"),
+	)
 
 	result, err := e.List(ctx, input)
 	assert.Error(t, err)

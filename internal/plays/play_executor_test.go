@@ -4,12 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"testing"
 
 	pg "awong/dotfiles/internal/plays/gen"
 	tk "awong/dotfiles/internal/tasks"
 	i "awong/dotfiles/internal/tasks/installer"
 	ty "awong/dotfiles/internal/types"
-	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -127,7 +127,13 @@ func TestPlayExecutor_InstallPlay_PrintlnfError(t *testing.T) {
 	pbi := pg.NewMockPlayBookInfo(t)
 	input := newPlayInput(pbi)
 
-	logger.On("Printlnf", "%v Installing play (%v) ... %v", []any{PlayEllipsis, "test-play", ""}).Return(errors.New("log failed"))
+	logger.On(
+		"Printlnf",
+		"%v Installing play (%v) ... %v",
+		[]any{PlayEllipsis, "test-play", ""},
+	).Return(
+		errors.New("log failed"),
+	)
 
 	playAttr := &ty.Attributes{ID: "test-play", Enabled: true}
 	play, err := NewPlay(playAttr, []tk.Task{})
@@ -153,7 +159,14 @@ func TestPlayExecutor_InstallPlay_TaskError(t *testing.T) {
 	mockTask := &MockTask{
 		Attr: ty.Attributes{ID: "task-1", Enabled: true},
 	}
-	mockTask.On("Install", ctx, mock.AnythingOfType("*types.TaskInput")).Return((*ty.TaskResult)(nil), fmt.Errorf("install failed"))
+	mockTask.On(
+		"Install",
+		ctx,
+		mock.AnythingOfType("*types.TaskInput"),
+	).Return(
+		(*ty.TaskResult)(nil),
+		fmt.Errorf("install failed"),
+	)
 
 	playAttr := &ty.Attributes{ID: "test-play", Enabled: true}
 	play, err := NewPlay(playAttr, []tk.Task{mockTask})
@@ -199,7 +212,13 @@ func TestPlayExecutor_ListPlay_PrintlnfError(t *testing.T) {
 	pbi := pg.NewMockPlayBookInfo(t)
 	input := newPlayInput(pbi)
 
-	logger.On("Printlnf", "%v Listing play (%v) ... %v", []any{PlayEllipsis, "test-play", ""}).Return(errors.New("log failed"))
+	logger.On(
+		"Printlnf",
+		"%v Listing play (%v) ... %v",
+		[]any{PlayEllipsis, "test-play", ""},
+	).Return(
+		errors.New("log failed"),
+	)
 
 	playAttr := &ty.Attributes{ID: "test-play", Enabled: true}
 	play, err := NewPlay(playAttr, []tk.Task{})
@@ -225,7 +244,14 @@ func TestPlayExecutor_ListPlay_TaskError(t *testing.T) {
 	mockTask := &MockTask{
 		Attr: ty.Attributes{ID: "task-1", Enabled: true},
 	}
-	mockTask.On("List", ctx, mock.AnythingOfType("*types.TaskInput")).Return((*ty.TaskResult)(nil), fmt.Errorf("list failed"))
+	mockTask.On(
+		"List",
+		ctx,
+		mock.AnythingOfType("*types.TaskInput"),
+	).Return(
+		(*ty.TaskResult)(nil),
+		fmt.Errorf("list failed"),
+	)
 
 	playAttr := &ty.Attributes{ID: "test-play", Enabled: true}
 	play, err := NewPlay(playAttr, []tk.Task{mockTask})

@@ -28,6 +28,7 @@ func TestGetDefaultConfig_FromEnv(t *testing.T) {
 	result := cli.GetDefaultConfig()
 	assert.Equal(t, "/custom/path.yml", result)
 }
+
 func TestGetDefaultConfig_InstallerConfigTakesPrecedence(t *testing.T) {
 	t.Setenv("INSTALLER_CONFIG", "/custom/path.yml")
 	t.Setenv("XDG_CONFIG_HOME", "/custom/config")

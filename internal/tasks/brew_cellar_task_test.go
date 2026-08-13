@@ -48,7 +48,11 @@ func TestBrewCellarTask_Install_Disabled(t *testing.T) {
 		Enabled:     false,
 	}
 	mockLog := i.NewMockLogger(t)
-	mockLog.On("Debugf", "%s %s START ... play: %s taskID: %s", []any{"...........", "BrewCellarTask", "test-play", "test-cellar"}).Return().Maybe()
+	mockLog.On(
+		"Debugf",
+		"%s %s START ... play: %s taskID: %s",
+		[]any{"...........", "BrewCellarTask", "test-play", "test-cellar"},
+	).Return().Maybe()
 
 	task := &BrewCellarTask{
 		Attributes: *attrs,
