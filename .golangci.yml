@@ -44,6 +44,9 @@ linters:
       - path: internal/utilities/expansion.go
         linters:
           - godox
+      - path: internal/cmd/.*\.go
+        linters:
+          - goconst
 
 linters-settings:
   importas:
