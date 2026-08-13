@@ -6,7 +6,7 @@ import (
 
 // PlayBookYAML represents the top-level playbook configuration.
 type PlayBookYAML struct {
-	ID          string              `yaml:"id"`
+	ID          string              `yaml:"book"`
 	Description string              `yaml:"description"`
 	Enabled     bool                `yaml:"enabled"`
 	Sudo        bool                `yaml:"sudo"`

@@ -9,7 +9,7 @@ import (
 // TaskYAML represents a single task within a play.
 type TaskYAML struct {
 	Type        string   `yaml:"type"`
-	ID          string   `yaml:"id"`
+	ID          string   `yaml:"task"`
 	Description string   `yaml:"description"`
 	Enabled     bool     `yaml:"enabled"`
 	Command     string   `yaml:"command,omitempty"`
