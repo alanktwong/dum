@@ -69,20 +69,22 @@ git commit -m "refactor: resolve config path with Viper"
 
 ## Task 4: Characterize and move log-level parsing
 
-**Files:** new `cmd/dum/cli/log_level.go`, `cmd/dum/cli/log_level_test.go`
+**Files:** `internal/logging/logging_test.go`, `internal/logging/env_level.go`, new `cmd/dum/cli/log_level.go`, `cmd/dum/cli/log_level_test.go`
 
-- [ ] Add characterization tests for named values `debug`, `info`, `warn`, `error`, and `fatal`.
-- [ ] Add exact numeric boundary tests for `10`, `20`, `30`, `40`, and `50`, plus negative and over-50 values.
-- [ ] Add invalid and empty value tests; each fallback must be `warn`.
-- [ ] Add two-call `t.Setenv` isolation test proving each lookup constructs/configures fresh Viper state.
-- [ ] Run focused characterization tests and confirm PASS before implementation:
+- [ ] Extend existing `internal/logging` characterization tests with named values, exact numeric boundaries `10`, `20`, `30`, `40`, `50`, negative and over-50 values, invalid and empty fallback to `warn`.
+- [ ] Run current parser characterization tests before moving code:
 
 ```sh
-go test ./cmd/dum/... -run 'Test.*(LogLevel|EnvLevel)'
+go test ./internal/logging -run 'Test.*EnvLevel'
 ```
 
+- [ ] Add equivalent CLI-boundary tests for named/numeric values and a two-call `t.Setenv` isolation case; keep these tests initially disabled only by placing them beside the new API implementation step, not by asserting nonexistent symbols.
 - [ ] Implement Viper-backed lookup/conversion under `cmd/dum/cli`; fresh Viper state per call; preserve existing `internal/logging.EnvLevel` semantics.
-- [ ] Run focused tests; expect PASS.
+- [ ] Run CLI log-level tests after API introduction; expect PASS:
+
+```sh
+go test ./cmd/dum/... -run 'Test.*LogLevel'
+```
 
 ## Task 5: Wire root logger and remove internal env lookup
 
@@ -90,7 +92,7 @@ go test ./cmd/dum/... -run 'Test.*(LogLevel|EnvLevel)'
 
 - [ ] Update `NewDum()` to resolve `ZSH_LOG_LEVEL` through `cmd/dum/cli` before calling `lg.NewLogger`.
 - [ ] Remove `lg.EnvLevel()` call from `cmd/dum/log.executeLogging`.
-- [ ] Remove `internal/logging.EnvLevel` and obsolete internal tests; retain logger API tests.
+- [ ] Remove `internal/logging.EnvLevel` and obsolete internal tests; retain logger API tests and migrated CLI-level tests.
 - [ ] Add self-exec subprocess coverage in `cmd/dum/root_test.go`: select helper via `-test.run`, launch fresh children with `ZSH_LOG_LEVEL=debug` and `ZSH_LOG_LEVEL=warn`, invoke non-terminating `log debug`/`log warn`, capture stderr, assert debug output appears only in debug child.
 - [ ] Run focused command/log tests:
 
@@ -107,8 +109,9 @@ git commit -m "refactor: move log env config to cmd"
 
 ## Task 6: Full verification and cleanup
 
-**Files:** any files exposed by tests/lint; README/help text only if behavior wording needs correction
+**Files:** temporary fixture/files plus any files exposed by tests, lint, or smoke checks
 
+- [ ] Create temporary minimal valid `installer.yml` fixture with one harmless enabled play/task; remove it after smoke tests.
 - [ ] Run package tests:
 
 ```sh
@@ -133,7 +136,14 @@ make lint
 make build
 ```
 
-- [ ] Smoke-test root help, install/list config resolution, log output under `ZSH_LOG_LEVEL`, rename, and schema commands.
+- [ ] Run `dum --help`; expect root help and all command names.
+- [ ] Run `dum list --file "$fixture"`; expect fixture play/task output.
+- [ ] Run `INSTALLER_CONFIG="$fixture" dum list`; expect same fixture output.
+- [ ] Run `INSTALLER_CONFIG="$fixture" dum install --dry-run`; expect task preview without mutations.
+- [ ] Run `ZSH_LOG_LEVEL=debug dum log debug "probe"`; expect `probe` output.
+- [ ] Run rename against temporary files with `--dry-run`; expect preview only.
+- [ ] Run `dum schema --output "$tmp/installer.schema.json"`; expect schema file creation.
+- [ ] Remove temporary fixture/files.
 - [ ] Confirm no `internal/` package imports Viper and no obsolete `EnvLevel` references remain.
 - [ ] Commit any required cleanup with a focused Conventional Commit message.
 
