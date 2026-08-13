@@ -28,6 +28,25 @@ func TestGetDefaultConfig_FromEnv(t *testing.T) {
 	result := cli.GetDefaultConfig()
 	assert.Equal(t, "/custom/path.yml", result)
 }
+func TestGetDefaultConfig_InstallerConfigTakesPrecedence(t *testing.T) {
+	t.Setenv("INSTALLER_CONFIG", "/custom/path.yml")
+	t.Setenv("XDG_CONFIG_HOME", "/custom/config")
+
+	assert.Equal(t, "/custom/path.yml", cli.GetDefaultConfig())
+}
+
+func TestGetDefaultConfig_RepeatedCallsAreEnvironmentIsolated(t *testing.T) {
+	t.Setenv("INSTALLER_CONFIG", "/first/path.yml")
+	t.Setenv("XDG_CONFIG_HOME", "")
+	assert.Equal(t, "/first/path.yml", cli.GetDefaultConfig())
+
+	t.Setenv("INSTALLER_CONFIG", "")
+	t.Setenv("XDG_CONFIG_HOME", "/second/config")
+	assert.Equal(t, "/second/config/dum/installer.yml", cli.GetDefaultConfig())
+
+	t.Setenv("XDG_CONFIG_HOME", "")
+	assert.Equal(t, "~/.config/dum/installer.yml", cli.GetDefaultConfig())
+}
 
 func TestAddGroupFlag(t *testing.T) {
 	cmd := &cobra.Command{Use: "test"}

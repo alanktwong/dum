@@ -161,3 +161,30 @@ func TestRunList_ExecutorError(t *testing.T) {
 	executor.AssertExpectations(t)
 	logger.AssertExpectations(t)
 }
+
+func TestRunList_ViaCobraExplicitFileReachesFactory(t *testing.T) {
+	t.Setenv("INSTALLER_CONFIG", "/env/default.yml")
+
+	dum, logger, factory, executor := newTestDumForList(t)
+	cmd := NewListCommand("test", dum)
+	cmd.SetContext(context.Background())
+
+	logger.On("SetLevel", clog.WarnLevel).Return()
+	logger.On("Debug",
+		"Running list command:",
+		DRYRUN, false,
+		VERBOSE, uint8(0),
+		GROUP, "",
+		FILE, "/explicit/list.yml",
+	).Return()
+	factory.On("Provide", fy.InputOptions{File: "/explicit/list.yml", Group: ""}).Return(&pb.Input{}, nil)
+	executor.On("List", mock.Anything, mock.Anything).Return(&pb.Result{}, nil)
+
+	cmd.SetArgs([]string{"--file", "/explicit/list.yml"})
+	err := cmd.Execute()
+
+	assert.NoError(t, err)
+	factory.AssertExpectations(t)
+	executor.AssertExpectations(t)
+	logger.AssertExpectations(t)
+}
