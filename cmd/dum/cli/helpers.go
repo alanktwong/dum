@@ -4,10 +4,10 @@ package cli
 import (
 	"fmt"
 	"math"
-	"os"
 
 	clog "github.com/charmbracelet/log"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // CLI flag names and shared logging defaults.
@@ -79,13 +79,17 @@ func AddOutputFlag(cmd *cobra.Command) {
 
 // GetDefaultConfig returns the configured installer file path.
 func GetDefaultConfig() string {
-	config := os.Getenv("INSTALLER_CONFIG")
-	if config == "" {
-		xdg := os.Getenv("XDG_CONFIG_HOME")
-		if xdg == "" {
-			xdg = "~/.config"
-		}
-		config = fmt.Sprintf("%s/dum/installer.yml", xdg)
+	config := viper.New()
+	_ = config.BindEnv("INSTALLER_CONFIG")
+	_ = config.BindEnv("XDG_CONFIG_HOME")
+
+	if path := config.GetString("INSTALLER_CONFIG"); path != "" {
+		return path
 	}
-	return config
+
+	base := config.GetString("XDG_CONFIG_HOME")
+	if base == "" {
+		base = "~/.config"
+	}
+	return fmt.Sprintf("%s/dum/installer.yml", base)
 }
