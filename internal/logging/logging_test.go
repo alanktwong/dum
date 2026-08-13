@@ -287,6 +287,11 @@ func TestEnvLevel_Numeric_Over50(t *testing.T) {
 	assert.Equal(t, log.WarnLevel, EnvLevel())
 }
 
+func TestEnvLevel_Numeric_Negative(t *testing.T) {
+	t.Setenv("ZSH_LOG_LEVEL", "-1")
+	assert.Equal(t, log.DebugLevel, EnvLevel())
+}
+
 func TestMockLogger_Debug(t *testing.T) {
 	m := gen.NewMockLogger(t)
 	m.EXPECT().Debug("msg", []any{"key", "val"}).Return()
