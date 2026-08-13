@@ -131,7 +131,6 @@ vet: ## go vet
 .PHONY: fmt
 fmt: ## runs go formatter
 	@printf ${COLOR} "Formatting ..."
-	@go fmt ./...
 	@gofumpt -w $$(go list -f '{{.Dir}}' ./...)
 
 .PHONY: fix
