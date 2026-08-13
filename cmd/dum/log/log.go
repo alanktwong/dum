@@ -49,7 +49,6 @@ func NewLogCommand(rootUse string, dum *Command) *cobra.Command {
 
 func (d *Command) executeLogging(cmd *cobra.Command, args []string, level clog.Level) error {
 	logger := d.Log
-	logger.SetLevel(lg.EnvLevel())
 	p, err := cmd.Flags().GetString(cli.PREFIX)
 	if err != nil {
 		p = ""

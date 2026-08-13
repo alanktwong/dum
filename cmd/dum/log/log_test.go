@@ -25,7 +25,6 @@ func newTestDumWithCmd(t *testing.T) (*Command, *gen.MockLogger, *cobra.Command)
 func TestExecuteLogging_Debug(t *testing.T) {
 	dum, logger, cmd := newTestDumWithCmd(t)
 
-	logger.On("SetLevel", mock.Anything).Return()
 	logger.On("Debugf", "%v", mock.Anything).Return()
 
 	err := dum.executeLogging(cmd, []string{"hello", "world"}, clog.DebugLevel)
@@ -36,7 +35,6 @@ func TestExecuteLogging_Debug(t *testing.T) {
 func TestExecuteLogging_Info(t *testing.T) {
 	dum, logger, cmd := newTestDumWithCmd(t)
 
-	logger.On("SetLevel", mock.Anything).Return()
 	logger.On("Infof", "%v", mock.Anything).Return()
 
 	err := dum.executeLogging(cmd, []string{"hello"}, clog.InfoLevel)
@@ -47,7 +45,6 @@ func TestExecuteLogging_Info(t *testing.T) {
 func TestExecuteLogging_Warn(t *testing.T) {
 	dum, logger, cmd := newTestDumWithCmd(t)
 
-	logger.On("SetLevel", mock.Anything).Return()
 	logger.On("Warnf", "%v", mock.Anything).Return()
 
 	err := dum.executeLogging(cmd, []string{"warning"}, clog.WarnLevel)
@@ -58,7 +55,6 @@ func TestExecuteLogging_Warn(t *testing.T) {
 func TestExecuteLogging_Error(t *testing.T) {
 	dum, logger, cmd := newTestDumWithCmd(t)
 
-	logger.On("SetLevel", mock.Anything).Return()
 	logger.On("Errorf", "%v", mock.Anything).Return()
 
 	err := dum.executeLogging(cmd, []string{"error"}, clog.ErrorLevel)
@@ -69,7 +65,6 @@ func TestExecuteLogging_Error(t *testing.T) {
 func TestExecuteLogging_Fatal(t *testing.T) {
 	dum, logger, cmd := newTestDumWithCmd(t)
 
-	logger.On("SetLevel", mock.Anything).Return()
 	logger.On("Fatalf", "%v", mock.Anything).Return()
 
 	err := dum.executeLogging(cmd, []string{"fatal"}, clog.FatalLevel)
@@ -80,7 +75,6 @@ func TestExecuteLogging_Fatal(t *testing.T) {
 func TestExecuteLogging_Success(t *testing.T) {
 	dum, logger, cmd := newTestDumWithCmd(t)
 
-	logger.On("SetLevel", mock.Anything).Return()
 	logger.On("Printlnf", "%v", mock.Anything).Return(nil)
 
 	err := dum.executeLogging(cmd, []string{"done"}, SuccessLevel)
@@ -96,7 +90,6 @@ func TestExecuteLogging_SuccessWithPrefix(t *testing.T) {
 
 	prefixLogger := gen.NewMockLogger(t)
 
-	logger.On("SetLevel", mock.Anything).Return()
 	logger.On("WithPrefix", "my-prefix").Return(prefixLogger)
 	prefixLogger.On("Printlnf", "%v %v", mock.Anything).Return(nil)
 
@@ -108,7 +101,6 @@ func TestExecuteLogging_SuccessWithPrefix(t *testing.T) {
 func TestExecuteLogging_SuccessPrintlnfError(t *testing.T) {
 	dum, logger, cmd := newTestDumWithCmd(t)
 
-	logger.On("SetLevel", mock.Anything).Return()
 	logger.On("Printlnf", "%v", mock.Anything).Return(fmt.Errorf("write error"))
 
 	err := dum.executeLogging(cmd, []string{"done"}, SuccessLevel)
@@ -118,9 +110,7 @@ func TestExecuteLogging_SuccessPrintlnfError(t *testing.T) {
 }
 
 func TestExecuteLogging_InvalidLevel(t *testing.T) {
-	dum, logger, cmd := newTestDumWithCmd(t)
-
-	logger.On("SetLevel", mock.Anything).Return()
+	dum, _, cmd := newTestDumWithCmd(t)
 
 	err := dum.executeLogging(cmd, []string{"test"}, clog.Level(99))
 
@@ -136,7 +126,6 @@ func TestNewDebugCommand_RunE(t *testing.T) {
 	assert.NoError(t, err)
 	debugCmd.SetContext(context.Background())
 
-	logger.On("SetLevel", mock.Anything).Return()
 	logger.On("Debugf", "%v", mock.Anything).Return()
 
 	err = debugCmd.RunE(debugCmd, []string{"hello", "world"})
@@ -151,7 +140,6 @@ func TestNewInfoCommand_RunE(t *testing.T) {
 	assert.NoError(t, err)
 	infoCmd.SetContext(context.Background())
 
-	logger.On("SetLevel", mock.Anything).Return()
 	logger.On("Infof", "%v", mock.Anything).Return()
 
 	err = infoCmd.RunE(infoCmd, []string{"hello", "world"})
@@ -166,7 +154,6 @@ func TestNewWarnCommand_RunE(t *testing.T) {
 	assert.NoError(t, err)
 	warnCmd.SetContext(context.Background())
 
-	logger.On("SetLevel", mock.Anything).Return()
 	logger.On("Warnf", "%v", mock.Anything).Return()
 
 	err = warnCmd.RunE(warnCmd, []string{"hello", "world"})
@@ -181,7 +168,6 @@ func TestNewErrorCommand_RunE(t *testing.T) {
 	assert.NoError(t, err)
 	errorCmd.SetContext(context.Background())
 
-	logger.On("SetLevel", mock.Anything).Return()
 	logger.On("Errorf", "%v", mock.Anything).Return()
 
 	err = errorCmd.RunE(errorCmd, []string{"hello", "world"})
@@ -196,7 +182,6 @@ func TestNewSuccessCommand_RunE(t *testing.T) {
 	assert.NoError(t, err)
 	successCmd.SetContext(context.Background())
 
-	logger.On("SetLevel", mock.Anything).Return()
 	logger.On("Printlnf", "%v", mock.Anything).Return(nil)
 
 	err = successCmd.RunE(successCmd, []string{"hello", "world"})
