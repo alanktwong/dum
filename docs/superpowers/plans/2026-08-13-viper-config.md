@@ -111,7 +111,26 @@ git commit -m "refactor: move log env config to cmd"
 
 **Files:** temporary fixture/files plus any files exposed by tests, lint, or smoke checks
 
-- [ ] Create temporary minimal valid `installer.yml` fixture with one harmless enabled play/task; remove it after smoke tests.
+- [ ] Create temporary fixture with exact valid YAML:
+
+```sh
+tmp=$(mktemp -d)
+fixture="$tmp/installer.yml"
+cat >"$fixture" <<'EOF'
+playbook:
+  book: smoke
+  plays:
+    - play: smoke-play
+      enabled: true
+      tasks:
+        - type: bash
+          task: smoke-task
+          command: "echo smoke"
+          enabled: true
+EOF
+```
+
+- [ ] Set `binary` to executable emitted by `make build` (for example, `binary=$(printf '%s\\n' dist/dum-*)`) and use `"$binary"` for every smoke command.
 - [ ] Run package tests:
 
 ```sh
@@ -136,14 +155,14 @@ make lint
 make build
 ```
 
-- [ ] Run `dum --help`; expect root help and all command names.
-- [ ] Run `dum list --file "$fixture"`; expect fixture play/task output.
-- [ ] Run `INSTALLER_CONFIG="$fixture" dum list`; expect same fixture output.
-- [ ] Run `INSTALLER_CONFIG="$fixture" dum install --dry-run`; expect task preview without mutations.
-- [ ] Run `ZSH_LOG_LEVEL=debug dum log debug "probe"`; expect `probe` output.
+- [ ] Run `"$binary" --help`; expect root help containing `install`, `list`, `rename`, `log`, and `schema`.
+- [ ] Run `"$binary" list --file "$fixture"`; expect `smoke-play` and `smoke-task` in output.
+- [ ] Run `INSTALLER_CONFIG="$fixture" "$binary" list`; expect `smoke-play` and `smoke-task` in output.
+- [ ] Run `INSTALLER_CONFIG="$fixture" "$binary" install --dryrun`; expect `smoke` preview output and no mutation.
+- [ ] Run `ZSH_LOG_LEVEL=debug "$binary" log debug "probe"`; expect `probe` output.
 - [ ] Run rename against temporary files with `--dry-run`; expect preview only.
-- [ ] Run `dum schema --output "$tmp/installer.schema.json"`; expect schema file creation.
-- [ ] Remove temporary fixture/files.
+- [ ] Run `"$binary" schema --output "$tmp/installer.schema.json"`; expect schema file creation.
+- [ ] Remove temporary fixture/files with `rm -rf "$tmp"`.
 - [ ] Confirm no `internal/` package imports Viper and no obsolete `EnvLevel` references remain.
 - [ ] Commit any required cleanup with a focused Conventional Commit message.
 
