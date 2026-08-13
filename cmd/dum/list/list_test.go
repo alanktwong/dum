@@ -1,34 +1,35 @@
-package cmd
+package list
 
 import (
+	"awong/dotfiles/cmd/dum/cli"
 	"context"
 	"fmt"
 	"testing"
 
-	f "awong/dotfiles/internal/factory"
+	fy "awong/dotfiles/internal/factory"
 	pb "awong/dotfiles/internal/playbook"
 
-	"github.com/charmbracelet/log"
+	clog "github.com/charmbracelet/log"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
-func newTestDumForList(t *testing.T) (*Dum, *mockLogger, *mockFactoryProvider, *mockListExecutor) {
+func newTestDumForList(t *testing.T) (*Command, *mockLogger, *mockFactoryProvider, *mockListExecutor) {
 	t.Helper()
 	logger := &mockLogger{}
 	factory := &mockFactoryProvider{}
 	executor := &mockListExecutor{}
-	dum := &Dum{
+	dum := &Command{
 		Log:             logger,
 		FactoryProvider: factory,
-		ListExecutor:    executor,
+		Executor:        executor,
 	}
 	return dum, logger, factory, executor
 }
 
 func TestNewListCommand_Structure(t *testing.T) {
-	dum := &Dum{}
+	dum := &Command{}
 	cmd := NewListCommand("dum", dum)
 
 	assert.Equal(t, "list", cmd.Use)
@@ -43,7 +44,7 @@ func TestNewListCommand_Structure(t *testing.T) {
 func TestRunList_Success(t *testing.T) {
 	dum, logger, factory, executor := newTestDumForList(t)
 
-	logger.On("SetLevel", log.WarnLevel).Return()
+	logger.On("SetLevel", clog.WarnLevel).Return()
 	logger.On("Debug",
 		"Running list command:",
 		DRYRUN, false,
@@ -53,7 +54,7 @@ func TestRunList_Success(t *testing.T) {
 	).Return()
 
 	input := &pb.Input{}
-	factory.On("Provide", f.InputOptions{
+	factory.On("Provide", fy.InputOptions{
 		File:   "/test/path",
 		Group:  "",
 		DryRun: false,
@@ -63,9 +64,9 @@ func TestRunList_Success(t *testing.T) {
 
 	cmd := &cobra.Command{Use: "list"}
 	cmd.SetContext(context.Background())
-	addVerboseFlag(cmd)
-	addFileFlag(cmd)
-	addGroupFlag(cmd)
+	cli.AddVerboseFlag(cmd)
+	cli.AddFileFlag(cmd)
+	cli.AddGroupFlag(cmd)
 	_ = cmd.Flags().Set(FILE, "/test/path")
 
 	err := dum.runList(cmd)
@@ -80,9 +81,9 @@ func TestRunList_NilContext(t *testing.T) {
 	dum, _, _, _ := newTestDumForList(t)
 
 	cmd := &cobra.Command{Use: "list"}
-	addVerboseFlag(cmd)
-	addFileFlag(cmd)
-	addGroupFlag(cmd)
+	cli.AddVerboseFlag(cmd)
+	cli.AddFileFlag(cmd)
+	cli.AddGroupFlag(cmd)
 
 	err := dum.runList(cmd)
 	assert.Error(t, err)
@@ -92,7 +93,7 @@ func TestRunList_NilContext(t *testing.T) {
 func TestRunList_FactoryError(t *testing.T) {
 	dum, logger, factory, _ := newTestDumForList(t)
 
-	logger.On("SetLevel", log.WarnLevel).Return()
+	logger.On("SetLevel", clog.WarnLevel).Return()
 	logger.On("Debug",
 		"Running list command:",
 		DRYRUN, false,
@@ -101,7 +102,7 @@ func TestRunList_FactoryError(t *testing.T) {
 		FILE, "/test/path",
 	).Return()
 
-	factory.On("Provide", f.InputOptions{
+	factory.On("Provide", fy.InputOptions{
 		File:   "/test/path",
 		Group:  "",
 		DryRun: false,
@@ -109,9 +110,9 @@ func TestRunList_FactoryError(t *testing.T) {
 
 	cmd := &cobra.Command{Use: "list"}
 	cmd.SetContext(context.Background())
-	addVerboseFlag(cmd)
-	addFileFlag(cmd)
-	addGroupFlag(cmd)
+	cli.AddVerboseFlag(cmd)
+	cli.AddFileFlag(cmd)
+	cli.AddGroupFlag(cmd)
 	_ = cmd.Flags().Set(FILE, "/test/path")
 
 	err := dum.runList(cmd)
@@ -126,7 +127,7 @@ func TestRunList_FactoryError(t *testing.T) {
 func TestRunList_ExecutorError(t *testing.T) {
 	dum, logger, factory, executor := newTestDumForList(t)
 
-	logger.On("SetLevel", log.WarnLevel).Return()
+	logger.On("SetLevel", clog.WarnLevel).Return()
 	logger.On("Debug",
 		"Running list command:",
 		DRYRUN, false,
@@ -136,7 +137,7 @@ func TestRunList_ExecutorError(t *testing.T) {
 	).Return()
 
 	input := &pb.Input{}
-	factory.On("Provide", f.InputOptions{
+	factory.On("Provide", fy.InputOptions{
 		File:   "/test/path",
 		Group:  "",
 		DryRun: false,
@@ -146,9 +147,9 @@ func TestRunList_ExecutorError(t *testing.T) {
 
 	cmd := &cobra.Command{Use: "list"}
 	cmd.SetContext(context.Background())
-	addVerboseFlag(cmd)
-	addFileFlag(cmd)
-	addGroupFlag(cmd)
+	cli.AddVerboseFlag(cmd)
+	cli.AddFileFlag(cmd)
+	cli.AddGroupFlag(cmd)
 	_ = cmd.Flags().Set(FILE, "/test/path")
 
 	err := dum.runList(cmd)

@@ -1,4 +1,4 @@
-package cmd
+package schema
 
 import _ "embed"
 

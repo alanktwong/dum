@@ -1,4 +1,4 @@
-package cmd
+package log
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func newSuccessCommand(rootUse, logUse string, dum *Dum) *cobra.Command {
+func newSuccessCommand(rootUse, logUse string, dum *Command) *cobra.Command {
 	use := "success"
 	alias := "s"
 	return &cobra.Command{

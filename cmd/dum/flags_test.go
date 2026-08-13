@@ -1,6 +1,7 @@
-package cmd
+package main
 
 import (
+	"awong/dotfiles/cmd/dum/cli"
 	"os"
 	"testing"
 
@@ -11,26 +12,26 @@ import (
 func TestGetDefaultConfig_Default(t *testing.T) {
 	t.Setenv("INSTALLER_CONFIG", "")
 	t.Setenv("XDG_CONFIG_HOME", "")
-	result := getDefaultConfig()
+	result := cli.GetDefaultConfig()
 	assert.Equal(t, "~/.config/dum/installer.yml", result)
 }
 
 func TestGetDefaultConfig_XDGConfigHome(t *testing.T) {
 	t.Setenv("INSTALLER_CONFIG", "")
 	t.Setenv("XDG_CONFIG_HOME", "/custom/config")
-	result := getDefaultConfig()
+	result := cli.GetDefaultConfig()
 	assert.Equal(t, "/custom/config/dum/installer.yml", result)
 }
 
 func TestGetDefaultConfig_FromEnv(t *testing.T) {
 	t.Setenv("INSTALLER_CONFIG", "/custom/path.yml")
-	result := getDefaultConfig()
+	result := cli.GetDefaultConfig()
 	assert.Equal(t, "/custom/path.yml", result)
 }
 
 func TestAddGroupFlag(t *testing.T) {
 	cmd := &cobra.Command{Use: "test"}
-	addGroupFlag(cmd)
+	cli.AddGroupFlag(cmd)
 
 	flag := cmd.Flags().Lookup("group")
 	assert.NotNil(t, flag)
@@ -40,7 +41,7 @@ func TestAddGroupFlag(t *testing.T) {
 func TestAddFileFlag(t *testing.T) {
 	t.Setenv("INSTALLER_CONFIG", "")
 	cmd := &cobra.Command{Use: "test"}
-	addFileFlag(cmd)
+	cli.AddFileFlag(cmd)
 
 	flag := cmd.Flags().Lookup("file")
 	assert.NotNil(t, flag)
@@ -49,7 +50,7 @@ func TestAddFileFlag(t *testing.T) {
 
 func TestAddVerboseFlag(t *testing.T) {
 	cmd := &cobra.Command{Use: "test"}
-	addVerboseFlag(cmd)
+	cli.AddVerboseFlag(cmd)
 
 	flag := cmd.Flags().Lookup("verbose")
 	assert.NotNil(t, flag)
@@ -58,7 +59,7 @@ func TestAddVerboseFlag(t *testing.T) {
 
 func TestAddDryRunFlag(t *testing.T) {
 	cmd := &cobra.Command{Use: "test"}
-	addDryRunFlag(cmd)
+	cli.AddDryRunFlag(cmd)
 
 	flag := cmd.Flags().Lookup("dryrun")
 	assert.NotNil(t, flag)
@@ -67,7 +68,7 @@ func TestAddDryRunFlag(t *testing.T) {
 
 func TestAddPrefixFlag(t *testing.T) {
 	cmd := &cobra.Command{Use: "test"}
-	addPrefixFlag(cmd)
+	cli.AddPrefixFlag(cmd)
 
 	flag := cmd.Flags().Lookup("prefix")
 	assert.NotNil(t, flag)

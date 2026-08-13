@@ -65,48 +65,6 @@ func (e *Executor) Install(ctx context.Context, input *Input) (*Result, error) {
 	return NewResult(input, success), nil
 }
 
-func (e *Executor) installGroupPlay(ctx context.Context,
-	group string,
-	playResults []*pl.PlayResult,
-	playMap *om.OrderedMap[string, *pl.Play],
-	input *Input,
-) ([]*pl.PlayResult, error) {
-	if play, ok := playMap.Get(group); ok {
-		playResult, err := e.PlayExecutor.InstallPlay(ctx, play, &pl.PlayInput{
-			DryRun:   input.DryRun,
-			Play:     play.ID,
-			PlayBook: input.PlayBook,
-			Sudo:     input.Sudo,
-		})
-		if err != nil {
-			return nil, fmt.Errorf("failed to install play %s: %w", play.GetID(), err)
-		}
-		playResults = append(playResults, playResult)
-	}
-	return playResults, nil
-}
-
-func (e *Executor) installAllPlays(ctx context.Context,
-	playResults []*pl.PlayResult,
-	playMap *om.OrderedMap[string, *pl.Play],
-	input *Input,
-) ([]*pl.PlayResult, error) {
-	for current, play := range playMap.AllFromFront() {
-		e.Log.Infof("%v %v", PlayEllipsis, current)
-		playResult, err := e.PlayExecutor.InstallPlay(ctx, play, &pl.PlayInput{
-			DryRun:   input.DryRun,
-			Play:     play.ID,
-			PlayBook: input.PlayBook,
-			Sudo:     input.Sudo,
-		})
-		if err != nil {
-			return nil, fmt.Errorf("failed to install play %s: %w", play.GetID(), err)
-		}
-		playResults = append(playResults, playResult)
-	}
-	return playResults, nil
-}
-
 // List lists a playbook.
 func (e *Executor) List(ctx context.Context, input *Input) (*Result, error) {
 	group := input.Play
@@ -170,6 +128,48 @@ func (e *Executor) listAllPlays(ctx context.Context,
 		})
 		if err != nil {
 			return nil, fmt.Errorf("failed to list play %s: %w", play.GetID(), err)
+		}
+		playResults = append(playResults, playResult)
+	}
+	return playResults, nil
+}
+
+func (e *Executor) installGroupPlay(ctx context.Context,
+	group string,
+	playResults []*pl.PlayResult,
+	playMap *om.OrderedMap[string, *pl.Play],
+	input *Input,
+) ([]*pl.PlayResult, error) {
+	if play, ok := playMap.Get(group); ok {
+		playResult, err := e.PlayExecutor.InstallPlay(ctx, play, &pl.PlayInput{
+			DryRun:   input.DryRun,
+			Play:     play.ID,
+			PlayBook: input.PlayBook,
+			Sudo:     input.Sudo,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("failed to install play %s: %w", play.GetID(), err)
+		}
+		playResults = append(playResults, playResult)
+	}
+	return playResults, nil
+}
+
+func (e *Executor) installAllPlays(ctx context.Context,
+	playResults []*pl.PlayResult,
+	playMap *om.OrderedMap[string, *pl.Play],
+	input *Input,
+) ([]*pl.PlayResult, error) {
+	for current, play := range playMap.AllFromFront() {
+		e.Log.Infof("%v %v", PlayEllipsis, current)
+		playResult, err := e.PlayExecutor.InstallPlay(ctx, play, &pl.PlayInput{
+			DryRun:   input.DryRun,
+			Play:     play.ID,
+			PlayBook: input.PlayBook,
+			Sudo:     input.Sudo,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("failed to install play %s: %w", play.GetID(), err)
 		}
 		playResults = append(playResults, playResult)
 	}

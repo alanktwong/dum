@@ -3,7 +3,7 @@
 OUT_DIR="./dist"
 
 DUM_APP=dum
-DUM_SOURCE=./cmd/${DUM_APP}/main.go
+DUM_SOURCE=./cmd/${DUM_APP}
 GIT_TAG := $(shell git describe --tags --abbrev=0 2>/dev/null | sed 's/^v//')
 GIT_COMMIT := $(shell git rev-parse --short HEAD 2>/dev/null)
 GIT_DIRTY := $(shell git diff --quiet HEAD 2>/dev/null || echo "-dirty")
@@ -93,7 +93,7 @@ generate: ## generate code
 .PHONY: build
 build: make_out fmt vendor generate ## local build
 	@printf ${COLOR} "Building ..."
-	@go build -v -ldflags "-X awong/dotfiles/internal/cmd.version=$(DUM_VERSION) -X awong/dotfiles/internal/cmd.commit=$(GIT_COMMIT)" -o $(DUM_EXECUTABLE)-${DUM_VERSION} $(DUM_SOURCE)
+	@go build -v -ldflags "-X main.version=$(DUM_VERSION) -X main.commit=$(GIT_COMMIT)" -o $(DUM_EXECUTABLE)-${DUM_VERSION} $(DUM_SOURCE)
 
 .PHONY: linters-build
 linters-build: ## build custom linters

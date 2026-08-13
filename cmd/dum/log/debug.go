@@ -1,14 +1,14 @@
-package cmd
+package log
 
 import (
 	"fmt"
 	"strings"
 
-	"github.com/charmbracelet/log"
+	clog "github.com/charmbracelet/log"
 	"github.com/spf13/cobra"
 )
 
-func newDebugCommand(rootUse, logUse string, dum *Dum) *cobra.Command {
+func newDebugCommand(rootUse, logUse string, dum *Command) *cobra.Command {
 	use := "debug"
 	alias := "d"
 	return &cobra.Command{
@@ -29,7 +29,7 @@ func newDebugCommand(rootUse, logUse string, dum *Dum) *cobra.Command {
 			fmt.Sprintf("  %v %v %v -p myapp \"Loading config\"", rootUse, logUse, use),
 		}, "\n"),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return dum.executeLogging(cmd, args, log.DebugLevel)
+			return dum.executeLogging(cmd, args, clog.DebugLevel)
 		},
 	}
 }

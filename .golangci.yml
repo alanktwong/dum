@@ -36,6 +36,7 @@ linters:
     - importas
     - staticcheck
     - unused
+    - funcorder
     - forbidigo
   exclusions:
     generated: lax
@@ -45,7 +46,7 @@ linters:
       - path: internal/utilities/expansion.go
         linters:
           - godox
-      - path: internal/cmd/.*\.go
+      - path: cmd/dum/.*\.go
         linters:
           - goconst
       - path: internal/logging/.*\.go
@@ -66,7 +67,7 @@ linters-settings:
     no-unaliased: true
     no-extra-aliases: true
     alias:
-      - prefix: awong/dotfiles/internal/cmd
+      - prefix: awong/dotfiles/cmd/dum
         alias: cd
       - prefix: awong/dotfiles/internal/external
         alias: ext

@@ -1,11 +1,11 @@
-package cmd
+package log
 
 import (
 	"context"
 	"fmt"
 	"testing"
 
-	"github.com/charmbracelet/log"
+	clog "github.com/charmbracelet/log"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -13,12 +13,12 @@ import (
 	gen "awong/dotfiles/internal/logging/gen"
 )
 
-func newTestDumWithCmd(t *testing.T) (*Dum, *gen.MockLogger, *cobra.Command) {
+func newTestDumWithCmd(t *testing.T) (*Command, *gen.MockLogger, *cobra.Command) {
 	t.Helper()
 	logger := gen.NewMockLogger(t)
 	cmd := &cobra.Command{Use: "test"}
 	addPrefixFlag(cmd)
-	dum := &Dum{Log: logger}
+	dum := &Command{Log: logger}
 	return dum, logger, cmd
 }
 
@@ -28,7 +28,7 @@ func TestExecuteLogging_Debug(t *testing.T) {
 	logger.On("SetLevel", mock.Anything).Return()
 	logger.On("Debugf", "%v", mock.Anything).Return()
 
-	err := dum.executeLogging(cmd, []string{"hello", "world"}, log.DebugLevel)
+	err := dum.executeLogging(cmd, []string{"hello", "world"}, clog.DebugLevel)
 
 	assert.NoError(t, err)
 }
@@ -39,7 +39,7 @@ func TestExecuteLogging_Info(t *testing.T) {
 	logger.On("SetLevel", mock.Anything).Return()
 	logger.On("Infof", "%v", mock.Anything).Return()
 
-	err := dum.executeLogging(cmd, []string{"hello"}, log.InfoLevel)
+	err := dum.executeLogging(cmd, []string{"hello"}, clog.InfoLevel)
 
 	assert.NoError(t, err)
 }
@@ -50,7 +50,7 @@ func TestExecuteLogging_Warn(t *testing.T) {
 	logger.On("SetLevel", mock.Anything).Return()
 	logger.On("Warnf", "%v", mock.Anything).Return()
 
-	err := dum.executeLogging(cmd, []string{"warning"}, log.WarnLevel)
+	err := dum.executeLogging(cmd, []string{"warning"}, clog.WarnLevel)
 
 	assert.NoError(t, err)
 }
@@ -61,7 +61,7 @@ func TestExecuteLogging_Error(t *testing.T) {
 	logger.On("SetLevel", mock.Anything).Return()
 	logger.On("Errorf", "%v", mock.Anything).Return()
 
-	err := dum.executeLogging(cmd, []string{"error"}, log.ErrorLevel)
+	err := dum.executeLogging(cmd, []string{"error"}, clog.ErrorLevel)
 
 	assert.NoError(t, err)
 }
@@ -72,7 +72,7 @@ func TestExecuteLogging_Fatal(t *testing.T) {
 	logger.On("SetLevel", mock.Anything).Return()
 	logger.On("Fatalf", "%v", mock.Anything).Return()
 
-	err := dum.executeLogging(cmd, []string{"fatal"}, log.FatalLevel)
+	err := dum.executeLogging(cmd, []string{"fatal"}, clog.FatalLevel)
 
 	assert.NoError(t, err)
 }
@@ -122,7 +122,7 @@ func TestExecuteLogging_InvalidLevel(t *testing.T) {
 
 	logger.On("SetLevel", mock.Anything).Return()
 
-	err := dum.executeLogging(cmd, []string{"test"}, log.Level(99))
+	err := dum.executeLogging(cmd, []string{"test"}, clog.Level(99))
 
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "invalid log level")
@@ -130,7 +130,7 @@ func TestExecuteLogging_InvalidLevel(t *testing.T) {
 
 func TestNewDebugCommand_RunE(t *testing.T) {
 	logger := gen.NewMockLogger(t)
-	dum := &Dum{Log: logger}
+	dum := &Command{Log: logger}
 	logCmd := NewLogCommand("dum", dum)
 	debugCmd, _, err := logCmd.Find([]string{"debug"})
 	assert.NoError(t, err)
@@ -145,7 +145,7 @@ func TestNewDebugCommand_RunE(t *testing.T) {
 
 func TestNewInfoCommand_RunE(t *testing.T) {
 	logger := gen.NewMockLogger(t)
-	dum := &Dum{Log: logger}
+	dum := &Command{Log: logger}
 	logCmd := NewLogCommand("dum", dum)
 	infoCmd, _, err := logCmd.Find([]string{"info"})
 	assert.NoError(t, err)
@@ -160,7 +160,7 @@ func TestNewInfoCommand_RunE(t *testing.T) {
 
 func TestNewWarnCommand_RunE(t *testing.T) {
 	logger := gen.NewMockLogger(t)
-	dum := &Dum{Log: logger}
+	dum := &Command{Log: logger}
 	logCmd := NewLogCommand("dum", dum)
 	warnCmd, _, err := logCmd.Find([]string{"warn"})
 	assert.NoError(t, err)
@@ -175,7 +175,7 @@ func TestNewWarnCommand_RunE(t *testing.T) {
 
 func TestNewErrorCommand_RunE(t *testing.T) {
 	logger := gen.NewMockLogger(t)
-	dum := &Dum{Log: logger}
+	dum := &Command{Log: logger}
 	logCmd := NewLogCommand("dum", dum)
 	errorCmd, _, err := logCmd.Find([]string{"error"})
 	assert.NoError(t, err)
@@ -190,7 +190,7 @@ func TestNewErrorCommand_RunE(t *testing.T) {
 
 func TestNewSuccessCommand_RunE(t *testing.T) {
 	logger := gen.NewMockLogger(t)
-	dum := &Dum{Log: logger}
+	dum := &Command{Log: logger}
 	logCmd := NewLogCommand("dum", dum)
 	successCmd, _, err := logCmd.Find([]string{"success"})
 	assert.NoError(t, err)

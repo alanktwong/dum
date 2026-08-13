@@ -1,11 +1,11 @@
-package cmd
+package install
 
 import (
 	"context"
 	"fmt"
 	"testing"
 
-	f "awong/dotfiles/internal/factory"
+	fy "awong/dotfiles/internal/factory"
 	pb "awong/dotfiles/internal/playbook"
 
 	"github.com/spf13/cobra"
@@ -13,20 +13,20 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-func newTestDumForInstall(t *testing.T) (*Dum, *mockLogger, *mockFactoryProvider, *mockInstallExecutor) {
+func newTestDumForInstall(t *testing.T) (*Command, *mockLogger, *mockFactoryProvider, *mockInstallExecutor) {
 	t.Helper()
 	logger := &mockLogger{}
 	factory := &mockFactoryProvider{}
 	executor := &mockInstallExecutor{}
-	dum := &Dum{
+	dum := &Command{
 		Log:             logger,
 		FactoryProvider: factory,
-		InstallExecutor: executor,
+		Executor:        executor,
 	}
 	return dum, logger, factory, executor
 }
 
-func newTestInstallCmd(t *testing.T, dum *Dum) *cobra.Command {
+func newTestInstallCmd(t *testing.T, dum *Command) *cobra.Command {
 	t.Helper()
 	return NewInstallCommand("test", dum)
 }
@@ -62,7 +62,7 @@ func TestRunInstall_Success(t *testing.T) {
 		FILE, "/test/path",
 	).Return()
 
-	expectedOpts := f.InputOptions{
+	expectedOpts := fy.InputOptions{
 		File:   "/test/path",
 		Group:  "",
 		DryRun: false,
@@ -161,7 +161,7 @@ func TestRunInstall_ViaCobra(t *testing.T) {
 		FILE, "/test/path",
 	).Return()
 
-	factory.On("Provide", f.InputOptions{
+	factory.On("Provide", fy.InputOptions{
 		File:   "/test/path",
 		Group:  "",
 		DryRun: false,

@@ -1,4 +1,4 @@
-package cmd
+package schema
 
 import (
 	"context"
@@ -11,7 +11,7 @@ import (
 )
 
 func TestNewSchemaCommand_Stdout(t *testing.T) {
-	dum := &Dum{}
+	dum := &Command{}
 	cmd := NewSchemaCommand("dum", dum)
 	cmd.SetContext(context.Background())
 
@@ -34,7 +34,7 @@ func TestNewSchemaCommand_Stdout(t *testing.T) {
 }
 
 func TestNewSchemaCommand_File(t *testing.T) {
-	dum := &Dum{}
+	dum := &Command{}
 	cmd := NewSchemaCommand("dum", dum)
 	cmd.SetContext(context.Background())
 

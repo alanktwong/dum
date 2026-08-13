@@ -1,4 +1,4 @@
-package cmd
+package rename
 
 import (
 	"context"
@@ -30,11 +30,11 @@ func TestRename_BasicRename(t *testing.T) {
 	oldPath := filepath.Join(tmpDir, "source.txt")
 	newPath := filepath.Join(tmpDir, "renamed.txt")
 
-	err := os.WriteFile(oldPath, []byte("hello"), 0644)
+	err := os.WriteFile(oldPath, []byte("hello"), 0o644)
 	assert.NoError(t, err)
 
-	dum := &Dum{Log: setupMockLogger(t)}
-	err = dum.rename(context.Background(), RenameOptions{
+	dum := &Command{Log: setupMockLogger(t)}
+	err = dum.rename(context.Background(), Options{
 		FilePattern: oldPath,
 		Source:      "source",
 		Replace:     "renamed",
@@ -53,11 +53,11 @@ func TestRename_TrimFront(t *testing.T) {
 	oldPath := filepath.Join(tmpDir, "abcdef.txt")
 	newPath := filepath.Join(tmpDir, "cdef.txt")
 
-	err := os.WriteFile(oldPath, []byte("hello"), 0644)
+	err := os.WriteFile(oldPath, []byte("hello"), 0o644)
 	assert.NoError(t, err)
 
-	dum := &Dum{Log: setupMockLogger(t)}
-	err = dum.rename(context.Background(), RenameOptions{
+	dum := &Command{Log: setupMockLogger(t)}
+	err = dum.rename(context.Background(), Options{
 		FilePattern: oldPath,
 		TrimFront:   2,
 	})
@@ -75,11 +75,11 @@ func TestRename_TrimBack(t *testing.T) {
 	oldPath := filepath.Join(tmpDir, "abcdef.txt")
 	newPath := filepath.Join(tmpDir, "abcd.txt")
 
-	err := os.WriteFile(oldPath, []byte("hello"), 0644)
+	err := os.WriteFile(oldPath, []byte("hello"), 0o644)
 	assert.NoError(t, err)
 
-	dum := &Dum{Log: setupMockLogger(t)}
-	err = dum.rename(context.Background(), RenameOptions{
+	dum := &Command{Log: setupMockLogger(t)}
+	err = dum.rename(context.Background(), Options{
 		FilePattern: oldPath,
 		TrimBack:    2,
 	})
@@ -97,11 +97,11 @@ func TestRename_Replace(t *testing.T) {
 	oldPath := filepath.Join(tmpDir, "_DSC1234.NEF")
 	newPath := filepath.Join(tmpDir, "bar1234.NEF")
 
-	err := os.WriteFile(oldPath, []byte("hello"), 0644)
+	err := os.WriteFile(oldPath, []byte("hello"), 0o644)
 	assert.NoError(t, err)
 
-	dum := &Dum{Log: setupMockLogger(t)}
-	err = dum.rename(context.Background(), RenameOptions{
+	dum := &Command{Log: setupMockLogger(t)}
+	err = dum.rename(context.Background(), Options{
 		FilePattern: oldPath,
 		Source:      "_DSC",
 		Replace:     "bar",
@@ -119,11 +119,11 @@ func TestRename_Lowercase(t *testing.T) {
 	tmpDir := t.TempDir()
 	oldPath := filepath.Join(tmpDir, "FILE.JPG")
 
-	err := os.WriteFile(oldPath, []byte("hello"), 0644)
+	err := os.WriteFile(oldPath, []byte("hello"), 0o644)
 	assert.NoError(t, err)
 
-	dum := &Dum{Log: setupMockLogger(t)}
-	err = dum.rename(context.Background(), RenameOptions{
+	dum := &Command{Log: setupMockLogger(t)}
+	err = dum.rename(context.Background(), Options{
 		FilePattern: oldPath,
 		Lowercase:   true,
 	})
@@ -143,11 +143,11 @@ func TestRename_Iterate(t *testing.T) {
 	oldPath := filepath.Join(tmpDir, "photo.jpg")
 	newPath := filepath.Join(tmpDir, "photo_1.jpg")
 
-	err := os.WriteFile(oldPath, []byte("hello"), 0644)
+	err := os.WriteFile(oldPath, []byte("hello"), 0o644)
 	assert.NoError(t, err)
 
-	dum := &Dum{Log: setupMockLogger(t)}
-	err = dum.rename(context.Background(), RenameOptions{
+	dum := &Command{Log: setupMockLogger(t)}
+	err = dum.rename(context.Background(), Options{
 		FilePattern: oldPath,
 		Index:       0,
 		Iterate:     1,
@@ -166,11 +166,11 @@ func TestRename_Combined(t *testing.T) {
 	oldPath := filepath.Join(tmpDir, "_DSC1234.NEF")
 	newPath := filepath.Join(tmpDir, "bar1234.nef")
 
-	err := os.WriteFile(oldPath, []byte("hello"), 0644)
+	err := os.WriteFile(oldPath, []byte("hello"), 0o644)
 	assert.NoError(t, err)
 
-	dum := &Dum{Log: setupMockLogger(t)}
-	err = dum.rename(context.Background(), RenameOptions{
+	dum := &Command{Log: setupMockLogger(t)}
+	err = dum.rename(context.Background(), Options{
 		FilePattern: oldPath,
 		Source:      "_DSC",
 		Replace:     "bar",
@@ -189,11 +189,11 @@ func TestRename_DryRun(t *testing.T) {
 	tmpDir := t.TempDir()
 	oldPath := filepath.Join(tmpDir, "old.txt")
 
-	err := os.WriteFile(oldPath, []byte("hello"), 0644)
+	err := os.WriteFile(oldPath, []byte("hello"), 0o644)
 	assert.NoError(t, err)
 
-	dum := &Dum{Log: setupMockLogger(t)}
-	err = dum.rename(context.Background(), RenameOptions{
+	dum := &Command{Log: setupMockLogger(t)}
+	err = dum.rename(context.Background(), Options{
 		FilePattern: oldPath,
 		DryRun:      true,
 	})
@@ -204,8 +204,8 @@ func TestRename_DryRun(t *testing.T) {
 }
 
 func TestRename_OSError(t *testing.T) {
-	dum := &Dum{Log: setupMockLogger(t)}
-	err := dum.rename(context.Background(), RenameOptions{
+	dum := &Command{Log: setupMockLogger(t)}
+	err := dum.rename(context.Background(), Options{
 		FilePattern: filepath.Join(t.TempDir(), "nonexistent.txt"),
 	})
 	assert.Error(t, err)
@@ -226,7 +226,7 @@ func TestNewRenameCommand_RunE_SourceWithoutReplace(t *testing.T) {
 		mock.Anything, mock.Anything, mock.Anything,
 	).Return()
 
-	dum := &Dum{Log: logger}
+	dum := &Command{Log: logger}
 	cmd := NewRenameCommand("dum", dum)
 	cmd.SetContext(context.Background())
 	cmd.SetArgs([]string{"--source", "_DSC", "foo.txt"})
@@ -250,7 +250,7 @@ func TestNewRenameCommand_RunE_ReplaceWithoutSource(t *testing.T) {
 		mock.Anything, mock.Anything, mock.Anything,
 	).Return()
 
-	dum := &Dum{Log: logger}
+	dum := &Command{Log: logger}
 	cmd := NewRenameCommand("dum", dum)
 	cmd.SetContext(context.Background())
 	cmd.SetArgs([]string{"--replace", "bar", "foo.txt"})

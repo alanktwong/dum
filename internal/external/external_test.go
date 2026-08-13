@@ -219,7 +219,7 @@ func TestDefaultExt_SoftLink(t *testing.T) {
 	tmpDir := t.TempDir()
 	targetPath := filepath.Join(tmpDir, "target")
 
-	err := os.WriteFile(targetPath, []byte("test"), 0644)
+	err := os.WriteFile(targetPath, []byte("test"), 0o644)
 	assert.NoError(t, err)
 
 	tests := []struct {

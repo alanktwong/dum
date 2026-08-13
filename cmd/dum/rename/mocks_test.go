@@ -1,13 +1,13 @@
-package cmd
+package rename
 
 import (
 	"context"
 
-	f "awong/dotfiles/internal/factory"
-	l "awong/dotfiles/internal/logging"
+	fy "awong/dotfiles/internal/factory"
+	lg "awong/dotfiles/internal/logging"
 	pb "awong/dotfiles/internal/playbook"
 
-	"github.com/charmbracelet/log"
+	clog "github.com/charmbracelet/log"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -16,7 +16,7 @@ type mockFactoryProvider struct {
 	mock.Mock
 }
 
-func (m *mockFactoryProvider) Provide(opts f.InputOptions) (*pb.Input, error) {
+func (m *mockFactoryProvider) Provide(opts fy.InputOptions) (*pb.Input, error) {
 	ret := m.Called(opts)
 	var r0 *pb.Input
 	if ret.Get(0) != nil {
@@ -53,7 +53,7 @@ func (m *mockListExecutor) List(ctx context.Context, input *pb.Input) (*pb.Resul
 	return r0, ret.Error(1)
 }
 
-// mockLogger implements l.Logger for testing (only implements used methods).
+// mockLogger implements lg.Logger for testing (only implements used methods).
 type mockLogger struct {
 	mock.Mock
 }
@@ -106,13 +106,13 @@ func (m *mockLogger) Printlnf(format string, a ...any) error {
 	return ret.Error(0)
 }
 
-func (m *mockLogger) SetLevel(level log.Level) {
+func (m *mockLogger) SetLevel(level clog.Level) {
 	m.Called(level)
 }
 
-func (m *mockLogger) WithPrefix(prefix string) l.Logger {
+func (m *mockLogger) WithPrefix(prefix string) lg.Logger {
 	ret := m.Called(prefix)
-	return ret.Get(0).(l.Logger)
+	return ret.Get(0).(lg.Logger)
 }
 
 func (m *mockLogger) GetPrefix() string {

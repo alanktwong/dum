@@ -54,39 +54,6 @@ func (u *DefaultExt) IsInstalled(command string) bool {
 	return err == nil
 }
 
-func (u *DefaultExt) lookPath(command string) error {
-	_, err := exec.LookPath(command)
-	if err != nil {
-		return fmt.Errorf("failed to lookup path %s with error: %w", command, err)
-	}
-	return nil
-}
-
-func (u *DefaultExt) isBashInstalled() bool {
-	bashPath := filepath.Join("/usr", "local", "bin", "bash")
-	if _, err := os.Stat(bashPath); err == nil {
-		return true
-	}
-	return false
-}
-
-func (u *DefaultExt) isVimInstalled() bool {
-	vimPath := filepath.Join("/usr", "bin", "vim")
-	if _, err := os.Stat(vimPath); err == nil {
-		return true
-	}
-	err := u.lookPath(vimPath)
-	return err == nil
-}
-
-func (u *DefaultExt) checkPath(command, filepath string) bool {
-	if _, err := os.Stat(filepath); err == nil {
-		return true
-	}
-	err := u.lookPath(command)
-	return err == nil
-}
-
 // IsOSX implements Ext.
 func (u *DefaultExt) IsOSX() bool {
 	return runtime.GOOS == "darwin"
@@ -152,20 +119,6 @@ func (u *DefaultExt) SoftLink(ctx context.Context, rootPath, src, target string,
 	})
 }
 
-func (u *DefaultExt) pushd(newDir string, fn func() error) error {
-	previousDir, err := os.Getwd()
-	if err != nil {
-		return fmt.Errorf("failed to os.Getwd: %w", err)
-	}
-	if err := os.Chdir(newDir); err != nil {
-		return fmt.Errorf("failed to os.Chdir: %w", err)
-	}
-	defer func() {
-		_ = os.Chdir(previousDir)
-	}()
-	return fn()
-}
-
 // ExpandUser implements Ext.
 func (u *DefaultExt) ExpandUser(path string) (string, error) {
 	if strings.HasPrefix(path, "~") {
@@ -208,4 +161,51 @@ func (u *DefaultExt) RunCommand(ctx context.Context, command string, sudo bool) 
 // ToAbsolutePath implements Ext.
 func (u *DefaultExt) ToAbsolutePath(path string) (string, error) {
 	return u.absolutePath(path)
+}
+
+func (u *DefaultExt) lookPath(command string) error {
+	_, err := exec.LookPath(command)
+	if err != nil {
+		return fmt.Errorf("failed to lookup path %s with error: %w", command, err)
+	}
+	return nil
+}
+
+func (u *DefaultExt) isBashInstalled() bool {
+	bashPath := filepath.Join("/usr", "local", "bin", "bash")
+	if _, err := os.Stat(bashPath); err == nil {
+		return true
+	}
+	return false
+}
+
+func (u *DefaultExt) isVimInstalled() bool {
+	vimPath := filepath.Join("/usr", "bin", "vim")
+	if _, err := os.Stat(vimPath); err == nil {
+		return true
+	}
+	err := u.lookPath(vimPath)
+	return err == nil
+}
+
+func (u *DefaultExt) checkPath(command, filepath string) bool {
+	if _, err := os.Stat(filepath); err == nil {
+		return true
+	}
+	err := u.lookPath(command)
+	return err == nil
+}
+
+func (u *DefaultExt) pushd(newDir string, fn func() error) error {
+	previousDir, err := os.Getwd()
+	if err != nil {
+		return fmt.Errorf("failed to os.Getwd: %w", err)
+	}
+	if err := os.Chdir(newDir); err != nil {
+		return fmt.Errorf("failed to os.Chdir: %w", err)
+	}
+	defer func() {
+		_ = os.Chdir(previousDir)
+	}()
+	return fn()
 }

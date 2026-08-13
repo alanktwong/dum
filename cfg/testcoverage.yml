@@ -5,8 +5,6 @@ threshold:
   total: 40
 
 override:
-  - path: ^internal/cmd$
-    threshold: 7
   - path: ^internal/external$
     threshold: 1
   - path: ^internal/factory$

@@ -37,6 +37,14 @@ func (g *GitImpl) Clone(ctx context.Context, url, name, path string, sudo bool) 
 	return nil
 }
 
+// AlreadyExists implements Git.
+func (g *GitImpl) AlreadyExists(targetPath string) bool {
+	if _, err := os.Stat(targetPath); err == nil {
+		return true
+	}
+	return false
+}
+
 func (g *GitImpl) createCloneCommand(ctx context.Context, url, name string, sudo bool) *exec.Cmd {
 	if g.isGithub(url) && g.Utils.IsInstalled("gh") {
 		return g.createGithubClone(ctx, url, sudo)
@@ -69,12 +77,4 @@ func (g *GitImpl) githubOrgRepo(url string) (string, string) {
 	org := parts[0]
 	repo := strings.TrimSuffix(parts[1], ".git")
 	return org, repo
-}
-
-// AlreadyExists implements Git.
-func (g *GitImpl) AlreadyExists(targetPath string) bool {
-	if _, err := os.Stat(targetPath); err == nil {
-		return true
-	}
-	return false
 }
