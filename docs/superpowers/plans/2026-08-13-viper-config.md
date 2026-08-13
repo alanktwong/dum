@@ -160,7 +160,7 @@ make build
 - [ ] Run `INSTALLER_CONFIG="$fixture" "$binary" list`; expect `smoke-play` and `smoke-task` in output.
 - [ ] Run `INSTALLER_CONFIG="$fixture" "$binary" install --dryrun`; expect `smoke` preview output and no mutation.
 - [ ] Run `ZSH_LOG_LEVEL=debug "$binary" log debug "probe"`; expect `probe` output.
-- [ ] Run rename against temporary files with `--dry-run`; expect preview only.
+- [ ] Run rename against temporary files with `--dryrun`; expect preview only.
 - [ ] Run `"$binary" schema --output "$tmp/installer.schema.json"`; expect schema file creation.
 - [ ] Remove temporary fixture/files with `rm -rf "$tmp"`.
 - [ ] Confirm no `internal/` package imports Viper and no obsolete `EnvLevel` references remain.

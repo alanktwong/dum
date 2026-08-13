@@ -86,8 +86,7 @@ func NewInstallCommand(rootUse string, dum *Command) *cobra.Command {
 		"  # jetbrains - install a JetBrains plugin", "  - type: \"jetbrains\"", "    task: \"org.asciidoctor.intellij.asciidoc\"", "    apps: [\"goland\", \"idea\"]", "    description: \"Install AsciiDoc plugin\"", "",
 		"  # function - call a custom function", "  - type: \"function\"", "    task: \"my_custom_function\"", "    description: \"Run custom function\"",
 	}, "\n"), Example: strings.Join([]string{
-		"  # Run all plays and tasks from default config", fmt.Sprintf("  %v %v", rootUse, use), "", "  # Run with verbose output", fmt.Sprintf("  %v %v -v", rootUse, use), "", "  # Dry run (preview what would happen)", fmt.Sprintf("  %v %v --dry-run", rootUse, use), "", "  # Run a specific group of plays", fmt.Sprintf("  %v %v --group work", rootUse, use), "", "  # Use a custom config file", fmt.Sprintf("  %v %v --file ~/my-install.yml", rootUse, use), "", "  # Combine flags", fmt.Sprintf("  %v %v --group work -vv --dry-run", rootUse, use),
-	}, "\n"), RunE: func(cmd *cobra.Command, _ []string) error { return dum.runInstall(cmd) }}
+		"  # Run all plays and tasks from default config", fmt.Sprintf("  %v %v", rootUse, use), "", "  # Run with verbose output", fmt.Sprintf("  %v %v -v", rootUse, use), "", "  # Dry run (preview what would happen)", fmt.Sprintf("  %v %v --dryrun", rootUse, use), "", "  # Run a specific group of plays", fmt.Sprintf("  %v %v --group work", rootUse, use), "", "  # Use a custom config file", fmt.Sprintf("  %v %v --file ~/my-install.yml", rootUse, use), "", "  # Combine flags", fmt.Sprintf("  %v %v --group work --dryrun -v", rootUse, use)}, "\n"), RunE: func(cmd *cobra.Command, _ []string) error { return dum.runInstall(cmd) }}
 	cli.AddVerboseFlag(cmd)
 	cli.AddFileFlag(cmd)
 	cli.AddDryRunFlag(cmd)

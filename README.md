@@ -31,7 +31,7 @@ Installs software based on the playbook configuration:
 ```shell
 dum install                    # Install all plays
 dum install --group <name>    # Install specific play group
-dum install --dry-run        # Preview without installing
+dum install --dryrun       # Preview without installing
 dum install -f <config.yml>   # Use custom config file
 ```
 
@@ -55,7 +55,7 @@ dum rename -l <files...>                         # Convert to lowercase
 dum rename -f <n> <files...>                   # Trim n chars from front
 dum rename -b <n> <files...>                   # Trim n chars from back
 dum rename -i <n> <files...>                   # Add numeric suffix starting at n
-dum rename --dry-run <files...>                # Preview without renaming
+dum rename --dryrun <files...>                # Preview without renaming
 ```
 
 ### Log Command
@@ -136,7 +136,7 @@ Dum sits in the space between Ansible (full configuration management) and shell-
 | [Chezmoi](https://www.chezmoi.io/) | Go | Declarative dotfile manager with templating, encryption, and host-specific configs | macOS, Linux, Windows |
 | [Ansible](https://github.com/ansible/ansible) | Python | Full configuration management with YAML playbooks, idempotent tasks, and a large module ecosystem | macOS, Linux |
 
-**What makes Dum different:** Dum combines Go performance with an Ansible-like playbook/task model specifically tailored for personal workstation setup. It offers JSON schema validation for config files, a `--dry-run` preview mode, and a growing set of opinionated task types (brew, git, vscode, jetbrains, mas) without the overhead of a full configuration management tool.
+**What makes Dum different:** Dum combines Go performance with an Ansible-like playbook/task model specifically tailored for personal workstation setup. It offers JSON schema validation for config files, a `--dryrun` preview mode, and a growing set of opinionated task types (brew, git, vscode, jetbrains, mas) without the overhead of a full configuration management tool.
 
 ## Development
 
