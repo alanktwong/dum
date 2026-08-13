@@ -100,6 +100,12 @@ import (
 - Return errors rather than logging unless it's the final consumer
 - Validate inputs early with descriptive errors
 
+### CLI Framework Boundary
+- Keep all interactions with CLI frameworks such as Cobra inside `/cmd/` and its subdirectories.
+- Command packages under `/cmd/` own framework wiring, flags, help text, argument parsing, and CLI-specific error handling.
+- Packages under `/internal/` must remain framework-agnostic and expose typed structs, services, and errors instead of Cobra types.
+
+
 ### Types and Interfaces
 
 The codebase uses a task-based pattern:
@@ -154,12 +160,15 @@ type Task interface {
 ## Project Structure
 
 ```
-/cmd/dum/main.go       # Entry point
-/internal/cmd/              # CLI commands (Cobra-based)
-/internal/playbook/         # Core task execution logic
-/internal/external/         # External tool wrappers (brew, git, etc.)
-/internal/logging/          # Logging utilities
-/internal/enums/            # Enum definitions
+/cmd/dum/               # CLI entry point and all Cobra-facing command packages
+/cmd/linters/            # Custom lint tooling
+/internal/factory/       # Typed installer configuration and runtime construction
+/internal/playbook/      # Core task execution logic
+/internal/external/      # External tool wrappers (brew, git, etc.)
+/internal/logging/       # Logging utilities
+/internal/rename/        # Cobra-free file rename service
+/internal/types/         # Shared domain types
+/internal/yaml/          # Typed installer YAML loading and validation
 ```
 
 ## Important Files
