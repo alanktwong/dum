@@ -23,7 +23,7 @@ if [[ -z "${DUM_VERSION:-}" ]]; then
 fi
 
 # shellcheck disable=SC2034
-DUM_EXECUTABLE="$OUT_DIR/$DUM_APP"
+DUM_EXECUTABLE="${DUM_EXECUTABLE:-$OUT_DIR/$DUM_APP}"
 
 announce() {
     printf '\033[1;36m%s\033[0m\n' "$1"
