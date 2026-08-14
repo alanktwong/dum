@@ -28,39 +28,27 @@ cmd_make_out() {
 
 cmd_rhard() {
     announce "git resetting hard ..."
-    git reset --hard HEAD
-    for directory in vim/vim.d/plugged/*/; do
-        if [[ -d "$directory/.git" ]]; then
-            echo "Resetting $directory ..."
-            git -C "$directory" reset --hard HEAD
-            git -C "$directory" clean -fd
-        fi
-    done
+    repository_rhard
 }
 
 cmd_install() {
     announce "Installing tools ..."
-    bash "$TOOLS_DIR/dev-prep.sh"
+    setup_install_tools
 }
 
 cmd_check_tools() {
     announce "Checking tools ..."
-    bash "$TOOLS_DIR/dev-env-check.sh"
+    setup_check_tools
 }
 
 cmd_ci_setup() {
     announce "Installing CI tools ..."
-    go install github.com/abice/go-enum@latest
-    go install github.com/vektra/mockery/v3@latest
-    go install golang.org/x/tools/cmd/goimports@latest
+    setup_ci_tools
 }
 
 cmd_clean() {
     announce "Cleaning up ..."
-    go clean -cache
-    rm -rf "$OUT_DIR"
-    rm -f ./internal/**/*_mocks.go
-    rm -f ./internal/**/*_enum.go
+    repository_clean
 }
 
 cmd_tidy() {
@@ -166,10 +154,7 @@ cmd_all() {
 }
 
 cmd_check_lfs_hook() {
-    if ! grep -q '^git lfs pre-push' "$REPO_ROOT/.git/hooks/pre-push"; then
-        echo "git-lfs is not installed properly. Please run 'git lfs install' and try again." >&2
-        return 1
-    fi
+    repository_check_lfs_hook
 }
 
 cmd_coverage_check() {
