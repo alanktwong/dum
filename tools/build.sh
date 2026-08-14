@@ -112,34 +112,27 @@ cmd_fix() {
 
 cmd_test() {
     announce "Testing ..."
-    go test -v -cover \
-        -coverprofile="$OUT_DIR/cover.out" \
-        -covermode=atomic \
-        -coverpkg=./... \
-        -race ./...
+    quality_test
 }
 
 cmd_coverage() {
     announce "Checking coverage of tests ..."
-    go-test-coverage --config=./cfg/testcoverage.yml || true
-    announce "Generating HTML report ..."
-    go tool cover -html="$OUT_DIR/cover.out" -o "$OUT_DIR/coverage.html"
-    announce "HTML report: $OUT_DIR/coverage.html"
+    quality_coverage
 }
 
 cmd_check_coverage() {
     announce "Checking coverage threshold ..."
-    go-test-coverage --config=./cfg/testcoverage.yml
+    quality_check_coverage
 }
 
 cmd_profile() {
     announce "Profiling ..."
-    go test -cpuprofile cpu.prof -memprofile mem.prof -v -bench ./...
+    quality_profile
 }
 
 cmd_bench() {
     announce "Benchmarking ..."
-    go test -v -benchmem -bench=. ./...
+    quality_bench
 }
 
 cmd_all() {
@@ -151,12 +144,13 @@ cmd_check_lfs_hook() {
 }
 
 cmd_coverage_check() {
-    bash "$TOOLS_DIR/coverage-check.sh"
+    quality_coverage_check
 }
 
 cmd_cpd() {
-    bash "$TOOLS_DIR/cpd.sh"
+    quality_cpd
 }
+
 
 case "${1:-}" in
     print-go-version) cmd_print_go_version ;;
