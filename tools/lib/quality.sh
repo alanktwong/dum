@@ -47,7 +47,8 @@ quality_check_coverage() {
 }
 
 quality_profile() {
-    go test -cpuprofile cpu.prof -memprofile mem.prof -v -bench ./...
+    mkdir -p "$OUT_DIR"
+    go test -cpuprofile="$OUT_DIR/cpu.prof" -memprofile="$OUT_DIR/mem.prof" -v -bench ./...
 }
 
 quality_bench() {
