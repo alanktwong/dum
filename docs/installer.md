@@ -54,7 +54,7 @@ make clean build
 ls dist
 ```
 
-The local executable is written to `dist/dum`. Former standalone checks are now dispatcher subcommands, for example:
+The local executable is written to a versioned path such as `dist/dum-<version>`. Former standalone checks are now dispatcher subcommands, for example:
 
 ```shell
 ./tools/build.sh check-lfs-hook
@@ -67,7 +67,7 @@ The local executable is written to `dist/dum`. Former standalone checks are now 
 To see installer help:
 
 ```shell
-./dist/dum install --help
+./dist/dum-* install --help
 ```
 
 ## Configuring

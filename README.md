@@ -147,6 +147,7 @@ The repository's shell automation has one entry point: `tools/build.sh`. It must
 ```shell
 make help                 # List the Makefile wrappers
 ./tools/build.sh help     # List dispatcher subcommands
+./tools/build.sh make_out # Create the output directory
 ./tools/build.sh build    # Invoke the build recipe directly
 ./tools/build.sh test     # Invoke the test recipe directly
 ```
