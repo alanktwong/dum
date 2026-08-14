@@ -21,10 +21,12 @@ override:
     threshold: 2
   - path: ^internal/types$
     threshold: 1
+  - path: ^cmd/dum(/|$)
+    threshold: 20
 
 exclude:
   paths:
     - \*_enum\.go$
     - \*_mocks\.go$
     - ^internal/.*/gen/
-    - ^cmd/
+    - ^cmd/linters
