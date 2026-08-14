@@ -169,8 +169,11 @@ make all             # Runs build and quality checks
 make clean           # Clean generated files
 ```
 
-### Enums
+PUT 175.=175:
++COVERAGE_THRESHOLD=90 make check-coverage
 
+### Enums
+COVERAGE_THRESHOLD=90 make check-coverage
 We are using [go-enum](https://github.com/abice/go-enum) to generate enums from Go struct field tags. 
 The generated enums, by convention, are suffixed as `_enum.go` and are gitignored.
 
