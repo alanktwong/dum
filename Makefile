@@ -130,7 +130,7 @@ bench: ## benchmarks
 ## All
 .PHONY: all
 all: build check ## runs setup, quality checks and builds
-	@$(DISPATCH) all
+	@DISPATCH_ALL_DEPS_DONE=1 $(DISPATCH) all
 
 ## Help
 .PHONY: help

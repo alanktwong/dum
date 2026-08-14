@@ -53,43 +53,37 @@ cmd_clean() {
 
 cmd_tidy() {
     announce "Tidying ..."
-    go mod tidy
+    go_tidy
 }
 
 cmd_vendor() {
     announce "Vendoring ..."
-    go mod vendor
+    go_vendor
 }
 
 cmd_generate() {
     announce "Generating ..."
-    go generate ./...
-    for config in cfg/mockery*.yml; do
-        mockery --config "$config"
-    done
+    go_generate
 }
 
 cmd_build() {
     announce "Building ..."
-    go build -v \
-        -ldflags "-X main.version=$DUM_VERSION -X main.commit=$GIT_COMMIT" \
-        -o "$DUM_EXECUTABLE-$DUM_VERSION" "$DUM_SOURCE"
+    go_build
 }
 
 cmd_linters_build() {
     announce "Building linters ..."
-    mkdir -p "$OUT_DIR"
-    (cd cmd/linters && go build -o ../dist/linters .)
+    go_linters_build
 }
 
 cmd_release() {
     announce "Compiling releases for every OS and Platform ..."
-    goreleaser build --clean --snapshot --config cfg/goreleaser.local.yaml
+    go_release
 }
 
 cmd_release_build() {
     announce "Compiling builds for every OS and Platform ..."
-    goreleaser build --clean --snapshot --config cfg/goreleaser.snapshot.yaml
+    go_release_build
 }
 
 cmd_check() {
@@ -98,23 +92,22 @@ cmd_check() {
 
 cmd_lint() {
     announce "Linting ..."
-    golangci-lint run cmd/...
-    golangci-lint run internal/...
+    go_lint
 }
 
 cmd_vet() {
     announce "Vetting ..."
-    go vet ./...
+    go_vet
 }
 
 cmd_fmt() {
     announce "Formatting ..."
-    golangci-lint fmt
+    go_fmt
 }
 
 cmd_fix() {
     announce "Fixing ..."
-    go fix ./...
+    go_fix
 }
 
 cmd_test() {
@@ -150,6 +143,10 @@ cmd_bench() {
 }
 
 cmd_all() {
+    if [[ "${DISPATCH_ALL_DEPS_DONE:-0}" != "1" ]]; then
+        cmd_build
+        cmd_check
+    fi
     announce "running all ..."
 }
 
