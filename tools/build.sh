@@ -17,178 +17,123 @@ for library in "$SCRIPT_DIR"/lib/*.sh; do
     source "$library"
 done
 
-cmd_print_go_version() {
+case "${1:-}" in
+print-go-version)
     echo "Go Version: $(go version)"
-}
-
-cmd_make_out() {
+    ;;
+make_out)
     # shellcheck disable=SC2153
     mkdir -p "$OUT_DIR"
-}
-
-cmd_rhard() {
+    ;;
+rhard)
     announce "git resetting hard ..."
     repository_rhard
-}
-
-cmd_install() {
+    ;;
+install)
     announce "Installing tools ..."
     setup_install_tools
-}
-
-cmd_check_tools() {
+    ;;
+check_tools)
     announce "Checking tools ..."
     setup_check_tools
-}
-
-cmd_ci_setup() {
+    ;;
+ci-setup)
     announce "Installing CI tools ..."
     setup_ci_tools
-}
-
-cmd_clean() {
+    ;;
+clean)
     announce "Cleaning up ..."
     repository_clean
-}
-
-cmd_tidy() {
+    ;;
+tidy)
     announce "Tidying ..."
     go_tidy
-}
-
-cmd_vendor() {
+    ;;
+vendor)
     announce "Vendoring ..."
     go_vendor
-}
-
-cmd_generate() {
+    ;;
+generate)
     announce "Generating ..."
     go_generate
-}
-
-cmd_build() {
+    ;;
+build)
     announce "Building ..."
     go_build
-}
-
-cmd_linters_build() {
+    ;;
+linters-build)
     announce "Building linters ..."
     go_linters_build
-}
-
-cmd_release() {
+    ;;
+release)
     announce "Compiling releases for every OS and Platform ..."
     go_release
-}
-
-cmd_release_build() {
+    ;;
+release-build)
     announce "Compiling builds for every OS and Platform ..."
     go_release_build
-}
-
-cmd_check() {
+    ;;
+check)
     announce "Checking code quality ..."
-}
-
-cmd_lint() {
+    ;;
+lint)
     announce "Linting ..."
     go_lint
-}
-
-cmd_vet() {
+    ;;
+vet)
     announce "Vetting ..."
     go_vet
-}
-
-cmd_fmt() {
+    ;;
+fmt)
     announce "Formatting ..."
     go_fmt
-}
-
-cmd_fix() {
+    ;;
+fix)
     announce "Fixing ..."
     go_fix
-}
-
-cmd_test() {
+    ;;
+test)
     announce "Testing ..."
     quality_test
-}
-
-cmd_coverage() {
+    ;;
+coverage)
     announce "Checking coverage of tests ..."
     quality_coverage
-}
-
-cmd_check_coverage() {
+    ;;
+check-coverage)
     announce "Checking coverage threshold ..."
     quality_check_coverage
-}
-
-cmd_profile() {
+    ;;
+profile)
     announce "Profiling ..."
     quality_profile
-}
-
-cmd_bench() {
+    ;;
+bench)
     announce "Benchmarking ..."
     quality_bench
-}
-
-cmd_all() {
+    ;;
+all)
     announce "running all ..."
-}
-
-cmd_check_lfs_hook() {
+    ;;
+check-lfs-hook)
     repository_check_lfs_hook
-}
-
-cmd_coverage_check() {
+    ;;
+coverage-check)
     quality_coverage_check
-}
-
-cmd_cpd() {
+    ;;
+cpd)
     quality_cpd
-}
-
-
-case "${1:-}" in
-    print-go-version) cmd_print_go_version ;;
-    make_out) cmd_make_out ;;
-    rhard) cmd_rhard ;;
-    install) cmd_install ;;
-    check_tools) cmd_check_tools ;;
-    ci-setup) cmd_ci_setup ;;
-    clean) cmd_clean ;;
-    tidy) cmd_tidy ;;
-    vendor) cmd_vendor ;;
-    generate) cmd_generate ;;
-    build) cmd_build ;;
-    linters-build) cmd_linters_build ;;
-    release) cmd_release ;;
-    release-build) cmd_release_build ;;
-    check) cmd_check ;;
-    lint) cmd_lint ;;
-    vet) cmd_vet ;;
-    fmt) cmd_fmt ;;
-    fix) cmd_fix ;;
-    test) cmd_test ;;
-    coverage) cmd_coverage ;;
-    check-coverage) cmd_check_coverage ;;
-    profile) cmd_profile ;;
-    bench) cmd_bench ;;
-    all) cmd_all ;;
-    check-lfs-hook) cmd_check_lfs_hook ;;
-    coverage-check) cmd_coverage_check ;;
-    cpd) cmd_cpd ;;
-    help) print_dispatcher_usage ;;
-    "")
-        print_dispatcher_usage >&2
-        exit 2
-        ;;
-    *)
-        echo "Unknown build subcommand: $1" >&2
-        print_dispatcher_usage >&2
-        exit 2
-        ;;
+    ;;
+help)
+    print_dispatcher_usage
+    ;;
+"")
+    print_dispatcher_usage >&2
+    exit 2
+    ;;
+*)
+    echo "Unknown build subcommand: $1" >&2
+    print_dispatcher_usage >&2
+    exit 2
+    ;;
 esac

@@ -50,23 +50,12 @@ ci-setup: ## install tools needed for CI (Go tools only)
 	@$(DISPATCH) ci-setup
 
 ## Compile
-make_out:
-	@$(DISPATCH) make_out
-
 clean: ## cleans binary and other generated files
 	@$(DISPATCH) clean
-
-.PHONY: tidy
-tidy: ## runs tidy to fix go.mod dependencies
-	@$(DISPATCH) tidy
 
 .PHONY: vendor
 vendor: tidy ## all packages required to support builds and tests in the /vendor directory
 	@$(DISPATCH) vendor
-
-.PHONY: generate
-generate: ## generate code
-	@$(DISPATCH) generate
 
 .PHONY: build
 build: make_out fmt vendor generate ## local build
