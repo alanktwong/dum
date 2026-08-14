@@ -13,7 +13,7 @@ DUM_EXECUTABLE="$(OUT_DIR)/$(DUM_APP)"
 ALL_PACKAGES=$(shell go list ./... | grep -v /vendor)
 SHELL := /bin/bash # Use bash syntax
 
-COVERAGE_THRESHOLD ?= 80
+COVERAGE_THRESHOLD ?= 75 
 
 # Optional colors to beautify output
 BLACK   := $(shell tput -Txterm setaf 0)

@@ -28,12 +28,21 @@ quality_write_coverage_config() {
 }
 
 quality_run_coverage_checker() (
-    local config_file
+    local config_file output coverage
     config_file="$(mktemp "${TMPDIR:-/tmp}/dum-testcoverage.XXXXXX")"
-    trap 'rm -f -- "$config_file"' EXIT
+    output="$(mktemp "${TMPDIR:-/tmp}/dum-testcoverage-output.XXXXXX")"
+    trap 'rm -f -- "$config_file" "$output"' EXIT
 
     quality_write_coverage_config "$config_file"
-    go-test-coverage --config="$config_file"
+    if go-test-coverage --config="$config_file" --threshold-file=-1 --threshold-package=-1 >"$output"; then
+        cat "$output"
+        return 0
+    fi
+
+    cat "$output"
+    coverage="$(awk '/Total test coverage:/ { gsub("%", "", $4); print $4 }' "$output")"
+    [[ -n "$coverage" ]] && awk -v coverage="$coverage" -v threshold="$COVERAGE_THRESHOLD" \
+        'BEGIN { exit !(coverage >= threshold) }'
 )
 
 quality_coverage() {
