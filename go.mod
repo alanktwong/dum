@@ -1,13 +1,11 @@
 module awong/dotfiles
 
-go 1.26.0
+go 1.26.5
 
 // want to add
-// github.com/spf13/viper
 // github.com/samber/do
 // github.com/samber/lo
 // github.com/samber/mo
-// gopkg.in/yaml/v3
 
 require (
 	github.com/charmbracelet/log v0.4.2
@@ -18,7 +16,7 @@ require (
 )
 
 require (
-	github.com/fsnotify/fsnotify v1.9.0 // indirect
+	github.com/fsnotify/fsnotify v1.10.1 // indirect
 	github.com/go-viper/mapstructure/v2 v2.4.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
 	github.com/sagikazarmark/locafero v0.11.0 // indirect
