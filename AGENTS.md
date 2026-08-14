@@ -20,6 +20,8 @@ This document provides guidelines for agentic coding agents operating in this re
 
 ### Primary Commands (via Makefile)
 
+The Makefile targets are wrappers around the repository-root `tools/build.sh` dispatcher. Use the Makefile for normal development; run `./tools/build.sh help` to inspect direct subcommands.
+
 ```bash
 make build           # Local build (includes tidy, fmt, vendor, generate)
 make test            # Run tests with coverage
@@ -32,6 +34,13 @@ make check-coverage  # Checks coverage meets minimum threshold (default 80%)
 make all             # Runs build and check (quality + build)
 make clean           # Clean generated files
 ```
+
+Direct dispatcher commands must be run from the repository root:
+
+```bash
+./tools/build.sh help
+```
+
 
 ### Code Generation
 
@@ -48,7 +57,7 @@ mocks are gitignored since they should follow the naming convention `*_mocks.go`
 - Default threshold is **80%**
 - Override via environment variable or command line:
     ```bash
-    COVERAGE_THRESHOLD=90 make coverage-check
+    COVERAGE_THRESHOLD=90 make check-coverage
     ```
 - `check` target enforces the threshold as part of quality checks
 
@@ -72,7 +81,7 @@ make install    # Install tools (go-enum, goimports, gocov, golangci-lint, mocke
 make tidy       # Fix go.mod dependencies
 make vendor     # Vendor dependencies
 make coverage   # View coverage report in browser and check threshold
-make coverage-check  # Enforce coverage threshold
+make check-coverage  # Enforce coverage threshold
 ```
 
 ## Code Style Guidelines

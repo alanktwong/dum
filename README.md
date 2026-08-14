@@ -140,6 +140,19 @@ Dum sits in the space between Ansible (full configuration management) and shell-
 
 ## Development
 
+### Build automation
+
+The repository's shell automation has one entry point: `tools/build.sh`. It must be run from the repository root. The Makefile targets are the supported wrappers for normal development; they pass the output directory, version, and coverage settings to the dispatcher while preserving the commands below.
+
+```shell
+make help                 # List the Makefile wrappers
+./tools/build.sh help     # List dispatcher subcommands
+./tools/build.sh build    # Invoke the build recipe directly
+./tools/build.sh test     # Invoke the test recipe directly
+```
+
+The former standalone tool scripts are now dispatcher subcommands. Use `./tools/build.sh check-lfs-hook`, `./tools/build.sh coverage-check`, or `./tools/build.sh cpd` when those direct checks are needed. Run the dispatcher from the repository root; Makefile wrappers handle that automatically.
+
 ### Build Commands
 
 ```shell
@@ -172,7 +185,7 @@ mocks are gitignored since they should follow the naming convention `*_mocks.go`
 Default minimum coverage is **80%**. Override via environment variable:
 
 ```shell
-COVERAGE_THRESHOLD=90 make coverage-check
+COVERAGE_THRESHOLD=90 make check-coverage
 ```
 
 ### Linting Principles
