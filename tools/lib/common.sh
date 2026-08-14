@@ -33,33 +33,38 @@ print_dispatcher_usage() {
 Usage: ./tools/build.sh <subcommand>
 
 Subcommands:
-  print-go-version  print the Go version
-  make_out         create the output directory
-  rhard            reset the repository and nested Vim plugins
-  install          install development tools
-  check_tools      check required development tools
-  ci-setup         install tools needed by CI
-  clean            remove generated output
-  tidy             tidy Go dependencies
-  vendor           vendor Go dependencies
-  generate         generate Go code and mocks
-  build            build the dum executable
-  linters-build    build custom linters
-  release          compile release binaries
-  release-build    compile snapshot binaries
-  check            run the code quality aggregate recipe
-  lint             run linters
-  vet              run go vet
-  fmt              format Go code
-  fix              run go fix
-  test             run tests with coverage
-  coverage         generate a coverage report
-  check-coverage   check the coverage threshold
-  profile          collect CPU and memory profiles
-  bench            run benchmarks
-  all              run the aggregate recipe
-  check-lfs-hook   verify the Git LFS pre-push hook
-  coverage-check   run the standalone coverage checker
-  cpd              run copy/paste detection
+  Shared:
+    print-go-version  print the Go version
+    make_out          create the output directory
+  Setup:
+    install           install development tools
+    check_tools       check required development tools
+    ci-setup          install tools needed by CI
+  Repository:
+    rhard             reset the repository
+    clean             remove generated output
+    check-lfs-hook    verify the Git LFS pre-push hook
+  Go:
+    tidy              tidy Go dependencies
+    vendor            vendor Go dependencies
+    vet               run go vet
+    fmt               format Go code
+    fix               run go fix
+    generate          generate Go code and mocks
+    lint              run linters
+    build             build the dum executable
+    linters-build     build custom linters
+    release           compile release binaries
+    release-build     compile snapshot binaries
+  Quality:
+    check             run the code quality aggregate recipe
+    test              run tests with coverage
+    coverage          generate a coverage report
+    check-coverage    check the coverage threshold
+    profile           collect CPU and memory profiles
+    bench             run benchmarks
+    coverage-check    run the standalone coverage checker
+  All:
+    all               run the aggregate recipe
 EOF
 }

@@ -121,9 +121,6 @@ check-lfs-hook)
 coverage-check)
     quality_coverage_check
     ;;
-cpd)
-    quality_cpd
-    ;;
 help)
     print_dispatcher_usage
     ;;

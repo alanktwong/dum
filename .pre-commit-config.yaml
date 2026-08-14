@@ -1,0 +1,53 @@
+default_stages:
+  - pre-commit
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+        args:
+          - --markdown-linebreak-ext=md
+      - id: check-added-large-files
+        args:
+          - --maxkb=5000 # match GH rule
+      - id: check-case-conflict
+      - id: check-merge-conflict
+      - id: mixed-line-ending
+        args:
+          - --fix=auto
+      - id: end-of-file-fixer
+      - id: check-executables-have-shebangs
+      - id: detect-private-key
+  - repo: https://github.com/koalaman/shellcheck-precommit
+    rev: v0.11.0
+    hooks:
+      - id: shellcheck
+  - repo: https://github.com/sirosen/texthooks
+    rev: 0.6.8
+    hooks:
+      - id: fix-smartquotes
+  - repo: local
+    hooks:
+      - id: trufflehog
+        name: TruffleHog
+        description: Detect secrets in your data.
+        entry: >-
+          bash -c 'default_branch=$(git rev-parse --abbrev-ref origin/HEAD 2>/dev/null || printf "%s" main);
+          base_commit=$(git rev-parse --verify "$default_branch" 2>/dev/null || git rev-parse --verify HEAD^ 2>/dev/null || git rev-parse HEAD);
+          trufflehog git file://. --since-commit "$base_commit" --branch HEAD --only-verified --no-update --fail'
+        # For running trufflehog in docker, use the following entry instead:
+        # entry: bash -c 'docker run --rm -v "$(pwd):/workdir" -i --rm trufflesecurity/trufflehog:latest git file:///workdir --since-commit HEAD --only-verified --fail'
+        language: system
+        stages: [pre-push]
+  - repo: https://github.com/jorisroovers/gitlint
+    rev: v0.19.1
+    hooks:
+      - id: gitlint
+        stages: [commit-msg]
+  - repo: local
+    hooks:
+      - id: check-lfs-hook
+        name: check-lfs-hook
+        entry: ./tools/build.sh check-lfs-hook
+        language: system
+        pass_filenames: false
