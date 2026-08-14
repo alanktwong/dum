@@ -37,30 +37,37 @@ Assumes that:
 * Installed Go 1.24.4+
 * Installed curl
 * Installed zip/unzip
-* Installed curl
 * Installed tar
 * Install repo in normal $GOPATH/src/dotfiles
 
+The repository's shell automation has one entry point, `tools/build.sh`, and it must be run from the repository root. Makefile targets are wrappers around the same dispatcher and are the recommended interface for normal development. `make help` lists the wrappers; `./tools/build.sh help` lists the direct subcommands.
 
 ```shell
 make help
+./tools/build.sh help
 ```
 
-for the normal help
+For a normal local build, preserve the Makefile workflow:
 
 ```shell
 make clean build
 ls dist
 ```
 
-You should see an `installer-M.N.X` executor with semantic versioning.
+The local executable is written to a versioned path such as `dist/dum-<version>`. Former standalone checks are now dispatcher subcommands, for example:
+
+```shell
+./tools/build.sh check-lfs-hook
+./tools/build.sh coverage-check
+./tools/build.sh cpd
+```
 
 ## Running
 
-To see help
+To see installer help:
 
 ```shell
-./dum-M.N.X install --help
+./dist/dum-* install --help
 ```
 
 ## Configuring
@@ -92,7 +99,9 @@ See installer.yml
 * GraphiQL
 * [AppCleaner](https://freemacsoft.net/appcleaner/)
 
-### installer script
+### Legacy host tooling
+
+The list below is historical host-tooling guidance, not a separate installer script. Repository build automation uses `tools/build.sh` and its Makefile wrappers described above.
 
 #### [zsh](https://www.zsh.org/)
 
