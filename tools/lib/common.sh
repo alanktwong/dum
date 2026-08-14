@@ -10,18 +10,18 @@ readonly TOOLS_DIR
 
 DUM_APP="${DUM_APP:-dum}"
 # shellcheck disable=SC2034
-DUM_SOURCE="$REPO_ROOT/cmd/$DUM_APP"
+DUM_SOURCE="${DUM_SOURCE:-$REPO_ROOT/cmd/$DUM_APP}"
 OUT_DIR="${OUT_DIR:-./dist}"
 COVERAGE_THRESHOLD="${COVERAGE_THRESHOLD:-80}"
 
+GIT_COMMIT="${GIT_COMMIT:-$(git -C "$REPO_ROOT" rev-parse --short HEAD 2>/dev/null || true)}"
+
 if [[ -z "${DUM_VERSION:-}" ]]; then
     GIT_TAG="$(git -C "$REPO_ROOT" describe --tags --abbrev=0 2>/dev/null | sed 's/^v//' || true)"
-    GIT_COMMIT="$(git -C "$REPO_ROOT" rev-parse --short HEAD 2>/dev/null || true)"
     GIT_DIRTY="$(git -C "$REPO_ROOT" diff --quiet HEAD 2>/dev/null || printf '%s' '-dirty')"
     DUM_VERSION="${GIT_TAG:+$GIT_TAG-}${GIT_COMMIT}${GIT_DIRTY}"
 fi
 
-GIT_COMMIT="${GIT_COMMIT:-$(git -C "$REPO_ROOT" rev-parse --short HEAD 2>/dev/null || true)}"
 # shellcheck disable=SC2034
 DUM_EXECUTABLE="$OUT_DIR/$DUM_APP"
 
