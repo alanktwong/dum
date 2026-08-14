@@ -13,7 +13,6 @@ DUM_EXECUTABLE="$(OUT_DIR)/$(DUM_APP)"
 ALL_PACKAGES=$(shell go list ./... | grep -v /vendor)
 SHELL := /bin/bash # Use bash syntax
 
-COVERAGE_THRESHOLD ?= 75 
 
 # Optional colors to beautify output
 BLACK   := $(shell tput -Txterm setaf 0)
@@ -27,7 +26,7 @@ WHITE   := $(shell tput -Txterm setaf 7)
 RESET   := $(shell tput -Txterm sgr0)
 COLOR   := "\e[1;36m%s\e[0m\n"
 .DEFAULT_GOAL := help
-DISPATCH = OUT_DIR="$(OUT_DIR)" DUM_VERSION="$(DUM_VERSION)" COVERAGE_THRESHOLD="$(COVERAGE_THRESHOLD)" DUM_APP="$(DUM_APP)" DUM_SOURCE="$(DUM_SOURCE)" GIT_COMMIT="$(GIT_COMMIT)" DUM_EXECUTABLE="$(DUM_EXECUTABLE)" ./tools/build.sh
+DISPATCH = OUT_DIR="$(OUT_DIR)" DUM_VERSION="$(DUM_VERSION)" DUM_APP="$(DUM_APP)" DUM_SOURCE="$(DUM_SOURCE)" GIT_COMMIT="$(GIT_COMMIT)" DUM_EXECUTABLE="$(DUM_EXECUTABLE)" ./tools/build.sh
 
 ## Tools
 .PHONY: print-go-version

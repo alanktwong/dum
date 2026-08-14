@@ -12,7 +12,6 @@ DUM_APP="${DUM_APP:-dum}"
 # shellcheck disable=SC2034
 DUM_SOURCE="${DUM_SOURCE:-$REPO_ROOT/cmd/$DUM_APP}"
 OUT_DIR="${OUT_DIR:-./dist}"
-COVERAGE_THRESHOLD="${COVERAGE_THRESHOLD:-80}"
 
 GIT_COMMIT="${GIT_COMMIT:-$(git -C "$REPO_ROOT" rev-parse --short HEAD 2>/dev/null || true)}"
 

@@ -14,26 +14,18 @@ quality_write_coverage_config() {
     local config_file="$1"
     local profile="${OUT_DIR%/}/cover.out"
 
-    awk -v profile="$profile" -v threshold="$COVERAGE_THRESHOLD" '
-        /^profile:/ {
-            print "profile: " profile
-            next
-        }
-        /^  total:/ {
-            print "  total: " threshold
-            next
-        }
-        { print }
-    ' "$REPO_ROOT/cfg/testcoverage.yml" > "$config_file"
+    PROFILE="$profile" yq eval '.profile = strenv(PROFILE)' \
+        "$REPO_ROOT/cfg/testcoverage.yml" > "$config_file"
 }
 
 quality_run_coverage_checker() (
-    local config_file output coverage
+    local config_file output coverage threshold
     config_file="$(mktemp "${TMPDIR:-/tmp}/dum-testcoverage.XXXXXX")"
     output="$(mktemp "${TMPDIR:-/tmp}/dum-testcoverage-output.XXXXXX")"
     trap 'rm -f -- "$config_file" "$output"' EXIT
 
     quality_write_coverage_config "$config_file"
+    threshold="$(yq eval -r '.threshold.total' "$config_file")"
     if go-test-coverage --config="$config_file" --threshold-file=-1 --threshold-package=-1 >"$output"; then
         cat "$output"
         return 0
@@ -41,9 +33,10 @@ quality_run_coverage_checker() (
 
     cat "$output"
     coverage="$(awk '/Total test coverage:/ { gsub("%", "", $4); print $4 }' "$output")"
-    [[ -n "$coverage" ]] && awk -v coverage="$coverage" -v threshold="$COVERAGE_THRESHOLD" \
+    [[ -n "$coverage" ]] && awk -v coverage="$coverage" -v threshold="$threshold" \
         'BEGIN { exit !(coverage >= threshold) }'
 )
+
 
 quality_coverage() {
     quality_run_coverage_checker || true
@@ -65,7 +58,7 @@ quality_bench() {
 }
 
 quality_coverage_check() (
-    local coverage_profile filtered_profile coverage
+    local coverage_profile filtered_profile coverage threshold
 
     if [[ -f "$OUT_DIR/coverage.txt" ]]; then
         coverage_profile="$OUT_DIR/coverage.txt"
@@ -77,7 +70,7 @@ quality_coverage_check() (
     fi
 
     filtered_profile="$OUT_DIR/coverage-filtered.txt"
-    grep -v '_enum.go' "$coverage_profile" > "$filtered_profile" || {
+    grep -v -E '_enum\.go|_mocks\.go' "$coverage_profile" > "$filtered_profile" || {
         local grep_status=$?
         if ((grep_status != 1)); then
             return "$grep_status"
@@ -90,13 +83,14 @@ quality_coverage_check() (
         return 1
     fi
 
-    if awk -v coverage="$coverage" -v threshold="$COVERAGE_THRESHOLD" \
+    threshold="$(yq eval -r '.threshold.total' "$REPO_ROOT/cfg/testcoverage.yml")"
+    if awk -v coverage="$coverage" -v threshold="$threshold" \
         'BEGIN { exit !(coverage < threshold) }'; then
-        echo "Coverage ${coverage}% is below threshold ${COVERAGE_THRESHOLD}%"
+        echo "Coverage ${coverage}% is below threshold ${threshold}%"
         return 1
     fi
 
-    echo "Coverage ${coverage}% meets threshold ${COVERAGE_THRESHOLD}%"
+    echo "Coverage ${coverage}% meets threshold ${threshold}%"
 )
 
 quality_cpd() (
