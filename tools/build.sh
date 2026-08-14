@@ -143,10 +143,6 @@ cmd_bench() {
 }
 
 cmd_all() {
-    if [[ "${DISPATCH_ALL_DEPS_DONE:-0}" != "1" ]]; then
-        cmd_build
-        cmd_check
-    fi
     announce "running all ..."
 }
 
