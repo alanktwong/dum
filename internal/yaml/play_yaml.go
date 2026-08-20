@@ -6,7 +6,7 @@ import (
 
 // PlayYAML represents a single play within a playbook.
 type PlayYAML struct {
-	ID          string     `yaml:"id"`
+	ID          string     `yaml:"play"`
 	Description string     `yaml:"description"`
 	Enabled     bool       `yaml:"enabled"`
 	Tasks       []TaskYAML `yaml:"tasks"`

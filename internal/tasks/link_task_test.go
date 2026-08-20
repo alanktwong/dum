@@ -236,7 +236,16 @@ func TestLinkTask_Install_Error(t *testing.T) {
 	mockExt := new(MockExt)
 	mockExt.On("ExpandUser", "~/dotfiles").Return("/Users/testuser/dotfiles", nil)
 	mockExt.On("IsSymlink", mock.Anything).Return(false)
-	mockExt.On("SoftLink", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(assert.AnError)
+	mockExt.On(
+		"SoftLink",
+		mock.Anything,
+		mock.Anything,
+		mock.Anything,
+		mock.Anything,
+		mock.Anything,
+	).Return(
+		assert.AnError,
+	)
 
 	task := &LinkTask{
 		Attributes: *attrs,
@@ -255,31 +264,6 @@ func TestLinkTask_Install_Error(t *testing.T) {
 	assert.Error(t, err)
 	assert.Nil(t, result)
 	mockExt.AssertExpectations(t)
-}
-
-func TestLinkTask_List(t *testing.T) {
-	attrs := &ty.Attributes{
-		ID:          "~/test-link",
-		Description: "test link task",
-		Enabled:     true,
-	}
-	mockLog := NewTestLogger(t)
-
-	task := &LinkTask{
-		Attributes: *attrs,
-		Root:       "~/dotfiles",
-		Target:     "test-link",
-		Log:        mockLog,
-	}
-
-	input := &ty.TaskInput{
-		Play: "test-play",
-	}
-
-	result, err := task.List(context.Background(), input)
-	assert.NoError(t, err)
-	assert.NotNil(t, result)
-	assert.True(t, result.Success)
 }
 
 func TestLinkTask_ProvideTarget(t *testing.T) {
@@ -331,4 +315,39 @@ func TestLinkTask_IsEnabled(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.True(t, task.IsEnabled())
+}
+
+func TestLinkTask_Install_Disabled_DryRun(t *testing.T) {
+	attrs := &ty.Attributes{
+		ID:          "~/test-link",
+		Description: "test link task",
+		Enabled:     false,
+	}
+	mockExt := new(MockExt)
+
+	mockLog := NewTestLogger(t)
+	mockLog.On(
+		"Printlnf",
+		"%v %s: linking %v -> %s/%s",
+		[]any{TaskEllipsis, "LinkTask", "~/test-link", "~/dotfiles", "test-link"},
+	).Return(nil)
+
+	task := &LinkTask{
+		Attributes: *attrs,
+		Root:       "~/dotfiles",
+		Target:     "test-link",
+		Utils:      mockExt,
+		Log:        mockLog,
+	}
+
+	input := &ty.TaskInput{
+		Play:   "test-play",
+		DryRun: true,
+	}
+
+	result, err := task.Install(context.Background(), input)
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.False(t, result.Success)
+	mockLog.AssertExpectations(t)
 }

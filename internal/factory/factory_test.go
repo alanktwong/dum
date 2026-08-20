@@ -1,11 +1,11 @@
 package factory
 
 import (
+	"awong/dotfiles/internal/tasks"
 	"os"
 	"path/filepath"
 	"testing"
 
-	"awong/dotfiles/internal/tasks"
 	yml "awong/dotfiles/internal/yaml"
 
 	"github.com/stretchr/testify/assert"
@@ -55,7 +55,7 @@ func TestFactory_Provide_InvalidYaml(t *testing.T) {
 
 	tmpDir := t.TempDir()
 	badFile := filepath.Join(tmpDir, "bad.yml")
-	err := os.WriteFile(badFile, []byte("{{invalid yaml: [}"), 0644)
+	err := os.WriteFile(badFile, []byte("{{invalid yaml: [}"), 0o644)
 	assert.NoError(t, err)
 
 	_, err = f.Provide(InputOptions{File: badFile})
@@ -191,7 +191,7 @@ func TestFactory_ProvidePlayBook_JetBrainsApps(t *testing.T) {
 	f := NewFactory()
 	pbYAML := &yml.PlayBookYAML{
 		ID: "jetbrains-pb",
-		JetBrains: []map[string]string{
+		JetBrains: []yml.JetBrainsYAML{
 			{"goland": "GoLand2025.1"},
 			{"idea": "IntelliJIdea2025.1"},
 		},
@@ -247,7 +247,7 @@ func TestFactory_loadFromTypedYAML_InvalidYaml(t *testing.T) {
 
 	tmpDir := t.TempDir()
 	badFile := filepath.Join(tmpDir, "bad.yml")
-	err := os.WriteFile(badFile, []byte("{{invalid: [}"), 0644)
+	err := os.WriteFile(badFile, []byte("{{invalid: [}"), 0o644)
 	assert.NoError(t, err)
 
 	_, err = f.loadFromTypedYAML(badFile)

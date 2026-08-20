@@ -1,11 +1,6 @@
-// Main package for installer
+// Package main is the dum command-line executable.
 package main
 
-import (
-	"awong/dotfiles/internal/cmd"
-)
-
 func main() {
-	dum := cmd.NewDum()
-	dum.Exec()
+	NewDum().Exec()
 }

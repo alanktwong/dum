@@ -7,7 +7,7 @@ before:
 
 builds:
   - id: "dum"
-    main: "./cmd/dum/main.go"
+    main: "./cmd/dum"
     binary: "{{.ProjectName}}-{{.Os}}-{{.Arch}}-{{.RawVersion}}-{{.ShortCommit}}{{if .IsGitDirty}}-dirty{{end}}"
     env:
       - CGO_ENABLED=0
@@ -19,8 +19,8 @@ builds:
       pre:
         - cmd: "test \"{{.Os}}\" != \"windows\" && exit 0; echo \"ERROR: Windows builds are not supported\"; exit 1"
     ldflags:
-      - -X awong/dotfiles/internal/cmd.version={{.RawVersion}}-{{.ShortCommit}}{{if .IsGitDirty}}-dirty{{end}}
-      - -X awong/dotfiles/internal/cmd.commit={{.ShortCommit}}
+      - -X main.version={{.RawVersion}}-{{.ShortCommit}}{{if .IsGitDirty}}-dirty{{end}}
+      - -X main.commit={{.ShortCommit}}
     no_unique_dist_dir: true
 
 archives:

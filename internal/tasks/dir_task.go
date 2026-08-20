@@ -50,6 +50,12 @@ func (t *DirTask) IsEnabled() bool {
 func (t *DirTask) Install(ctx context.Context, input *ty.TaskInput) (*ty.TaskResult, error) {
 	t.Log.Debugf("%s %s START ... play: %s taskID: %s", TaskEllipsis, TaskTypeName(t), input.Play, t.ID)
 	if !t.Enabled {
+		if input.DryRun {
+			err := t.Log.Printlnf("%v %s: mkdir -p %s", TaskEllipsis, TaskTypeName(t), t.ID)
+			if err != nil {
+				return nil, fmt.Errorf("failed to log disabled dir: %w", err)
+			}
+		}
 		result, err := t.CreateTaskResult(input, false)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create task result: %w", err)
@@ -74,19 +80,6 @@ func (t *DirTask) Install(ctx context.Context, input *ty.TaskInput) (*ty.TaskRes
 		if err != nil {
 			return nil, fmt.Errorf("failed to mkdir -p %v: %w", t.ID, err)
 		}
-	}
-	result, err := t.CreateTaskResult(input, true)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create task result: %w", err)
-	}
-	return result, nil
-}
-
-// List lists the task.
-func (t *DirTask) List(_ context.Context, input *ty.TaskInput) (*ty.TaskResult, error) {
-	err := t.Log.Printlnf("%v %s: mkdir -p %s", TaskEllipsis, TaskTypeName(t), t.ID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to list dir: %w", err)
 	}
 	result, err := t.CreateTaskResult(input, true)
 	if err != nil {

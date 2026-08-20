@@ -11,6 +11,7 @@ This document provides guidelines for agentic coding agents operating in this re
 - **Configuration**: Uses `installer.yml` for defining playbooks, plays, and tasks
 
 ### Key Concepts
+
 - **Task**: A specific task for installing something (e.g., `BrewTask` runs `brew install ...`)
 - **Play**: A group of tasks
 - **Playbook**: A grouping of plays
@@ -18,6 +19,9 @@ This document provides guidelines for agentic coding agents operating in this re
 ## Build/Lint/Test Commands
 
 ### Primary Commands (via Makefile)
+
+The Makefile targets are wrappers around the repository-root `tools/build.sh` dispatcher. Use the Makefile for normal development; run `./tools/build.sh help` to inspect direct subcommands.
+
 ```bash
 make build           # Local build (includes tidy, fmt, vendor, generate)
 make test            # Run tests with coverage
@@ -30,6 +34,14 @@ make check-coverage  # Checks coverage meets minimum threshold (default 80%)
 make all             # Runs build and check (quality + build)
 make clean           # Clean generated files
 ```
+
+Direct dispatcher commands must be run from the repository root:
+
+```bash
+./tools/build.sh help
+```
+
+
 ### Code Generation
 
 We are using [go-enum](https://github.com/abice/go-enum) to generate enums from Go struct field tags.
@@ -41,14 +53,16 @@ The mockery configurations live in `cfg/mockery.*.yml` and the generated
 mocks are gitignored since they should follow the naming convention `*_mocks.go`.
 
 ### Coverage Threshold
+
 - Default threshold is **80%**
 - Override via environment variable or command line:
-  ```bash
-  COVERAGE_THRESHOLD=90 make coverage-check
-  ```
+    ```bash
+    COVERAGE_THRESHOLD=90 make check-coverage
+    ```
 - `check` target enforces the threshold as part of quality checks
 
 ### Single Test Execution
+
 ```bash
 # Run specific test
 go test -v ./internal/playbook/... -run TestBrewTask_Install
@@ -61,23 +75,27 @@ go test -v -race ./...
 ```
 
 ### Development Setup
+
 ```bash
 make install    # Install tools (go-enum, goimports, gocov, golangci-lint, mockery)
 make tidy       # Fix go.mod dependencies
 make vendor     # Vendor dependencies
 make coverage   # View coverage report in browser and check threshold
-make coverage-check  # Enforce coverage threshold
+make check-coverage  # Enforce coverage threshold
 ```
 
 ## Code Style Guidelines
 
 ### Formatting
-- **Indentation**: Use tabs for Go files (per `.editorconfig`)
+
+- **Indentation**: Use tabs for Go files and Makefile recipes; respect `.editorconfig`
 - **Line endings**: LF (Unix-style)
-- **Formatter**: Uses `gofumpt` and `goimports` (configured in `.golangci.yml`)
+- **Formatter**: Uses `gofumpt`, `goimports`, and `golines` through `.golangci.yml`
 
 ### Import Order
+
 Standard library imports first, then external packages:
+
 ```go
 import (
     "awong/dotfiles/pkg/external"
@@ -90,52 +108,60 @@ import (
 ```
 
 ### Naming Conventions
+
 - **Types/Functions**: PascalCase (e.g., `BrewTask`, `NewExecutor`)
 - **Variables/Interfaces**: camelCase (e.g., `input`, `task`)
 - **Interfaces**: Use descriptive names like `Lister`, `Installer`, `Task`
 - **Packages**: Short, lowercase names (e.g., `playbook`, `cmd`, `external`)
 
 ### Error Handling
+
 - Use `fmt.Errorf` with wrapped errors: `fmt.Errorf("failed to install task %s: %w", id, err)`
 - Return errors rather than logging unless it's the final consumer
 - Validate inputs early with descriptive errors
 
+### CLI Framework Boundary
+
+- Keep all interactions with CLI frameworks such as Cobra Viper inside `/cmd/` and its subdirectories.
+- Command packages under `/cmd/` own framework wiring, flags, help text, argument parsing, and CLI-specific error handling.
+- Packages under `/internal/` must remain framework-agnostic and expose typed structs, services, and errors instead of Cobra or Viper types.
+
 ### Types and Interfaces
 
 The codebase uses a task-based pattern:
-```go
-// Lister can list given an input.
-type Lister interface {
-    List(ctx context.Context, input *Input) (*TaskResult, error)
-}
 
+```go
 // Installer can install given an input.
 type Installer interface {
     Install(ctx context.Context, input *Input) (*TaskResult, error)
 }
 
-// Task can list and install given an input.
+// Task can install given an input. Dry runs log disabled tasks instead of
+// skipping them so the output shows the full playbook manifest.
 type Task interface {
-    Lister
     Installer
 }
 ```
 
 ### Context Usage
+
 - All public methods should accept `context.Context` as the first argument
 - Use `context.Background()` in tests
 
 ### Testing
+
 - Tests use `testify/assert` package
 - Mocks are generated with `mockery` (configured in `cfg/mockery.yml`)
 - Test files are named `*_test.go`
 - Mock files are named `*_mocks_test.go`
 
 ### Code Generation
+
 - Enums use `go-enum` with directive: `//go:generate ../../../../bin/go-enum ...`
 - Run `make generate` to regenerate code and mocks
 
 ### Linters (Enabled in golangci-lint)
+
 - bodyclose, exhaustive, goconst, godot, godox
 - gomoddirectives, goprintffuncname, gosec, misspell
 - nakedret, nestif, nilerr, noctx, nolintlint
@@ -145,21 +171,25 @@ type Task interface {
 - gocritic, gocyclo, importas, linters, staticcheck, unused
 
 ### Import Alias Standards
+
 - **No single-letter aliases**: Aliases like `l`, `i`, `t` are banned
 - **Required aliases**: All internal and vendor packages must use standardized aliases:
-  - Internal: `cd`, `ext`, `fy`, `lg`, `pb`, `pl`, `plg`, `tk`, `ti`, `ty`, `tyg`
-  - Vendor: `clog`, `omv3`, `ca`, `tt`, `asrt`, `mck`, `yamlv3`
+    - Internal: `cd`, `ext`, `fy`, `lg`, `pb`, `pl`, `plg`, `tk`, `ti`, `ty`, `tyg`
+    - Vendor: `clog`, `omv3`, `ca`, `tt`, `asrt`, `mck`, `yamlv3`
 - **Auto-fix**: Run `golangci-lint run ./... --fix` to fix importas violations
 
 ## Project Structure
 
 ```
-/cmd/dum/main.go       # Entry point
-/internal/cmd/              # CLI commands (Cobra-based)
-/internal/playbook/         # Core task execution logic
-/internal/external/         # External tool wrappers (brew, git, etc.)
-/internal/logging/          # Logging utilities
-/internal/enums/            # Enum definitions
+/cmd/dum/               # CLI entry point and all Cobra-facing command packages
+/cmd/linters/            # Custom lint tooling
+/internal/factory/       # Typed installer configuration and runtime construction
+/internal/playbook/      # Core task execution logic
+/internal/external/      # External tool wrappers (brew, git, etc.)
+/internal/logging/       # Logging utilities
+/internal/rename/        # Cobra-free file rename service
+/internal/types/         # Shared domain types
+/internal/yaml/          # Typed installer YAML loading and validation
 ```
 
 ## Important Files

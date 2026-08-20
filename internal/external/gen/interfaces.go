@@ -23,9 +23,6 @@ type Ext interface {
 	IsDir(path string) bool
 	IsSymlink(path string) bool
 	RunCommand(ctx context.Context, command string, sudo bool) error
-	GetString(data map[string]any, key string, def string) string
-	GetStrings(data map[string]any, key string, def []string) []string
-	GetBool(data map[string]any, key string, def bool) bool
 }
 
 // Brew is an abstraction for homebrew.

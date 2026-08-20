@@ -20,7 +20,6 @@ ls dist
 | Command   | Alias | Description                                     |
 |-----------|-------|-------------------------------------------------|
 | `install` | `i`   | Runs plays and tasks for software installations |
-| `list`    | `ls`  | Lists plays and tasks from the playbook         |
 | `rename`  | `r`   | Renames files with various transformations      |
 | `log`     | `lg`  | Logging utilities for shell scripts             |
 
@@ -31,19 +30,11 @@ Installs software based on the playbook configuration:
 ```shell
 dum install                    # Install all plays
 dum install --group <name>    # Install specific play group
-dum install --dry-run        # Preview without installing
+dum install --dryrun       # Preview without installing (includes disabled plays and tasks)
 dum install -f <config.yml>   # Use custom config file
 ```
 
-### List Command
-
-Lists available plays and tasks:
-
-```shell
-dum list                      # List all plays
-dum list --group <name>       # List specific play group
-dum list -f <config.yml>      # Use custom config file
-```
+Use `--dryrun` to preview what would run without making changes. Dry run output includes disabled plays and tasks, showing the full playbook manifest.
 
 ### Rename Command
 
@@ -55,7 +46,7 @@ dum rename -l <files...>                         # Convert to lowercase
 dum rename -f <n> <files...>                   # Trim n chars from front
 dum rename -b <n> <files...>                   # Trim n chars from back
 dum rename -i <n> <files...>                   # Add numeric suffix starting at n
-dum rename --dry-run <files...>                # Preview without renaming
+dum rename --dryrun <files...>                # Preview without renaming
 ```
 
 ### Log Command
@@ -136,9 +127,23 @@ Dum sits in the space between Ansible (full configuration management) and shell-
 | [Chezmoi](https://www.chezmoi.io/) | Go | Declarative dotfile manager with templating, encryption, and host-specific configs | macOS, Linux, Windows |
 | [Ansible](https://github.com/ansible/ansible) | Python | Full configuration management with YAML playbooks, idempotent tasks, and a large module ecosystem | macOS, Linux |
 
-**What makes Dum different:** Dum combines Go performance with an Ansible-like playbook/task model specifically tailored for personal workstation setup. It offers JSON schema validation for config files, a `--dry-run` preview mode, and a growing set of opinionated task types (brew, git, vscode, jetbrains, mas) without the overhead of a full configuration management tool.
+**What makes Dum different:** Dum combines Go performance with an Ansible-like playbook/task model specifically tailored for personal workstation setup. It offers JSON schema validation for config files, a `--dryrun` preview mode, and a growing set of opinionated task types (brew, git, vscode, jetbrains, mas) without the overhead of a full configuration management tool.
 
 ## Development
+
+### Build automation
+
+The repository's shell automation has one entry point: `tools/build.sh`. It must be run from the repository root. The Makefile targets are the supported wrappers for normal development; they pass the output directory, version, and coverage settings to the dispatcher while preserving the commands below.
+
+```shell
+make help                 # List the Makefile wrappers
+./tools/build.sh help     # List dispatcher subcommands
+./tools/build.sh make_out # Create the output directory
+./tools/build.sh build    # Invoke the build recipe directly
+./tools/build.sh test     # Invoke the test recipe directly
+```
+
+The former standalone tool scripts are now dispatcher subcommands. Use `./tools/build.sh check-lfs-hook`, `./tools/build.sh coverage-check`, or `./tools/build.sh cpd` when those direct checks are needed. Run the dispatcher from the repository root; Makefile wrappers handle that automatically.
 
 ### Build Commands
 
@@ -155,15 +160,18 @@ make all             # Runs build and quality checks
 make clean           # Clean generated files
 ```
 
-### Enums
+PUT 175.=175:
++COVERAGE_THRESHOLD=90 make check-coverage
 
-We are using [go-enum](https://github.com/abice/go-enum) to generate enums from Go struct field tags. 
+### Enums
+COVERAGE_THRESHOLD=90 make check-coverage
+We are using [go-enum](https://github.com/abice/go-enum) to generate enums from Go struct field tags.
 The generated enums, by convention, are suffixed as `_enum.go` and are gitignored.
 
 ### Mockery
 
 We are using [mockery](https://vektra.github.io/mockery/v3.0/) to generate
-mocks of Go interfaces for testing. 
+mocks of Go interfaces for testing.
 The mockery configurations live in `cfg/mockery.*.yml` and the generated
 mocks are gitignored since they should follow the naming convention `*_mocks.go`.
 
@@ -172,7 +180,7 @@ mocks are gitignored since they should follow the naming convention `*_mocks.go`
 Default minimum coverage is **80%**. Override via environment variable:
 
 ```shell
-COVERAGE_THRESHOLD=90 make coverage-check
+COVERAGE_THRESHOLD=90 make check-coverage
 ```
 
 ### Linting Principles

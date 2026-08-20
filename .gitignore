@@ -480,7 +480,7 @@ develop-eggs/
 downloads/
 eggs/
 .eggs/
-lib/
+# lib/
 lib64/
 parts/
 sdist/
@@ -751,7 +751,6 @@ tags
 ######################
 # Others
 ######################
-.worktrees/
 *.class
 *.*~
 *~
@@ -770,3 +769,4 @@ cfg/installer.schema.json
 ######################
 bin
 .opencode/package-lock.json
+.worktrees/

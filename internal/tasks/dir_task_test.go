@@ -213,29 +213,6 @@ func TestDirTask_Install_CreateDirectoryError(t *testing.T) {
 	mockExt.AssertExpectations(t)
 }
 
-func TestDirTask_List(t *testing.T) {
-	attrs := &ty.Attributes{
-		ID:          "~/test-dir",
-		Description: "test dir task",
-		Enabled:     true,
-	}
-	mockLog := newDirTestLogger(t)
-
-	task := &DirTask{
-		Attributes: *attrs,
-		Log:        mockLog,
-	}
-
-	input := &ty.TaskInput{
-		Play: "test-play",
-	}
-
-	result, err := task.List(context.Background(), input)
-	assert.NoError(t, err)
-	assert.NotNil(t, result)
-	assert.True(t, result.Success)
-}
-
 func TestDirTask_GetAttributes(t *testing.T) {
 	attrs := &ty.Attributes{
 		ID:          "~/test-dir",
@@ -271,4 +248,40 @@ func TestDirTask_IsEnabled(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.True(t, task.IsEnabled())
+}
+
+func TestDirTask_Install_Disabled_DryRun(t *testing.T) {
+	attrs := &ty.Attributes{
+		ID:          "~/test-dir",
+		Description: "test dir task",
+		Enabled:     false,
+	}
+	mockLog := i.NewMockLogger(t)
+	mockLog.On(
+		"Debugf",
+		"%s %s START ... play: %s taskID: %s",
+		[]any{TaskEllipsis, "DirTask", "test-play", "~/test-dir"},
+	).Return().Maybe()
+	mockLog.On(
+		"Printlnf",
+		"%v %s: mkdir -p %s",
+		[]any{TaskEllipsis, "DirTask", "~/test-dir"},
+	).Return(nil)
+
+	task := &DirTask{
+		Attributes: *attrs,
+		Utils:      new(MockExt),
+		Log:        mockLog,
+	}
+
+	input := &ty.TaskInput{
+		Play:   "test-play",
+		DryRun: true,
+	}
+
+	result, err := task.Install(context.Background(), input)
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.False(t, result.Success)
+	mockLog.AssertExpectations(t)
 }

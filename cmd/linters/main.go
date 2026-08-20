@@ -14,6 +14,7 @@ package main
 import (
 	"go/ast"
 	"go/token"
+
 	"golang.org/x/tools/go/analysis"
 	"golang.org/x/tools/go/analysis/singlechecker"
 )
@@ -28,7 +29,7 @@ func main() {
 	singlechecker.Main(Analyzer)
 }
 
-func run(pass *analysis.Pass) (interface{}, error) {
+func run(pass *analysis.Pass) (any, error) {
 	for _, file := range pass.Files {
 		ast.Inspect(file, func(n ast.Node) bool {
 			if genDecl, ok := n.(*ast.GenDecl); ok && genDecl.Tok == token.IMPORT {

@@ -46,7 +46,8 @@ func (e *Executor) Install(ctx context.Context, input *Input) (*Result, error) {
 	}
 	playResults = append(playResults, initResult)
 
-	playMap := pb.GetPlays(true)
+	// Dry runs include disabled plays so the output shows the full playbook manifest.
+	playMap := pb.GetPlays(!input.DryRun)
 	if group != "" {
 		results, err := e.installGroupPlay(ctx, group, playResults, playMap, input)
 		if err != nil {
@@ -101,75 +102,6 @@ func (e *Executor) installAllPlays(ctx context.Context,
 		})
 		if err != nil {
 			return nil, fmt.Errorf("failed to install play %s: %w", play.GetID(), err)
-		}
-		playResults = append(playResults, playResult)
-	}
-	return playResults, nil
-}
-
-// List lists a playbook.
-func (e *Executor) List(ctx context.Context, input *Input) (*Result, error) {
-	group := input.Play
-	pb := input.PlayBook
-	err := e.Log.Printlnf(Ellipsis+"Listing playbook (%v) ... %v", pb.ID, pb.Description)
-	if err != nil {
-		return nil, fmt.Errorf("failed to list playbook: %w", err)
-	}
-	var playResults []*pl.PlayResult
-	playMap := pb.GetPlays(false)
-	if group != "" {
-		results, err := e.listGroupPlay(ctx, group, playResults, playMap, input)
-		if err != nil {
-			return nil, fmt.Errorf("failed to list group %w", err)
-		}
-		playResults = results
-	} else {
-		results, err := e.listAllPlays(ctx, playResults, playMap, input)
-		if err != nil {
-			return nil, fmt.Errorf("failed to list %w", err)
-		}
-		playResults = results
-	}
-	e.Log.Infof(Ellipsis+"END: listing playbook (%v) ... %v", pb.ID, pb.Description)
-	success := pl.CalculateSuccess(playResults)
-	return NewResult(input, success), nil
-}
-
-func (e *Executor) listGroupPlay(ctx context.Context,
-	group string,
-	playResults []*pl.PlayResult,
-	playMap *om.OrderedMap[string, *pl.Play],
-	input *Input,
-) ([]*pl.PlayResult, error) {
-	if play, ok := playMap.Get(group); ok {
-		playResult, err := e.PlayExecutor.ListPlay(ctx, play, &pl.PlayInput{
-			DryRun:   input.DryRun,
-			Play:     play.ID,
-			PlayBook: input.PlayBook,
-			Sudo:     input.Sudo,
-		})
-		if err != nil {
-			return nil, fmt.Errorf("failed to list play %s: %w", play.GetID(), err)
-		}
-		playResults = append(playResults, playResult)
-	}
-	return playResults, nil
-}
-
-func (e *Executor) listAllPlays(ctx context.Context,
-	playResults []*pl.PlayResult,
-	playMap *om.OrderedMap[string, *pl.Play],
-	input *Input,
-) ([]*pl.PlayResult, error) {
-	for _, play := range playMap.AllFromFront() {
-		playResult, err := e.PlayExecutor.ListPlay(ctx, play, &pl.PlayInput{
-			DryRun:   input.DryRun,
-			Play:     play.ID,
-			PlayBook: input.PlayBook,
-			Sudo:     input.Sudo,
-		})
-		if err != nil {
-			return nil, fmt.Errorf("failed to list play %s: %w", play.GetID(), err)
 		}
 		playResults = append(playResults, playResult)
 	}

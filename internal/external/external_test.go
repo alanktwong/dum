@@ -153,123 +153,6 @@ func TestDefaultExt_ExpandUser(t *testing.T) {
 	}
 }
 
-func TestDefaultExt_GetString(t *testing.T) {
-	u := NewExt()
-	tests := []struct {
-		name string
-		data map[string]any
-		key  string
-		def  string
-		want string
-	}{
-		{
-			name: "key exists",
-			data: map[string]any{"key": "value"},
-			key:  "key",
-			def:  "default",
-			want: "value",
-		},
-		{
-			name: "key does not exist",
-			data: map[string]any{"other": "value"},
-			key:  "key",
-			def:  "default",
-			want: "default",
-		},
-		{
-			name: "key exists but not string",
-			data: map[string]any{"key": 123},
-			key:  "key",
-			def:  "default",
-			want: "default",
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := u.GetString(tt.data, tt.key, tt.def)
-			assert.Equal(t, tt.want, got)
-		})
-	}
-}
-
-func TestDefaultExt_GetStrings(t *testing.T) {
-	u := NewExt()
-	tests := []struct {
-		name string
-		data map[string]any
-		key  string
-		def  []string
-		want []string
-	}{
-		{
-			name: "key exists",
-			data: map[string]any{"key": []any{"a", "b"}},
-			key:  "key",
-			def:  []string{"default"},
-			want: []string{"a", "b"},
-		},
-		{
-			name: "key does not exist",
-			data: map[string]any{"other": "value"},
-			key:  "key",
-			def:  []string{"default"},
-			want: []string{"default"},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := u.GetStrings(tt.data, tt.key, tt.def)
-			assert.Equal(t, tt.want, got)
-		})
-	}
-}
-
-func TestDefaultExt_GetBool(t *testing.T) {
-	u := NewExt()
-	tests := []struct {
-		name string
-		data map[string]any
-		key  string
-		def  bool
-		want bool
-	}{
-		{
-			name: "key exists true",
-			data: map[string]any{"key": true},
-			key:  "key",
-			def:  false,
-			want: true,
-		},
-		{
-			name: "key exists false",
-			data: map[string]any{"key": false},
-			key:  "key",
-			def:  true,
-			want: false,
-		},
-		{
-			name: "key does not exist",
-			data: map[string]any{"other": true},
-			key:  "key",
-			def:  true,
-			want: true,
-		},
-		{
-			name: "key exists but not bool",
-			data: map[string]any{"key": "not bool"},
-			key:  "key",
-			def:  true,
-			want: true,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := u.GetBool(tt.data, tt.key, tt.def)
-			assert.Equal(t, tt.want, got)
-		})
-	}
-}
-
 func TestDefaultExt_RunCommand(t *testing.T) {
 	u := NewExt()
 	tests := []struct {
@@ -336,7 +219,7 @@ func TestDefaultExt_SoftLink(t *testing.T) {
 	tmpDir := t.TempDir()
 	targetPath := filepath.Join(tmpDir, "target")
 
-	err := os.WriteFile(targetPath, []byte("test"), 0644)
+	err := os.WriteFile(targetPath, []byte("test"), 0o644)
 	assert.NoError(t, err)
 
 	tests := []struct {

@@ -62,23 +62,16 @@ func (t *BrewCellarTask) IsEnabled() bool {
 	return t.Enabled
 }
 
-// List lists the task.
-func (t *BrewCellarTask) List(_ context.Context, input *ty.TaskInput) (*ty.TaskResult, error) {
-	err := t.Log.Printlnf("%v %s: brew install (Cellar) %s", TaskEllipsis, TaskTypeName(t), t.ID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to list brew cellar: %w", err)
-	}
-	result, err := t.CreateTaskResult(input, true)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create task result: %w", err)
-	}
-	return result, nil
-}
-
 // Install installs the task.
 func (t *BrewCellarTask) Install(ctx context.Context, input *ty.TaskInput) (*ty.TaskResult, error) {
 	t.Log.Debugf("%s %s START ... play: %s taskID: %s", TaskEllipsis, TaskTypeName(t), input.Play, t.ID)
 	if !t.Enabled {
+		if input.DryRun {
+			err := t.Log.Printlnf("%v %s: brew install (Cellar) %s", TaskEllipsis, TaskTypeName(t), t.ID)
+			if err != nil {
+				return nil, fmt.Errorf("failed to log disabled brew cellar: %w", err)
+			}
+		}
 		result, err := t.CreateTaskResult(input, false)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create task result: %w", err)

@@ -29,14 +29,3 @@ func (m *MockTask) Install(ctx context.Context, input *ty.TaskInput) (*ty.TaskRe
 	//nolint:wrapcheck
 	return r0, ret.Error(1)
 }
-
-// List implements t.Task.
-func (m *MockTask) List(ctx context.Context, input *ty.TaskInput) (*ty.TaskResult, error) {
-	ret := m.Called(ctx, input)
-	var r0 *ty.TaskResult
-	if ret.Get(0) != nil {
-		r0 = ret.Get(0).(*ty.TaskResult)
-	}
-	//nolint:wrapcheck
-	return r0, ret.Error(1)
-}

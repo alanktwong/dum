@@ -2,11 +2,9 @@ profile: dist/cover.out
 threshold:
   file: 0
   package: 0
-  total: 40
+  total: 75
 
 override:
-  - path: ^internal/cmd$
-    threshold: 7
   - path: ^internal/external$
     threshold: 1
   - path: ^internal/factory$
@@ -23,10 +21,12 @@ override:
     threshold: 2
   - path: ^internal/types$
     threshold: 1
+  - path: ^cmd/dum(/|$)
+    threshold: 20
 
 exclude:
   paths:
-    - \*_enum\.go$
-    - \*_mocks\.go$
+    - .*_enum\.go$
+    - .*_mocks\.go$
     - ^internal/.*/gen/
-    - ^cmd/
+    - ^cmd/linters

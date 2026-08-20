@@ -23,14 +23,14 @@ func (t *testExt) CreateDirectory(ctx context.Context, path string, sudo bool) e
 func (t *testExt) SoftLink(ctx context.Context, rootPath, src, target string, sudo bool) error {
 	return nil
 }
-func (t *testExt) ExpandUser(path string) (string, error)                            { return path, nil }
-func (t *testExt) ToAbsolutePath(path string) (string, error)                        { return path, nil }
-func (t *testExt) IsDir(path string) bool                                            { return t.isDirResult }
-func (t *testExt) IsSymlink(path string) bool                                        { return false }
-func (t *testExt) RunCommand(ctx context.Context, command string, sudo bool) error   { return nil }
-func (t *testExt) GetString(data map[string]any, key string, def string) string      { return def }
-func (t *testExt) GetStrings(data map[string]any, key string, def []string) []string { return def }
-func (t *testExt) GetBool(data map[string]any, key string, def bool) bool            { return def }
+
+func (t *testExt) ExpandUser(path string) (string, error) { return path, nil }
+
+func (t *testExt) ToAbsolutePath(path string) (string, error) { return path, nil }
+
+func (t *testExt) IsDir(path string) bool                                          { return t.isDirResult }
+func (t *testExt) IsSymlink(path string) bool                                      { return false }
+func (t *testExt) RunCommand(ctx context.Context, command string, sudo bool) error { return nil }
 
 func TestBrewImpl_Install_Error(t *testing.T) {
 	brew := &BrewImpl{Utils: &testExt{}}

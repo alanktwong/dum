@@ -61,7 +61,7 @@ type MockRunner_Run_Call struct {
 
 // Run is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *MockRunner_Expecter) Run(ctx interface{}) *MockRunner_Run_Call {
+func (_e *MockRunner_Expecter) Run(ctx any) *MockRunner_Run_Call {
 	return &MockRunner_Run_Call{Call: _e.mock.On("Run", ctx)}
 }
 
@@ -141,7 +141,7 @@ type MockExt_CreateDirectory_Call struct {
 //   - ctx context.Context
 //   - path string
 //   - sudo bool
-func (_e *MockExt_Expecter) CreateDirectory(ctx interface{}, path interface{}, sudo interface{}) *MockExt_CreateDirectory_Call {
+func (_e *MockExt_Expecter) CreateDirectory(ctx any, path any, sudo any) *MockExt_CreateDirectory_Call {
 	return &MockExt_CreateDirectory_Call{Call: _e.mock.On("CreateDirectory", ctx, path, sudo)}
 }
 
@@ -211,7 +211,7 @@ type MockExt_ExpandUser_Call struct {
 
 // ExpandUser is a helper method to define mock.On call
 //   - path string
-func (_e *MockExt_Expecter) ExpandUser(path interface{}) *MockExt_ExpandUser_Call {
+func (_e *MockExt_Expecter) ExpandUser(path any) *MockExt_ExpandUser_Call {
 	return &MockExt_ExpandUser_Call{Call: _e.mock.On("ExpandUser", path)}
 }
 
@@ -234,197 +234,6 @@ func (_c *MockExt_ExpandUser_Call) Return(s string, err error) *MockExt_ExpandUs
 }
 
 func (_c *MockExt_ExpandUser_Call) RunAndReturn(run func(path string) (string, error)) *MockExt_ExpandUser_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
-// GetBool provides a mock function for the type MockExt
-func (_mock *MockExt) GetBool(data map[string]any, key string, def bool) bool {
-	ret := _mock.Called(data, key, def)
-
-	if len(ret) == 0 {
-		panic("no return value specified for GetBool")
-	}
-
-	var r0 bool
-	if returnFunc, ok := ret.Get(0).(func(map[string]any, string, bool) bool); ok {
-		r0 = returnFunc(data, key, def)
-	} else {
-		r0 = ret.Get(0).(bool)
-	}
-	return r0
-}
-
-// MockExt_GetBool_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetBool'
-type MockExt_GetBool_Call struct {
-	*mock.Call
-}
-
-// GetBool is a helper method to define mock.On call
-//   - data map[string]any
-//   - key string
-//   - def bool
-func (_e *MockExt_Expecter) GetBool(data interface{}, key interface{}, def interface{}) *MockExt_GetBool_Call {
-	return &MockExt_GetBool_Call{Call: _e.mock.On("GetBool", data, key, def)}
-}
-
-func (_c *MockExt_GetBool_Call) Run(run func(data map[string]any, key string, def bool)) *MockExt_GetBool_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 map[string]any
-		if args[0] != nil {
-			arg0 = args[0].(map[string]any)
-		}
-		var arg1 string
-		if args[1] != nil {
-			arg1 = args[1].(string)
-		}
-		var arg2 bool
-		if args[2] != nil {
-			arg2 = args[2].(bool)
-		}
-		run(
-			arg0,
-			arg1,
-			arg2,
-		)
-	})
-	return _c
-}
-
-func (_c *MockExt_GetBool_Call) Return(b bool) *MockExt_GetBool_Call {
-	_c.Call.Return(b)
-	return _c
-}
-
-func (_c *MockExt_GetBool_Call) RunAndReturn(run func(data map[string]any, key string, def bool) bool) *MockExt_GetBool_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
-// GetString provides a mock function for the type MockExt
-func (_mock *MockExt) GetString(data map[string]any, key string, def string) string {
-	ret := _mock.Called(data, key, def)
-
-	if len(ret) == 0 {
-		panic("no return value specified for GetString")
-	}
-
-	var r0 string
-	if returnFunc, ok := ret.Get(0).(func(map[string]any, string, string) string); ok {
-		r0 = returnFunc(data, key, def)
-	} else {
-		r0 = ret.Get(0).(string)
-	}
-	return r0
-}
-
-// MockExt_GetString_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetString'
-type MockExt_GetString_Call struct {
-	*mock.Call
-}
-
-// GetString is a helper method to define mock.On call
-//   - data map[string]any
-//   - key string
-//   - def string
-func (_e *MockExt_Expecter) GetString(data interface{}, key interface{}, def interface{}) *MockExt_GetString_Call {
-	return &MockExt_GetString_Call{Call: _e.mock.On("GetString", data, key, def)}
-}
-
-func (_c *MockExt_GetString_Call) Run(run func(data map[string]any, key string, def string)) *MockExt_GetString_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 map[string]any
-		if args[0] != nil {
-			arg0 = args[0].(map[string]any)
-		}
-		var arg1 string
-		if args[1] != nil {
-			arg1 = args[1].(string)
-		}
-		var arg2 string
-		if args[2] != nil {
-			arg2 = args[2].(string)
-		}
-		run(
-			arg0,
-			arg1,
-			arg2,
-		)
-	})
-	return _c
-}
-
-func (_c *MockExt_GetString_Call) Return(s string) *MockExt_GetString_Call {
-	_c.Call.Return(s)
-	return _c
-}
-
-func (_c *MockExt_GetString_Call) RunAndReturn(run func(data map[string]any, key string, def string) string) *MockExt_GetString_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
-// GetStrings provides a mock function for the type MockExt
-func (_mock *MockExt) GetStrings(data map[string]any, key string, def []string) []string {
-	ret := _mock.Called(data, key, def)
-
-	if len(ret) == 0 {
-		panic("no return value specified for GetStrings")
-	}
-
-	var r0 []string
-	if returnFunc, ok := ret.Get(0).(func(map[string]any, string, []string) []string); ok {
-		r0 = returnFunc(data, key, def)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]string)
-		}
-	}
-	return r0
-}
-
-// MockExt_GetStrings_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetStrings'
-type MockExt_GetStrings_Call struct {
-	*mock.Call
-}
-
-// GetStrings is a helper method to define mock.On call
-//   - data map[string]any
-//   - key string
-//   - def []string
-func (_e *MockExt_Expecter) GetStrings(data interface{}, key interface{}, def interface{}) *MockExt_GetStrings_Call {
-	return &MockExt_GetStrings_Call{Call: _e.mock.On("GetStrings", data, key, def)}
-}
-
-func (_c *MockExt_GetStrings_Call) Run(run func(data map[string]any, key string, def []string)) *MockExt_GetStrings_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 map[string]any
-		if args[0] != nil {
-			arg0 = args[0].(map[string]any)
-		}
-		var arg1 string
-		if args[1] != nil {
-			arg1 = args[1].(string)
-		}
-		var arg2 []string
-		if args[2] != nil {
-			arg2 = args[2].([]string)
-		}
-		run(
-			arg0,
-			arg1,
-			arg2,
-		)
-	})
-	return _c
-}
-
-func (_c *MockExt_GetStrings_Call) Return(strings []string) *MockExt_GetStrings_Call {
-	_c.Call.Return(strings)
-	return _c
-}
-
-func (_c *MockExt_GetStrings_Call) RunAndReturn(run func(data map[string]any, key string, def []string) []string) *MockExt_GetStrings_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -453,7 +262,7 @@ type MockExt_IsDir_Call struct {
 
 // IsDir is a helper method to define mock.On call
 //   - path string
-func (_e *MockExt_Expecter) IsDir(path interface{}) *MockExt_IsDir_Call {
+func (_e *MockExt_Expecter) IsDir(path any) *MockExt_IsDir_Call {
 	return &MockExt_IsDir_Call{Call: _e.mock.On("IsDir", path)}
 }
 
@@ -504,7 +313,7 @@ type MockExt_IsInstalled_Call struct {
 
 // IsInstalled is a helper method to define mock.On call
 //   - command string
-func (_e *MockExt_Expecter) IsInstalled(command interface{}) *MockExt_IsInstalled_Call {
+func (_e *MockExt_Expecter) IsInstalled(command any) *MockExt_IsInstalled_Call {
 	return &MockExt_IsInstalled_Call{Call: _e.mock.On("IsInstalled", command)}
 }
 
@@ -643,7 +452,7 @@ type MockExt_IsSymlink_Call struct {
 
 // IsSymlink is a helper method to define mock.On call
 //   - path string
-func (_e *MockExt_Expecter) IsSymlink(path interface{}) *MockExt_IsSymlink_Call {
+func (_e *MockExt_Expecter) IsSymlink(path any) *MockExt_IsSymlink_Call {
 	return &MockExt_IsSymlink_Call{Call: _e.mock.On("IsSymlink", path)}
 }
 
@@ -703,7 +512,7 @@ type MockExt_IsUserInFileGroup_Call struct {
 
 // IsUserInFileGroup is a helper method to define mock.On call
 //   - filePath string
-func (_e *MockExt_Expecter) IsUserInFileGroup(filePath interface{}) *MockExt_IsUserInFileGroup_Call {
+func (_e *MockExt_Expecter) IsUserInFileGroup(filePath any) *MockExt_IsUserInFileGroup_Call {
 	return &MockExt_IsUserInFileGroup_Call{Call: _e.mock.On("IsUserInFileGroup", filePath)}
 }
 
@@ -756,7 +565,7 @@ type MockExt_RunCommand_Call struct {
 //   - ctx context.Context
 //   - command string
 //   - sudo bool
-func (_e *MockExt_Expecter) RunCommand(ctx interface{}, command interface{}, sudo interface{}) *MockExt_RunCommand_Call {
+func (_e *MockExt_Expecter) RunCommand(ctx any, command any, sudo any) *MockExt_RunCommand_Call {
 	return &MockExt_RunCommand_Call{Call: _e.mock.On("RunCommand", ctx, command, sudo)}
 }
 
@@ -821,7 +630,7 @@ type MockExt_SoftLink_Call struct {
 //   - src string
 //   - target string
 //   - sudo bool
-func (_e *MockExt_Expecter) SoftLink(ctx interface{}, rootPath interface{}, src interface{}, target interface{}, sudo interface{}) *MockExt_SoftLink_Call {
+func (_e *MockExt_Expecter) SoftLink(ctx any, rootPath any, src any, target any, sudo any) *MockExt_SoftLink_Call {
 	return &MockExt_SoftLink_Call{Call: _e.mock.On("SoftLink", ctx, rootPath, src, target, sudo)}
 }
 
@@ -901,7 +710,7 @@ type MockExt_ToAbsolutePath_Call struct {
 
 // ToAbsolutePath is a helper method to define mock.On call
 //   - path string
-func (_e *MockExt_Expecter) ToAbsolutePath(path interface{}) *MockExt_ToAbsolutePath_Call {
+func (_e *MockExt_Expecter) ToAbsolutePath(path any) *MockExt_ToAbsolutePath_Call {
 	return &MockExt_ToAbsolutePath_Call{Call: _e.mock.On("ToAbsolutePath", path)}
 }
 
@@ -981,7 +790,7 @@ type MockBrew_InPath_Call struct {
 //   - ctx context.Context
 //   - prefix string
 //   - id string
-func (_e *MockBrew_Expecter) InPath(ctx interface{}, prefix interface{}, id interface{}) *MockBrew_InPath_Call {
+func (_e *MockBrew_Expecter) InPath(ctx any, prefix any, id any) *MockBrew_InPath_Call {
 	return &MockBrew_InPath_Call{Call: _e.mock.On("InPath", ctx, prefix, id)}
 }
 
@@ -1043,7 +852,7 @@ type MockBrew_Install_Call struct {
 // Install is a helper method to define mock.On call
 //   - ctx context.Context
 //   - formula string
-func (_e *MockBrew_Expecter) Install(ctx interface{}, formula interface{}) *MockBrew_Install_Call {
+func (_e *MockBrew_Expecter) Install(ctx any, formula any) *MockBrew_Install_Call {
 	return &MockBrew_Install_Call{Call: _e.mock.On("Install", ctx, formula)}
 }
 
@@ -1100,7 +909,7 @@ type MockBrew_InstallCask_Call struct {
 // InstallCask is a helper method to define mock.On call
 //   - ctx context.Context
 //   - formula string
-func (_e *MockBrew_Expecter) InstallCask(ctx interface{}, formula interface{}) *MockBrew_InstallCask_Call {
+func (_e *MockBrew_Expecter) InstallCask(ctx any, formula any) *MockBrew_InstallCask_Call {
 	return &MockBrew_InstallCask_Call{Call: _e.mock.On("InstallCask", ctx, formula)}
 }
 
@@ -1165,7 +974,7 @@ type MockBrew_Prefix_Call struct {
 
 // Prefix is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *MockBrew_Expecter) Prefix(ctx interface{}) *MockBrew_Prefix_Call {
+func (_e *MockBrew_Expecter) Prefix(ctx any) *MockBrew_Prefix_Call {
 	return &MockBrew_Prefix_Call{Call: _e.mock.On("Prefix", ctx)}
 }
 
@@ -1217,7 +1026,7 @@ type MockBrew_Tap_Call struct {
 // Tap is a helper method to define mock.On call
 //   - ctx context.Context
 //   - formula string
-func (_e *MockBrew_Expecter) Tap(ctx interface{}, formula interface{}) *MockBrew_Tap_Call {
+func (_e *MockBrew_Expecter) Tap(ctx any, formula any) *MockBrew_Tap_Call {
 	return &MockBrew_Tap_Call{Call: _e.mock.On("Tap", ctx, formula)}
 }
 
@@ -1300,7 +1109,7 @@ type MockGit_AlreadyExists_Call struct {
 
 // AlreadyExists is a helper method to define mock.On call
 //   - targetPath string
-func (_e *MockGit_Expecter) AlreadyExists(targetPath interface{}) *MockGit_AlreadyExists_Call {
+func (_e *MockGit_Expecter) AlreadyExists(targetPath any) *MockGit_AlreadyExists_Call {
 	return &MockGit_AlreadyExists_Call{Call: _e.mock.On("AlreadyExists", targetPath)}
 }
 
@@ -1355,7 +1164,7 @@ type MockGit_Clone_Call struct {
 //   - name string
 //   - path string
 //   - sudo bool
-func (_e *MockGit_Expecter) Clone(ctx interface{}, url interface{}, name interface{}, path interface{}, sudo interface{}) *MockGit_Clone_Call {
+func (_e *MockGit_Expecter) Clone(ctx any, url any, name any, path any, sudo any) *MockGit_Clone_Call {
 	return &MockGit_Clone_Call{Call: _e.mock.On("Clone", ctx, url, name, path, sudo)}
 }
 
@@ -1454,7 +1263,7 @@ type MockCode_InstallExtension_Call struct {
 // InstallExtension is a helper method to define mock.On call
 //   - ctx context.Context
 //   - formula string
-func (_e *MockCode_Expecter) InstallExtension(ctx interface{}, formula interface{}) *MockCode_InstallExtension_Call {
+func (_e *MockCode_Expecter) InstallExtension(ctx any, formula any) *MockCode_InstallExtension_Call {
 	return &MockCode_InstallExtension_Call{Call: _e.mock.On("InstallExtension", ctx, formula)}
 }
 
@@ -1519,7 +1328,7 @@ type MockCode_ListExtensions_Call struct {
 
 // ListExtensions is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *MockCode_Expecter) ListExtensions(ctx interface{}) *MockCode_ListExtensions_Call {
+func (_e *MockCode_Expecter) ListExtensions(ctx any) *MockCode_ListExtensions_Call {
 	return &MockCode_ListExtensions_Call{Call: _e.mock.On("ListExtensions", ctx)}
 }
 
@@ -1598,7 +1407,7 @@ type MockMas_Install_Call struct {
 // Install is a helper method to define mock.On call
 //   - ctx context.Context
 //   - app string
-func (_e *MockMas_Expecter) Install(ctx interface{}, app interface{}) *MockMas_Install_Call {
+func (_e *MockMas_Expecter) Install(ctx any, app any) *MockMas_Install_Call {
 	return &MockMas_Install_Call{Call: _e.mock.On("Install", ctx, app)}
 }
 
@@ -1663,7 +1472,7 @@ type MockMas_List_Call struct {
 
 // List is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *MockMas_Expecter) List(ctx interface{}) *MockMas_List_Call {
+func (_e *MockMas_Expecter) List(ctx any) *MockMas_List_Call {
 	return &MockMas_List_Call{Call: _e.mock.On("List", ctx)}
 }
 
@@ -1743,7 +1552,7 @@ type MockJetBrainsApp_Install_Call struct {
 //   - ctx context.Context
 //   - app string
 //   - plugin string
-func (_e *MockJetBrainsApp_Expecter) Install(ctx interface{}, app interface{}, plugin interface{}) *MockJetBrainsApp_Install_Call {
+func (_e *MockJetBrainsApp_Expecter) Install(ctx any, app any, plugin any) *MockJetBrainsApp_Install_Call {
 	return &MockJetBrainsApp_Install_Call{Call: _e.mock.On("Install", ctx, app, plugin)}
 }
 
@@ -1805,7 +1614,7 @@ type MockJetBrainsApp_IsInstalled_Call struct {
 // IsInstalled is a helper method to define mock.On call
 //   - ideName string
 //   - plugin string
-func (_e *MockJetBrainsApp_Expecter) IsInstalled(ideName interface{}, plugin interface{}) *MockJetBrainsApp_IsInstalled_Call {
+func (_e *MockJetBrainsApp_Expecter) IsInstalled(ideName any, plugin any) *MockJetBrainsApp_IsInstalled_Call {
 	return &MockJetBrainsApp_IsInstalled_Call{Call: _e.mock.On("IsInstalled", ideName, plugin)}
 }
 

@@ -9,7 +9,8 @@ import (
 func NewTestLogger(t interface {
 	mock.TestingT
 	Cleanup(func())
-}) *i.MockLogger {
+},
+) *i.MockLogger {
 	l := i.NewMockLogger(t)
 	l.On("Debugf", mock.Anything, mock.Anything).Return().Maybe()
 	l.On("Infof", mock.Anything, mock.Anything).Return().Maybe()

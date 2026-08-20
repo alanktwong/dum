@@ -203,32 +203,6 @@ func TestFunctionTask_Install_InstallError(t *testing.T) {
 	mockInstaller.AssertExpectations(t)
 }
 
-func TestFunctionTask_List(t *testing.T) {
-	t.Skip("Skipping - requires complex mock setup")
-	attrs := &ty.Attributes{
-		ID:          "install_bash",
-		Description: "test function task",
-		Enabled:     true,
-	}
-	mockLog := i.NewMockLogger(t)
-
-	task := &FunctionTask{
-		Attributes: *attrs,
-		Registry:   NewFunctionRegistry(),
-		Log:        mockLog,
-	}
-
-	input := &ty.TaskInput{
-		Play: "test-play",
-	}
-
-	result, err := task.List(context.Background(), input)
-	assert.NoError(t, err)
-	assert.NotNil(t, result)
-	assert.True(t, result.Success)
-	mockLog.AssertExpectations(t)
-}
-
 func TestFunctionTask_GetAttributes(t *testing.T) {
 	attrs := &ty.Attributes{
 		ID:          "install_bash",
@@ -264,4 +238,40 @@ func TestFunctionTask_IsEnabled(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.True(t, task.IsEnabled())
+}
+
+func TestFunctionTask_Install_Disabled_DryRun(t *testing.T) {
+	attrs := &ty.Attributes{
+		ID:          "install_bash",
+		Description: "test function task",
+		Enabled:     false,
+	}
+	mockLog := i.NewMockLogger(t)
+	mockLog.On(
+		"Debugf",
+		"%s %s START ... play: %s taskID: %s",
+		[]any{TaskEllipsis, "FunctionTask", "test-play", "install_bash"},
+	).Return().Maybe()
+	mockLog.On(
+		"Printlnf",
+		"%v %s: function -> %s",
+		[]any{TaskEllipsis, "FunctionTask", "install_bash"},
+	).Return(nil)
+
+	task := &FunctionTask{
+		Attributes: *attrs,
+		Registry:   NewFunctionRegistry(),
+		Log:        mockLog,
+	}
+
+	input := &ty.TaskInput{
+		Play:   "test-play",
+		DryRun: true,
+	}
+
+	result, err := task.Install(context.Background(), input)
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.False(t, result.Success)
+	mockLog.AssertExpectations(t)
 }

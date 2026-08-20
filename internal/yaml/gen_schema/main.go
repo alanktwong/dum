@@ -17,7 +17,7 @@ func main() {
 			"playbook": map[string]interface{}{
 				"type": "object",
 				"properties": map[string]interface{}{
-					"id":          map[string]interface{}{"type": "string"},
+					"book":        map[string]interface{}{"type": "string"},
 					"description": map[string]interface{}{"type": "string"},
 					"enabled":     map[string]interface{}{"type": "boolean"},
 					"sudo":        map[string]interface{}{"type": "boolean"},
@@ -33,7 +33,7 @@ func main() {
 						"items": map[string]interface{}{
 							"type": "object",
 							"properties": map[string]interface{}{
-								"id":          map[string]interface{}{"type": "string"},
+								"play":        map[string]interface{}{"type": "string"},
 								"description": map[string]interface{}{"type": "string"},
 								"enabled":     map[string]interface{}{"type": "boolean"},
 								"tasks": map[string]interface{}{
@@ -41,8 +41,23 @@ func main() {
 									"items": map[string]interface{}{
 										"type": "object",
 										"properties": map[string]interface{}{
-											"type":        map[string]interface{}{"type": "string", "enum": []string{"bash", "dir", "link", "git", "brew", "cask", "cellar", "function", "mas", "vscode", "jetbrains"}},
-											"id":          map[string]interface{}{"type": "string"},
+											"type": map[string]interface{}{
+												"type": "string",
+												"enum": []string{
+													"bash",
+													"dir",
+													"link",
+													"git",
+													"brew",
+													"cask",
+													"cellar",
+													"function",
+													"mas",
+													"vscode",
+													"jetbrains",
+												},
+											},
+											"task":        map[string]interface{}{"type": "string"},
 											"description": map[string]interface{}{"type": "string"},
 											"enabled":     map[string]interface{}{"type": "boolean"},
 											"command":     map[string]interface{}{"type": "string"},
@@ -56,15 +71,15 @@ func main() {
 												"items": map[string]interface{}{"type": "string"},
 											},
 										},
-										"required": []string{"type", "id"},
+										"required": []string{"type", "task"},
 									},
 								},
 							},
-							"required": []string{"id", "tasks"},
+							"required": []string{"play", "tasks"},
 						},
 					},
 				},
-				"required": []string{"id", "plays"},
+				"required": []string{"book", "plays"},
 			},
 		},
 		"required": []string{"playbook"},
@@ -81,7 +96,7 @@ func main() {
 		outputPath = os.Args[1]
 	}
 
-	err = os.WriteFile(outputPath, data, 0644)
+	err = os.WriteFile(outputPath, data, 0o644)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error writing schema: %v\n", err)
 		os.Exit(1)
