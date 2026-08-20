@@ -23,8 +23,11 @@ func (t *testExt) CreateDirectory(ctx context.Context, path string, sudo bool) e
 func (t *testExt) SoftLink(ctx context.Context, rootPath, src, target string, sudo bool) error {
 	return nil
 }
-func (t *testExt) ExpandUser(path string) (string, error)                          { return path, nil }
-func (t *testExt) ToAbsolutePath(path string) (string, error)                      { return path, nil }
+
+func (t *testExt) ExpandUser(path string) (string, error) { return path, nil }
+
+func (t *testExt) ToAbsolutePath(path string) (string, error) { return path, nil }
+
 func (t *testExt) IsDir(path string) bool                                          { return t.isDirResult }
 func (t *testExt) IsSymlink(path string) bool                                      { return false }
 func (t *testExt) RunCommand(ctx context.Context, command string, sudo bool) error { return nil }
