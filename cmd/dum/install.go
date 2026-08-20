@@ -59,7 +59,6 @@ func NewInstallCommand(rootUse string, dum *InstallCommand) *cobra.Command {
 		"  vscode    - runs 'code --install-extension {ID}'",
 		"  mas       - runs 'mas install {ID}'",
 		"  jetbrains - runs '{app} installPlugin {ID}' for JetBrains apps",
-		"  function  - runs a custom function from the playbook",
 		"",
 		"Config:",
 		"  Default:   ./dum.yml, $XDG_CONFIG_HOME/dum/dum.yml, or legacy $XDG_CONFIG_HOME/dum/installer.yml",
@@ -133,11 +132,6 @@ func NewInstallCommand(rootUse string, dum *InstallCommand) *cobra.Command {
 		"    task: \"org.asciidoctor.intellij.asciidoc\"",
 		"    apps: [\"goland\", \"idea\"]",
 		"    description: \"Install AsciiDoc plugin\"",
-		"",
-		"  # function - call a custom function",
-		"  - type: \"function\"",
-		"    task: \"my_custom_function\"",
-		"    description: \"Run custom function\"",
 	}
 	exampleHunk := []string{
 		"  # Run all plays and tasks from default config",

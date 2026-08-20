@@ -330,7 +330,7 @@ func TestFactory_Provide_HappyPath_TaskTypes(t *testing.T) {
 	assert.NoError(t, err)
 
 	play1 := input.PlayBook.Plays[0]
-	assert.Len(t, play1.Tasks, 12)
+	assert.Len(t, play1.Tasks, 11)
 
 	_, ok := play1.Tasks[0].(*tasks.DirTask)
 	assert.True(t, ok, "expected DirTask")
@@ -344,15 +344,13 @@ func TestFactory_Provide_HappyPath_TaskTypes(t *testing.T) {
 	assert.True(t, ok, "expected BrewCaskTask")
 	_, ok = play1.Tasks[6].(*tasks.BrewCellarTask)
 	assert.True(t, ok, "expected BrewCellarTask")
-	_, ok = play1.Tasks[7].(*tasks.FunctionTask)
-	assert.True(t, ok, "expected FunctionTask")
-	_, ok = play1.Tasks[8].(*tasks.GitTask)
+	_, ok = play1.Tasks[7].(*tasks.GitTask)
 	assert.True(t, ok, "expected GitTask")
-	_, ok = play1.Tasks[9].(*tasks.MasTask)
+	_, ok = play1.Tasks[8].(*tasks.MasTask)
 	assert.True(t, ok, "expected MasTask")
-	_, ok = play1.Tasks[10].(*tasks.VsCodePluginTask)
+	_, ok = play1.Tasks[9].(*tasks.VsCodePluginTask)
 	assert.True(t, ok, "expected VsCodePluginTask")
-	_, ok = play1.Tasks[11].(*tasks.JetBrainsPluginTask)
+	_, ok = play1.Tasks[10].(*tasks.JetBrainsPluginTask)
 	assert.True(t, ok, "expected JetBrainsPluginTask")
 }
 
