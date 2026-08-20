@@ -4,6 +4,7 @@ package main
 import (
 	"fmt"
 	"math"
+	"os"
 
 	clog "github.com/charmbracelet/log"
 	"github.com/spf13/cobra"
@@ -77,13 +78,20 @@ func AddOutputFlag(cmd *cobra.Command) {
 	cmd.Flags().StringP(OUTPUT, "o", "", "output file path (default: stdout)")
 }
 
-// GetDefaultConfig returns the configured installer file path.
+// GetDefaultConfig returns the configured dum configuration file path.
+//
+// Resolution order, first match wins:
+//  1. DUM_CONFIG environment variable (returned verbatim).
+//  2. ./dum.yml if it exists.
+//  3. $XDG_CONFIG_HOME/dum/dum.yml if it exists.
+//  4. Legacy $XDG_CONFIG_HOME/dum/installer.yml if it exists.
+//  5. The canonical $XDG_CONFIG_HOME/dum/dum.yml path otherwise.
 func GetDefaultConfig() string {
 	config := viper.New()
-	_ = config.BindEnv("INSTALLER_CONFIG")
+	_ = config.BindEnv("DUM_CONFIG")
 	_ = config.BindEnv("XDG_CONFIG_HOME")
 
-	if path := config.GetString("INSTALLER_CONFIG"); path != "" {
+	if path := config.GetString("DUM_CONFIG"); path != "" {
 		return path
 	}
 
@@ -91,5 +99,15 @@ func GetDefaultConfig() string {
 	if base == "" {
 		base = "~/.config"
 	}
-	return fmt.Sprintf("%s/dum/installer.yml", base)
+	candidates := []string{
+		"dum.yml",
+		fmt.Sprintf("%s/dum/dum.yml", base),
+		fmt.Sprintf("%s/dum/installer.yml", base),
+	}
+	for _, candidate := range candidates {
+		if _, err := os.Stat(candidate); err == nil {
+			return candidate
+		}
+	}
+	return candidates[1]
 }

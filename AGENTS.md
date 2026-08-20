@@ -8,7 +8,7 @@ This document provides guidelines for agentic coding agents operating in this re
 - **Language**: Go 1.26 (requires 1.24.4+)
 - **Module**: `awong/dotfiles`
 - **Description**: A hand-rolled CLI tool similar to Ansible, written in Go. Manages software installations and configurations on macOS/Linux laptops.
-- **Configuration**: Uses `installer.yml` for defining playbooks, plays, and tasks
+- **Configuration**: Uses `dum.yml` for defining playbooks, plays, and tasks (legacy `installer.yml` still resolved as fallback)
 
 ### Key Concepts
 
@@ -199,4 +199,4 @@ type Task interface {
 - `cfg/goreleaser.yaml` - GoReleaser build config
 - `.editorconfig` - Editor formatting rules
 - `Makefile` - Build and development commands
-- `installer.yml` - Playbook configuration file
+- `dum.yml` - Playbook configuration file (legacy `installer.yml` still resolved as fallback)

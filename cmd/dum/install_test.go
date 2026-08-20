@@ -148,7 +148,7 @@ func TestRunInstall_ExecutorError(t *testing.T) {
 }
 
 func TestRunInstall_ViaCobra(t *testing.T) {
-	t.Setenv("INSTALLER_CONFIG", "/env/default.yml")
+	t.Setenv("DUM_CONFIG", "/env/default.yml")
 	dum, logger, factory, executor := newTestDumForInstall(t)
 	cmd := newTestInstallCmd(t, dum)
 	cmd.SetContext(context.Background())

@@ -63,8 +63,14 @@ dum log error <message>    # Error level log
 
 ## Configuration
 
-By default, the playbook is loaded from `$XDG_CONFIG_HOME/dum/installer.yml` (defaults to `~/.config/dum/installer.yml`).
-You can specify a custom file with the `-f` flag or set the `INSTALLER_CONFIG` environment variable.
+By default, the playbook is resolved in this order (first match wins):
+
+1. `DUM_CONFIG` environment variable
+2. `./dum.yml` in the current directory
+3. `$XDG_CONFIG_HOME/dum/dum.yml` (defaults to `~/.config/dum/dum.yml`)
+4. Legacy fallback: `$XDG_CONFIG_HOME/dum/installer.yml`
+
+You can also specify a custom file with the `-f` flag.
 
 ## Task Types
 
@@ -78,7 +84,7 @@ You can specify a custom file with the `-f` flag or set the `INSTALLER_CONFIG` e
 
 ## Editor Integration
 
-For IDE autocomplete and validation when editing `installer.yml`, you can use the JSON schema:
+For IDE autocomplete and validation when editing `dum.yml`, you can use the JSON schema:
 
 ### VS Code
 
@@ -87,7 +93,7 @@ Add to your `settings.json`:
 ```json
 {
   "yaml.schemas": {
-    "installer.schema.json": "installer.yml"
+    "installer.schema.json": "dum.yml"
   }
 }
 ```
@@ -103,7 +109,7 @@ Place the schema in your IDE config directory:
 - macOS: `~/Library/Application Support/JetBrains/<IDE>/schemas`
 - Linux: `~/.config/JetBrains/<IDE>/schemas`
 
-The IDE should automatically detect and use the schema for `installer.yml` files.
+The IDE should automatically detect and use the schema for `dum.yml` files.
 
 ### Other Editors
 
