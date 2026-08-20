@@ -1,4 +1,4 @@
-package install
+package main
 
 import (
 	"context"
@@ -13,12 +13,12 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-func newTestDumForInstall(t *testing.T) (*Command, *mockLogger, *mockFactoryProvider, *mockInstallExecutor) {
+func newTestDumForInstall(t *testing.T) (*InstallCommand, *mockLogger, *mockFactoryProvider, *mockInstallExecutor) {
 	t.Helper()
 	logger := &mockLogger{}
 	factory := &mockFactoryProvider{}
 	executor := &mockInstallExecutor{}
-	dum := &Command{
+	dum := &InstallCommand{
 		Log:             logger,
 		FactoryProvider: factory,
 		Executor:        executor,
@@ -26,7 +26,7 @@ func newTestDumForInstall(t *testing.T) (*Command, *mockLogger, *mockFactoryProv
 	return dum, logger, factory, executor
 }
 
-func newTestInstallCmd(t *testing.T, dum *Command) *cobra.Command {
+func newTestInstallCmd(t *testing.T, dum *InstallCommand) *cobra.Command {
 	t.Helper()
 	return NewInstallCommand("test", dum)
 }

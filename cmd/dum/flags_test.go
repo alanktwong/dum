@@ -1,7 +1,6 @@
 package main
 
 import (
-	"awong/dotfiles/cmd/dum/cli"
 	"os"
 	"testing"
 
@@ -12,20 +11,20 @@ import (
 func TestGetDefaultConfig_Default(t *testing.T) {
 	t.Setenv("INSTALLER_CONFIG", "")
 	t.Setenv("XDG_CONFIG_HOME", "")
-	result := cli.GetDefaultConfig()
+	result := GetDefaultConfig()
 	assert.Equal(t, "~/.config/dum/installer.yml", result)
 }
 
 func TestGetDefaultConfig_XDGConfigHome(t *testing.T) {
 	t.Setenv("INSTALLER_CONFIG", "")
 	t.Setenv("XDG_CONFIG_HOME", "/custom/config")
-	result := cli.GetDefaultConfig()
+	result := GetDefaultConfig()
 	assert.Equal(t, "/custom/config/dum/installer.yml", result)
 }
 
 func TestGetDefaultConfig_FromEnv(t *testing.T) {
 	t.Setenv("INSTALLER_CONFIG", "/custom/path.yml")
-	result := cli.GetDefaultConfig()
+	result := GetDefaultConfig()
 	assert.Equal(t, "/custom/path.yml", result)
 }
 
@@ -33,25 +32,25 @@ func TestGetDefaultConfig_InstallerConfigTakesPrecedence(t *testing.T) {
 	t.Setenv("INSTALLER_CONFIG", "/custom/path.yml")
 	t.Setenv("XDG_CONFIG_HOME", "/custom/config")
 
-	assert.Equal(t, "/custom/path.yml", cli.GetDefaultConfig())
+	assert.Equal(t, "/custom/path.yml", GetDefaultConfig())
 }
 
 func TestGetDefaultConfig_RepeatedCallsAreEnvironmentIsolated(t *testing.T) {
 	t.Setenv("INSTALLER_CONFIG", "/first/path.yml")
 	t.Setenv("XDG_CONFIG_HOME", "")
-	assert.Equal(t, "/first/path.yml", cli.GetDefaultConfig())
+	assert.Equal(t, "/first/path.yml", GetDefaultConfig())
 
 	t.Setenv("INSTALLER_CONFIG", "")
 	t.Setenv("XDG_CONFIG_HOME", "/second/config")
-	assert.Equal(t, "/second/config/dum/installer.yml", cli.GetDefaultConfig())
+	assert.Equal(t, "/second/config/dum/installer.yml", GetDefaultConfig())
 
 	t.Setenv("XDG_CONFIG_HOME", "")
-	assert.Equal(t, "~/.config/dum/installer.yml", cli.GetDefaultConfig())
+	assert.Equal(t, "~/.config/dum/installer.yml", GetDefaultConfig())
 }
 
 func TestAddGroupFlag(t *testing.T) {
 	cmd := &cobra.Command{Use: "test"}
-	cli.AddGroupFlag(cmd)
+	AddGroupFlag(cmd)
 
 	flag := cmd.Flags().Lookup("group")
 	assert.NotNil(t, flag)
@@ -61,7 +60,7 @@ func TestAddGroupFlag(t *testing.T) {
 func TestAddFileFlag(t *testing.T) {
 	t.Setenv("INSTALLER_CONFIG", "")
 	cmd := &cobra.Command{Use: "test"}
-	cli.AddFileFlag(cmd)
+	AddFileFlag(cmd)
 
 	flag := cmd.Flags().Lookup("file")
 	assert.NotNil(t, flag)
@@ -70,7 +69,7 @@ func TestAddFileFlag(t *testing.T) {
 
 func TestAddVerboseFlag(t *testing.T) {
 	cmd := &cobra.Command{Use: "test"}
-	cli.AddVerboseFlag(cmd)
+	AddVerboseFlag(cmd)
 
 	flag := cmd.Flags().Lookup("verbose")
 	assert.NotNil(t, flag)
@@ -79,7 +78,7 @@ func TestAddVerboseFlag(t *testing.T) {
 
 func TestAddDryRunFlag(t *testing.T) {
 	cmd := &cobra.Command{Use: "test"}
-	cli.AddDryRunFlag(cmd)
+	AddDryRunFlag(cmd)
 
 	flag := cmd.Flags().Lookup("dryrun")
 	assert.NotNil(t, flag)
@@ -88,7 +87,7 @@ func TestAddDryRunFlag(t *testing.T) {
 
 func TestAddPrefixFlag(t *testing.T) {
 	cmd := &cobra.Command{Use: "test"}
-	cli.AddPrefixFlag(cmd)
+	AddPrefixFlag(cmd)
 
 	flag := cmd.Flags().Lookup("prefix")
 	assert.NotNil(t, flag)

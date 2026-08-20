@@ -1,8 +1,6 @@
-// Package list defines the list Cobra command and its typed dependencies.
-package list
+package main
 
 import (
-	"awong/dotfiles/cmd/dum/cli"
 	"context"
 	"fmt"
 	"strings"
@@ -14,44 +12,16 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// CLI flag names used by the list command.
-const (
-	DRYRUN  = cli.DRYRUN
-	FILE    = cli.FILE
-	GROUP   = cli.GROUP
-	VERBOSE = cli.VERBOSE
-)
-
-// FactoryProvider builds playbook input from installer options.
-type FactoryProvider interface {
-	Provide(fy.InputOptions) (*pb.Input, error)
-}
-
-// Executor lists a prepared playbook.
-type Executor interface {
-	List(context.Context, *pb.Input) (*pb.Result, error)
-}
-
-// Command holds dependencies for the list command.
-type Command struct {
+// ListCommand holds dependencies for the list command.
+type ListCommand struct {
 	Log             lg.Logger
 	FactoryProvider FactoryProvider
-	Executor        Executor
+	Executor        ListExecutor
 }
 
-// NewCommand constructs a list command dependency set.
-func NewCommand(logger lg.Logger) *Command {
-	return &Command{Log: logger, FactoryProvider: &defaultFactoryProvider{}, Executor: &defaultListExecutor{}}
-}
-
-type defaultFactoryProvider struct{}
-
-func (*defaultFactoryProvider) Provide(opts fy.InputOptions) (*pb.Input, error) {
-	input, err := fy.NewFactory().Provide(opts)
-	if err != nil {
-		return nil, fmt.Errorf("factory provide: %w", err)
-	}
-	return input, nil
+// newListDeps constructs a list command dependency set.
+func newListDeps(logger lg.Logger) *ListCommand {
+	return &ListCommand{Log: logger, FactoryProvider: &defaultFactoryProvider{}, Executor: &defaultListExecutor{}}
 }
 
 type defaultListExecutor struct{}
@@ -65,7 +35,7 @@ func (*defaultListExecutor) List(ctx context.Context, input *pb.Input) (*pb.Resu
 }
 
 // NewListCommand constructs the list Cobra command.
-func NewListCommand(rootUse string, dum *Command) *cobra.Command {
+func NewListCommand(rootUse string, dum *ListCommand) *cobra.Command {
 	use, alias := "list", "ls"
 	cmd := &cobra.Command{
 		Use:     use,
@@ -120,36 +90,36 @@ func NewListCommand(rootUse string, dum *Command) *cobra.Command {
 		),
 		RunE: func(cmd *cobra.Command, _ []string) error { return dum.runList(cmd) },
 	}
-	cli.AddVerboseFlag(cmd)
-	cli.AddFileFlag(cmd)
-	cli.AddGroupFlag(cmd)
+	AddVerboseFlag(cmd)
+	AddFileFlag(cmd)
+	AddGroupFlag(cmd)
 	return cmd
 }
 
-func (d *Command) runList(cmd *cobra.Command) error {
+func (d *ListCommand) runList(cmd *cobra.Command) error {
 	ctx := cmd.Context()
 	if ctx == nil {
 		return fmt.Errorf("nil context")
 	}
-	verbosity := cli.GetVerbosityFromCommand(cmd)
+	verbosity := GetVerbosityFromCommand(cmd)
 	d.Log.SetLevel(verbosity.Level())
-	groupName, err := cmd.Flags().GetString(cli.GROUP)
+	groupName, err := cmd.Flags().GetString(GROUP)
 	if err != nil {
 		groupName = ""
 	}
-	config, err := cmd.Flags().GetString(cli.FILE)
+	config, err := cmd.Flags().GetString(FILE)
 	if err != nil {
-		return fmt.Errorf("error getting %v flag: %w", cli.FILE, err)
+		return fmt.Errorf("error getting %v flag: %w", FILE, err)
 	}
 	d.Log.Debug(
 		"Running list command:",
-		cli.DRYRUN,
+		DRYRUN,
 		false,
-		cli.VERBOSE,
+		VERBOSE,
 		verbosity.Verbose,
-		cli.GROUP,
+		GROUP,
 		groupName,
-		cli.FILE,
+		FILE,
 		config,
 	)
 	input, err := d.FactoryProvider.Provide(fy.InputOptions{File: config, Group: groupName})

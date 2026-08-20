@@ -1,4 +1,4 @@
-package log
+package main
 
 import (
 	"context"
@@ -13,12 +13,12 @@ import (
 	gen "awong/dotfiles/internal/logging/gen"
 )
 
-func newTestDumWithCmd(t *testing.T) (*Command, *gen.MockLogger, *cobra.Command) {
+func newTestDumWithCmd(t *testing.T) (*LogCommand, *gen.MockLogger, *cobra.Command) {
 	t.Helper()
 	logger := gen.NewMockLogger(t)
 	cmd := &cobra.Command{Use: "test"}
-	addPrefixFlag(cmd)
-	dum := &Command{Log: logger}
+	AddPrefixFlag(cmd)
+	dum := &LogCommand{Log: logger}
 	return dum, logger, cmd
 }
 
@@ -120,7 +120,7 @@ func TestExecuteLogging_InvalidLevel(t *testing.T) {
 
 func TestNewDebugCommand_RunE(t *testing.T) {
 	logger := gen.NewMockLogger(t)
-	dum := &Command{Log: logger}
+	dum := &LogCommand{Log: logger}
 	logCmd := NewLogCommand("dum", dum)
 	debugCmd, _, err := logCmd.Find([]string{"debug"})
 	assert.NoError(t, err)
@@ -134,7 +134,7 @@ func TestNewDebugCommand_RunE(t *testing.T) {
 
 func TestNewInfoCommand_RunE(t *testing.T) {
 	logger := gen.NewMockLogger(t)
-	dum := &Command{Log: logger}
+	dum := &LogCommand{Log: logger}
 	logCmd := NewLogCommand("dum", dum)
 	infoCmd, _, err := logCmd.Find([]string{"info"})
 	assert.NoError(t, err)
@@ -148,7 +148,7 @@ func TestNewInfoCommand_RunE(t *testing.T) {
 
 func TestNewWarnCommand_RunE(t *testing.T) {
 	logger := gen.NewMockLogger(t)
-	dum := &Command{Log: logger}
+	dum := &LogCommand{Log: logger}
 	logCmd := NewLogCommand("dum", dum)
 	warnCmd, _, err := logCmd.Find([]string{"warn"})
 	assert.NoError(t, err)
@@ -162,7 +162,7 @@ func TestNewWarnCommand_RunE(t *testing.T) {
 
 func TestNewErrorCommand_RunE(t *testing.T) {
 	logger := gen.NewMockLogger(t)
-	dum := &Command{Log: logger}
+	dum := &LogCommand{Log: logger}
 	logCmd := NewLogCommand("dum", dum)
 	errorCmd, _, err := logCmd.Find([]string{"error"})
 	assert.NoError(t, err)
@@ -176,7 +176,7 @@ func TestNewErrorCommand_RunE(t *testing.T) {
 
 func TestNewSuccessCommand_RunE(t *testing.T) {
 	logger := gen.NewMockLogger(t)
-	dum := &Command{Log: logger}
+	dum := &LogCommand{Log: logger}
 	logCmd := NewLogCommand("dum", dum)
 	successCmd, _, err := logCmd.Find([]string{"success"})
 	assert.NoError(t, err)

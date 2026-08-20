@@ -1,8 +1,6 @@
-// Package install defines the install Cobra command and its typed dependencies.
-package install
+package main
 
 import (
-	"awong/dotfiles/cmd/dum/cli"
 	"context"
 	"fmt"
 	"strings"
@@ -14,44 +12,16 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// CLI flag names used by the install command.
-const (
-	DRYRUN  = cli.DRYRUN
-	FILE    = cli.FILE
-	GROUP   = cli.GROUP
-	VERBOSE = cli.VERBOSE
-)
-
-// FactoryProvider builds playbook input from installer options.
-type FactoryProvider interface {
-	Provide(fy.InputOptions) (*pb.Input, error)
-}
-
-// Executor runs a prepared playbook.
-type Executor interface {
-	Install(context.Context, *pb.Input) (*pb.Result, error)
-}
-
-// Command holds dependencies for the install command.
-type Command struct {
+// InstallCommand holds dependencies for the install command.
+type InstallCommand struct {
 	Log             lg.Logger
 	FactoryProvider FactoryProvider
-	Executor        Executor
+	Executor        InstallExecutor
 }
 
-// NewCommand constructs an install command dependency set.
-func NewCommand(logger lg.Logger) *Command {
-	return &Command{Log: logger, FactoryProvider: &defaultFactoryProvider{}, Executor: &defaultInstallExecutor{}}
-}
-
-type defaultFactoryProvider struct{}
-
-func (*defaultFactoryProvider) Provide(opts fy.InputOptions) (*pb.Input, error) {
-	input, err := fy.NewFactory().Provide(opts)
-	if err != nil {
-		return nil, fmt.Errorf("factory provide: %w", err)
-	}
-	return input, nil
+// newInstallDeps constructs an install command dependency set.
+func newInstallDeps(logger lg.Logger) *InstallCommand {
+	return &InstallCommand{Log: logger, FactoryProvider: &defaultFactoryProvider{}, Executor: &defaultInstallExecutor{}}
 }
 
 type defaultInstallExecutor struct{}
@@ -65,7 +35,7 @@ func (*defaultInstallExecutor) Install(ctx context.Context, input *pb.Input) (*p
 }
 
 // NewInstallCommand provides a command that installs plays and tasks.
-func NewInstallCommand(rootUse string, dum *Command) *cobra.Command {
+func NewInstallCommand(rootUse string, dum *InstallCommand) *cobra.Command {
 	use, alias := "install", "i"
 	longHunk := []string{
 		fmt.Sprintf(
@@ -191,41 +161,41 @@ func NewInstallCommand(rootUse string, dum *Command) *cobra.Command {
 		Example: strings.Join(exampleHunk, "\n"),
 		RunE:    func(cmd *cobra.Command, _ []string) error { return dum.runInstall(cmd) },
 	}
-	cli.AddVerboseFlag(cmd)
-	cli.AddFileFlag(cmd)
-	cli.AddDryRunFlag(cmd)
-	cli.AddGroupFlag(cmd)
+	AddVerboseFlag(cmd)
+	AddFileFlag(cmd)
+	AddDryRunFlag(cmd)
+	AddGroupFlag(cmd)
 	return cmd
 }
 
-func (d *Command) runInstall(cmd *cobra.Command) error {
+func (d *InstallCommand) runInstall(cmd *cobra.Command) error {
 	ctx := cmd.Context()
 	if ctx == nil {
 		return fmt.Errorf("nil context")
 	}
-	verbosity := cli.GetVerbosityFromCommand(cmd)
+	verbosity := GetVerbosityFromCommand(cmd)
 	d.Log.SetLevel(verbosity.Level())
-	groupName, err := cmd.Flags().GetString(cli.GROUP)
+	groupName, err := cmd.Flags().GetString(GROUP)
 	if err != nil {
 		groupName = ""
 	}
-	dry, err := cmd.Flags().GetBool(cli.DRYRUN)
+	dry, err := cmd.Flags().GetBool(DRYRUN)
 	if err != nil {
-		return fmt.Errorf("error getting %v flag: %w", cli.DRYRUN, err)
+		return fmt.Errorf("error getting %v flag: %w", DRYRUN, err)
 	}
-	config, err := cmd.Flags().GetString(cli.FILE)
+	config, err := cmd.Flags().GetString(FILE)
 	if err != nil {
-		return fmt.Errorf("error getting %v flag: %w", cli.FILE, err)
+		return fmt.Errorf("error getting %v flag: %w", FILE, err)
 	}
 	d.Log.Debug(
 		"Running install command:",
-		cli.DRYRUN,
+		DRYRUN,
 		dry,
-		cli.VERBOSE,
+		VERBOSE,
 		verbosity.Verbose,
-		cli.GROUP,
+		GROUP,
 		groupName,
-		cli.FILE,
+		FILE,
 		config,
 	)
 	input, err := d.FactoryProvider.Provide(fy.InputOptions{File: config, Group: groupName, DryRun: dry})

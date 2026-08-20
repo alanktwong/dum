@@ -1,8 +1,6 @@
-// Package schema defines the installer schema Cobra command.
-package schema
+package main
 
 import (
-	"awong/dotfiles/cmd/dum/cli"
 	"fmt"
 	"os"
 	"strings"
@@ -10,16 +8,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// Command holds schema command dependencies.
-type Command struct{}
+// SchemaCommand holds schema command dependencies.
+type SchemaCommand struct{}
 
-// NewCommand constructs schema command dependencies.
-func NewCommand() *Command { return &Command{} }
-
-func addOutputFlag(cmd *cobra.Command) { cli.AddOutputFlag(cmd) }
+// newSchemaDeps constructs schema command dependencies.
+func newSchemaDeps() *SchemaCommand { return &SchemaCommand{} }
 
 // NewSchemaCommand constructs the schema Cobra command.
-func NewSchemaCommand(rootUse string, dum *Command) *cobra.Command {
+func NewSchemaCommand(rootUse string, dum *SchemaCommand) *cobra.Command {
 	use, alias := "schema", "s"
 	cmd := &cobra.Command{
 		Use:     use,
@@ -53,12 +49,12 @@ func NewSchemaCommand(rootUse string, dum *Command) *cobra.Command {
 		),
 		RunE: func(cmd *cobra.Command, _ []string) error { return dum.runSchema(cmd) },
 	}
-	addOutputFlag(cmd)
+	AddOutputFlag(cmd)
 	return cmd
 }
 
-func (*Command) runSchema(cmd *cobra.Command) error {
-	path, err := cmd.Flags().GetString(cli.OUTPUT)
+func (*SchemaCommand) runSchema(cmd *cobra.Command) error {
+	path, err := cmd.Flags().GetString(OUTPUT)
 	if err != nil {
 		return fmt.Errorf("error getting output flag: %w", err)
 	}

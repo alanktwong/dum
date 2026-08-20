@@ -1,8 +1,6 @@
-// Package rename defines the file rename Cobra command.
-package rename
+package main
 
 import (
-	"awong/dotfiles/cmd/dum/cli"
 	"context"
 	"fmt"
 	"strings"
@@ -13,31 +11,22 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const (
-	replace   = "replace"
-	source    = "source"
-	lowercase = "lowercase"
-	trimFront = "trimfront"
-	trimBack  = "trimback"
-	iterate   = "iterate"
-)
-
-// Command holds Cobra command dependencies for rename operations.
-type Command struct {
+// RenameCommand holds Cobra command dependencies for rename operations.
+type RenameCommand struct {
 	Log     lg.Logger
 	Service *rn.Renamer
 }
 
-// NewCommand constructs rename command dependencies.
-func NewCommand(logger lg.Logger) *Command {
-	return &Command{Log: logger, Service: rn.NewRenamer(logger)}
+// newRenameDeps constructs rename command dependencies.
+func newRenameDeps(logger lg.Logger) *RenameCommand {
+	return &RenameCommand{Log: logger, Service: rn.NewRenamer(logger)}
 }
 
 // Options is retained as the command-to-service request type.
 type Options = rn.Options
 
 // NewRenameCommand constructs the rename Cobra command.
-func NewRenameCommand(rootUse string, dum *Command) *cobra.Command {
+func NewRenameCommand(rootUse string, dum *RenameCommand) *cobra.Command {
 	use, alias := "rename", "r"
 	cmd := &cobra.Command{
 		Use:     use,
@@ -86,25 +75,25 @@ func NewRenameCommand(rootUse string, dum *Command) *cobra.Command {
 		Args: cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error { return dum.run(cmd, args) },
 	}
-	cmd.Flags().StringP(replace, "r", "", "replaces SOURCE with REPLACE in the PAT. See example.")
-	cmd.Flags().StringP(source, "s", "", "replaces SOURCE with REPLACE in the PAT. See example.")
-	cli.AddVerboseFlag(cmd)
-	cmd.Flags().BoolP(lowercase, "l", false, "convert the filename to lowercase. E.g. FILE.JPG -> file.jpg")
-	cli.AddDryRunFlag(cmd)
+	cmd.Flags().StringP(REPLACE, "r", "", "replaces SOURCE with REPLACE in the PAT. See example.")
+	cmd.Flags().StringP(SOURCE, "s", "", "replaces SOURCE with REPLACE in the PAT. See example.")
+	AddVerboseFlag(cmd)
+	cmd.Flags().BoolP(LOWERCASE, "l", false, "convert the filename to lowercase. E.g. FILE.JPG -> file.jpg")
+	AddDryRunFlag(cmd)
 	cmd.Flags().Uint16P(
-		trimFront,
+		TRIMFRONT,
 		"f",
 		0,
 		"trims N characters from the front of the filename. E.g. file.jpg -> le.jpg if N = 2",
 	)
 	cmd.Flags().Uint16P(
-		trimBack,
+		TRIMBACK,
 		"b",
 		0,
 		"trims N characters from the back of the filename. E.g. file.jpg -> fi.jpg if N = 2",
 	)
 	cmd.Flags().Uint16P(
-		iterate,
+		ITERATE,
 		"i",
 		0,
 		"suffix an integer to the filename starting from N. E.g. file.jpg -> file_1.jpg if N = 1",
@@ -112,7 +101,7 @@ func NewRenameCommand(rootUse string, dum *Command) *cobra.Command {
 	return cmd
 }
 
-func (d *Command) run(cmd *cobra.Command, args []string) error {
+func (d *RenameCommand) run(cmd *cobra.Command, args []string) error {
 	ctx := cmd.Context()
 	if ctx == nil {
 		return fmt.Errorf("nil context")
@@ -120,40 +109,40 @@ func (d *Command) run(cmd *cobra.Command, args []string) error {
 	if len(args) < 1 {
 		return fmt.Errorf("dum requires more than 1 argument")
 	}
-	v := cli.GetVerbosityFromCommand(cmd)
+	v := GetVerbosityFromCommand(cmd)
 	d.Log.SetLevel(v.Level())
-	dr, _ := cmd.Flags().GetBool(cli.DRYRUN)
-	src, err := cmd.Flags().GetString(source)
+	dr, _ := cmd.Flags().GetBool(DRYRUN)
+	src, err := cmd.Flags().GetString(SOURCE)
 	if err != nil {
-		return fmt.Errorf("error getting %v flag: %w", source, err)
+		return fmt.Errorf("error getting %v flag: %w", SOURCE, err)
 	}
-	rep, err := cmd.Flags().GetString(replace)
+	rep, err := cmd.Flags().GetString(REPLACE)
 	if err != nil {
-		return fmt.Errorf("error getting %v flag: %w", replace, err)
+		return fmt.Errorf("error getting %v flag: %w", REPLACE, err)
 	}
-	lc, _ := cmd.Flags().GetBool(lowercase)
-	tf, _ := cmd.Flags().GetUint16(trimFront)
-	tb, _ := cmd.Flags().GetUint16(trimBack)
-	it, _ := cmd.Flags().GetUint16(iterate)
+	lc, _ := cmd.Flags().GetBool(LOWERCASE)
+	tf, _ := cmd.Flags().GetUint16(TRIMFRONT)
+	tb, _ := cmd.Flags().GetUint16(TRIMBACK)
+	it, _ := cmd.Flags().GetUint16(ITERATE)
 	d.Log.Debug(
 		"Running the rename command:",
-		source,
+		SOURCE,
 		src,
-		replace,
+		REPLACE,
 		rep,
 		"PATTERN",
 		args,
-		cli.DRYRUN,
+		DRYRUN,
 		dr,
-		lowercase,
+		LOWERCASE,
 		lc,
-		trimFront,
+		TRIMFRONT,
 		tf,
-		trimBack,
+		TRIMBACK,
 		tb,
-		iterate,
+		ITERATE,
 		it,
-		cli.VERBOSE,
+		VERBOSE,
 		v.Verbose,
 	)
 	if src != "" && rep == "" {
@@ -182,7 +171,7 @@ func (d *Command) run(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func (d *Command) rename(ctx context.Context, options Options) error {
+func (d *RenameCommand) rename(ctx context.Context, options Options) error {
 	if d.Service == nil {
 		d.Service = rn.NewRenamer(d.Log)
 	}

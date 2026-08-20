@@ -1,4 +1,4 @@
-package rename
+package main
 
 import (
 	"context"
@@ -33,7 +33,7 @@ func TestRename_BasicRename(t *testing.T) {
 	err := os.WriteFile(oldPath, []byte("hello"), 0o644)
 	assert.NoError(t, err)
 
-	dum := &Command{Log: setupMockLogger(t)}
+	dum := &RenameCommand{Log: setupMockLogger(t)}
 	err = dum.rename(context.Background(), Options{
 		FilePattern: oldPath,
 		Source:      "source",
@@ -56,7 +56,7 @@ func TestRename_TrimFront(t *testing.T) {
 	err := os.WriteFile(oldPath, []byte("hello"), 0o644)
 	assert.NoError(t, err)
 
-	dum := &Command{Log: setupMockLogger(t)}
+	dum := &RenameCommand{Log: setupMockLogger(t)}
 	err = dum.rename(context.Background(), Options{
 		FilePattern: oldPath,
 		TrimFront:   2,
@@ -78,7 +78,7 @@ func TestRename_TrimBack(t *testing.T) {
 	err := os.WriteFile(oldPath, []byte("hello"), 0o644)
 	assert.NoError(t, err)
 
-	dum := &Command{Log: setupMockLogger(t)}
+	dum := &RenameCommand{Log: setupMockLogger(t)}
 	err = dum.rename(context.Background(), Options{
 		FilePattern: oldPath,
 		TrimBack:    2,
@@ -100,7 +100,7 @@ func TestRename_Replace(t *testing.T) {
 	err := os.WriteFile(oldPath, []byte("hello"), 0o644)
 	assert.NoError(t, err)
 
-	dum := &Command{Log: setupMockLogger(t)}
+	dum := &RenameCommand{Log: setupMockLogger(t)}
 	err = dum.rename(context.Background(), Options{
 		FilePattern: oldPath,
 		Source:      "_DSC",
@@ -122,7 +122,7 @@ func TestRename_Lowercase(t *testing.T) {
 	err := os.WriteFile(oldPath, []byte("hello"), 0o644)
 	assert.NoError(t, err)
 
-	dum := &Command{Log: setupMockLogger(t)}
+	dum := &RenameCommand{Log: setupMockLogger(t)}
 	err = dum.rename(context.Background(), Options{
 		FilePattern: oldPath,
 		Lowercase:   true,
@@ -146,7 +146,7 @@ func TestRename_Iterate(t *testing.T) {
 	err := os.WriteFile(oldPath, []byte("hello"), 0o644)
 	assert.NoError(t, err)
 
-	dum := &Command{Log: setupMockLogger(t)}
+	dum := &RenameCommand{Log: setupMockLogger(t)}
 	err = dum.rename(context.Background(), Options{
 		FilePattern: oldPath,
 		Index:       0,
@@ -169,7 +169,7 @@ func TestRename_Combined(t *testing.T) {
 	err := os.WriteFile(oldPath, []byte("hello"), 0o644)
 	assert.NoError(t, err)
 
-	dum := &Command{Log: setupMockLogger(t)}
+	dum := &RenameCommand{Log: setupMockLogger(t)}
 	err = dum.rename(context.Background(), Options{
 		FilePattern: oldPath,
 		Source:      "_DSC",
@@ -192,7 +192,7 @@ func TestRename_DryRun(t *testing.T) {
 	err := os.WriteFile(oldPath, []byte("hello"), 0o644)
 	assert.NoError(t, err)
 
-	dum := &Command{Log: setupMockLogger(t)}
+	dum := &RenameCommand{Log: setupMockLogger(t)}
 	err = dum.rename(context.Background(), Options{
 		FilePattern: oldPath,
 		DryRun:      true,
@@ -204,7 +204,7 @@ func TestRename_DryRun(t *testing.T) {
 }
 
 func TestRename_OSError(t *testing.T) {
-	dum := &Command{Log: setupMockLogger(t)}
+	dum := &RenameCommand{Log: setupMockLogger(t)}
 	err := dum.rename(context.Background(), Options{
 		FilePattern: filepath.Join(t.TempDir(), "nonexistent.txt"),
 	})
@@ -226,7 +226,7 @@ func TestNewRenameCommand_RunE_SourceWithoutReplace(t *testing.T) {
 		mock.Anything, mock.Anything, mock.Anything,
 	).Return()
 
-	dum := &Command{Log: logger}
+	dum := &RenameCommand{Log: logger}
 	cmd := NewRenameCommand("dum", dum)
 	cmd.SetContext(context.Background())
 	cmd.SetArgs([]string{"--source", "_DSC", "foo.txt"})
@@ -250,7 +250,7 @@ func TestNewRenameCommand_RunE_ReplaceWithoutSource(t *testing.T) {
 		mock.Anything, mock.Anything, mock.Anything,
 	).Return()
 
-	dum := &Command{Log: logger}
+	dum := &RenameCommand{Log: logger}
 	cmd := NewRenameCommand("dum", dum)
 	cmd.SetContext(context.Background())
 	cmd.SetArgs([]string{"--replace", "bar", "foo.txt"})

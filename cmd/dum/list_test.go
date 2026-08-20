@@ -1,7 +1,6 @@
-package list
+package main
 
 import (
-	"awong/dotfiles/cmd/dum/cli"
 	"context"
 	"fmt"
 	"testing"
@@ -15,12 +14,12 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-func newTestDumForList(t *testing.T) (*Command, *mockLogger, *mockFactoryProvider, *mockListExecutor) {
+func newTestDumForList(t *testing.T) (*ListCommand, *mockLogger, *mockFactoryProvider, *mockListExecutor) {
 	t.Helper()
 	logger := &mockLogger{}
 	factory := &mockFactoryProvider{}
 	executor := &mockListExecutor{}
-	dum := &Command{
+	dum := &ListCommand{
 		Log:             logger,
 		FactoryProvider: factory,
 		Executor:        executor,
@@ -29,7 +28,7 @@ func newTestDumForList(t *testing.T) (*Command, *mockLogger, *mockFactoryProvide
 }
 
 func TestNewListCommand_Structure(t *testing.T) {
-	dum := &Command{}
+	dum := &ListCommand{}
 	cmd := NewListCommand("dum", dum)
 
 	assert.Equal(t, "list", cmd.Use)
@@ -64,9 +63,9 @@ func TestRunList_Success(t *testing.T) {
 
 	cmd := &cobra.Command{Use: "list"}
 	cmd.SetContext(context.Background())
-	cli.AddVerboseFlag(cmd)
-	cli.AddFileFlag(cmd)
-	cli.AddGroupFlag(cmd)
+	AddVerboseFlag(cmd)
+	AddFileFlag(cmd)
+	AddGroupFlag(cmd)
 	_ = cmd.Flags().Set(FILE, "/test/path")
 
 	err := dum.runList(cmd)
@@ -81,9 +80,9 @@ func TestRunList_NilContext(t *testing.T) {
 	dum, _, _, _ := newTestDumForList(t)
 
 	cmd := &cobra.Command{Use: "list"}
-	cli.AddVerboseFlag(cmd)
-	cli.AddFileFlag(cmd)
-	cli.AddGroupFlag(cmd)
+	AddVerboseFlag(cmd)
+	AddFileFlag(cmd)
+	AddGroupFlag(cmd)
 
 	err := dum.runList(cmd)
 	assert.Error(t, err)
@@ -110,9 +109,9 @@ func TestRunList_FactoryError(t *testing.T) {
 
 	cmd := &cobra.Command{Use: "list"}
 	cmd.SetContext(context.Background())
-	cli.AddVerboseFlag(cmd)
-	cli.AddFileFlag(cmd)
-	cli.AddGroupFlag(cmd)
+	AddVerboseFlag(cmd)
+	AddFileFlag(cmd)
+	AddGroupFlag(cmd)
 	_ = cmd.Flags().Set(FILE, "/test/path")
 
 	err := dum.runList(cmd)
@@ -147,9 +146,9 @@ func TestRunList_ExecutorError(t *testing.T) {
 
 	cmd := &cobra.Command{Use: "list"}
 	cmd.SetContext(context.Background())
-	cli.AddVerboseFlag(cmd)
-	cli.AddFileFlag(cmd)
-	cli.AddGroupFlag(cmd)
+	AddVerboseFlag(cmd)
+	AddFileFlag(cmd)
+	AddGroupFlag(cmd)
 	_ = cmd.Flags().Set(FILE, "/test/path")
 
 	err := dum.runList(cmd)

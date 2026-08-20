@@ -1,16 +1,12 @@
 package main
 
 import (
-	"awong/dotfiles/cmd/dum/cli"
-	"awong/dotfiles/cmd/dum/install"
-	"awong/dotfiles/cmd/dum/list"
-	"awong/dotfiles/cmd/dum/rename"
-	"awong/dotfiles/cmd/dum/schema"
+	"context"
 	"fmt"
 
-	logcmd "awong/dotfiles/cmd/dum/log"
-
+	fy "awong/dotfiles/internal/factory"
 	lg "awong/dotfiles/internal/logging"
+	pb "awong/dotfiles/internal/playbook"
 
 	"github.com/spf13/cobra"
 )
@@ -20,13 +16,38 @@ var (
 	commit  = ""
 )
 
+// FactoryProvider builds playbook input from installer options.
+type FactoryProvider interface {
+	Provide(fy.InputOptions) (*pb.Input, error)
+}
+
+// InstallExecutor runs a prepared playbook.
+type InstallExecutor interface {
+	Install(context.Context, *pb.Input) (*pb.Result, error)
+}
+
+// ListExecutor lists a prepared playbook.
+type ListExecutor interface {
+	List(context.Context, *pb.Input) (*pb.Result, error)
+}
+
+type defaultFactoryProvider struct{}
+
+func (*defaultFactoryProvider) Provide(opts fy.InputOptions) (*pb.Input, error) {
+	input, err := fy.NewFactory().Provide(opts)
+	if err != nil {
+		return nil, fmt.Errorf("factory provide: %w", err)
+	}
+	return input, nil
+}
+
 // Dum is the executable application for the dum CLI.
 type Dum struct {
 	Log             lg.Logger
 	Cmd             *cobra.Command
-	FactoryProvider install.FactoryProvider
-	InstallExecutor install.Executor
-	ListExecutor    list.Executor
+	FactoryProvider FactoryProvider
+	InstallExecutor InstallExecutor
+	ListExecutor    ListExecutor
 }
 
 // NewDum constructs the root command and wires command dependencies.
@@ -42,18 +63,18 @@ func NewDum() *Dum {
 		),
 		Version: version,
 	}
-	logger := lg.NewLogger(lg.Options{Prefix: "", Level: cli.GetLogLevel()})
-	installDum := install.NewCommand(logger)
-	listDum := list.NewCommand(logger)
-	logDum := logcmd.NewCommand(logger)
-	renameDum := rename.NewCommand(logger)
-	schemaDum := schema.NewCommand()
+	logger := lg.NewLogger(lg.Options{Prefix: "", Level: GetLogLevel()})
+	installDum := newInstallDeps(logger)
+	listDum := newListDeps(logger)
+	logDum := newLogDeps(logger)
+	renameDum := newRenameDeps(logger)
+	schemaDum := newSchemaDeps()
 
-	rootCmd.AddCommand(list.NewListCommand(rootUse, listDum))
-	rootCmd.AddCommand(install.NewInstallCommand(rootUse, installDum))
-	rootCmd.AddCommand(rename.NewRenameCommand(rootUse, renameDum))
-	rootCmd.AddCommand(logcmd.NewLogCommand(rootUse, logDum))
-	rootCmd.AddCommand(schema.NewSchemaCommand(rootUse, schemaDum))
+	rootCmd.AddCommand(NewListCommand(rootUse, listDum))
+	rootCmd.AddCommand(NewInstallCommand(rootUse, installDum))
+	rootCmd.AddCommand(NewRenameCommand(rootUse, renameDum))
+	rootCmd.AddCommand(NewLogCommand(rootUse, logDum))
+	rootCmd.AddCommand(NewSchemaCommand(rootUse, schemaDum))
 
 	return &Dum{
 		Log:             logger,

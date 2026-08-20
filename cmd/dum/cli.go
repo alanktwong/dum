@@ -1,5 +1,5 @@
-// Package cli contains shared Cobra flag and verbosity helpers for dum commands.
-package cli
+// Shared Cobra flag and verbosity helpers for the dum CLI.
+package main
 
 import (
 	"fmt"
