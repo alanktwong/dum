@@ -1,8 +1,8 @@
 package playbook
 
 import (
-	pl "awong/dotfiles/internal/plays"
-	ty "awong/dotfiles/internal/types"
+	pl "alanktwong/dum/internal/plays"
+	ty "alanktwong/dum/internal/types"
 	"testing"
 
 	"github.com/stretchr/testify/assert"

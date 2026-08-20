@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	lg "awong/dotfiles/internal/logging"
-	rn "awong/dotfiles/internal/rename"
+	lg "alanktwong/dum/internal/logging"
+	rn "alanktwong/dum/internal/rename"
 
 	"github.com/spf13/cobra"
 )

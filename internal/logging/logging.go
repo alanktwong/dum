@@ -2,7 +2,7 @@
 package logging
 
 import (
-	"awong/dotfiles/internal/logging/gen"
+	"alanktwong/dum/internal/logging/gen"
 	"fmt"
 	"os"
 	"sync"

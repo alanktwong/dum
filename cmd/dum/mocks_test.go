@@ -3,9 +3,9 @@ package main
 import (
 	"context"
 
-	fy "awong/dotfiles/internal/factory"
-	lg "awong/dotfiles/internal/logging"
-	pb "awong/dotfiles/internal/playbook"
+	fy "alanktwong/dum/internal/factory"
+	lg "alanktwong/dum/internal/logging"
+	pb "alanktwong/dum/internal/playbook"
 
 	clog "github.com/charmbracelet/log"
 	"github.com/stretchr/testify/mock"

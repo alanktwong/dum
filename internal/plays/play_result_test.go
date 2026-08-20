@@ -1,8 +1,8 @@
 package plays
 
 import (
-	pg "awong/dotfiles/internal/plays/gen"
-	ty "awong/dotfiles/internal/types"
+	pg "alanktwong/dum/internal/plays/gen"
+	ty "alanktwong/dum/internal/types"
 	"testing"
 
 	"github.com/stretchr/testify/assert"

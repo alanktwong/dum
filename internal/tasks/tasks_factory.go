@@ -2,11 +2,11 @@
 package tasks
 
 import (
-	ext "awong/dotfiles/internal/external"
-	l "awong/dotfiles/internal/logging"
-	ty "awong/dotfiles/internal/types"
-	tyg "awong/dotfiles/internal/types/gen"
-	yml "awong/dotfiles/internal/yaml"
+	ext "alanktwong/dum/internal/external"
+	l "alanktwong/dum/internal/logging"
+	ty "alanktwong/dum/internal/types"
+	tyg "alanktwong/dum/internal/types/gen"
+	yml "alanktwong/dum/internal/yaml"
 	"fmt"
 )
 

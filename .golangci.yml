@@ -67,27 +67,27 @@ linters-settings:
     no-unaliased: true
     no-extra-aliases: true
     alias:
-      - prefix: awong/dotfiles/cmd/dum
+      - prefix: alanktwong/dum/cmd/dum
         alias: cd
-      - prefix: awong/dotfiles/internal/external
+      - prefix: alanktwong/dum/internal/external
         alias: ext
-      - prefix: awong/dotfiles/internal/factory
+      - prefix: alanktwong/dum/internal/factory
         alias: fy
-      - prefix: awong/dotfiles/internal/logging
+      - prefix: alanktwong/dum/internal/logging
         alias: lg
-      - prefix: awong/dotfiles/internal/playbook
+      - prefix: alanktwong/dum/internal/playbook
         alias: pb
-      - prefix: awong/dotfiles/internal/plays
+      - prefix: alanktwong/dum/internal/plays
         alias: pl
-      - prefix: awong/dotfiles/internal/plays/gen
+      - prefix: alanktwong/dum/internal/plays/gen
         alias: plg
-      - prefix: awong/dotfiles/internal/tasks
+      - prefix: alanktwong/dum/internal/tasks
         alias: tk
-      - prefix: awong/dotfiles/internal/tasks/installer
+      - prefix: alanktwong/dum/internal/tasks/installer
         alias: ti
-      - prefix: awong/dotfiles/internal/types
+      - prefix: alanktwong/dum/internal/types
         alias: ty
-      - prefix: awong/dotfiles/internal/types/gen
+      - prefix: alanktwong/dum/internal/types/gen
         alias: tyg
       - prefix: github.com/charmbracelet/log
         alias: clog

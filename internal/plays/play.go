@@ -2,8 +2,8 @@
 package plays
 
 import (
-	t "awong/dotfiles/internal/tasks"
-	ty "awong/dotfiles/internal/types"
+	t "alanktwong/dum/internal/tasks"
+	ty "alanktwong/dum/internal/types"
 	"fmt"
 
 	om "github.com/elliotchance/orderedmap/v3"

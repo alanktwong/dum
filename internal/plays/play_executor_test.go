@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"testing"
 
-	pg "awong/dotfiles/internal/plays/gen"
-	tk "awong/dotfiles/internal/tasks"
-	i "awong/dotfiles/internal/tasks/installer"
-	ty "awong/dotfiles/internal/types"
+	pg "alanktwong/dum/internal/plays/gen"
+	tk "alanktwong/dum/internal/tasks"
+	i "alanktwong/dum/internal/tasks/installer"
+	ty "alanktwong/dum/internal/types"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"

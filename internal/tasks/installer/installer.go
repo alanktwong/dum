@@ -2,7 +2,7 @@
 package installer
 
 import (
-	ty "awong/dotfiles/internal/types"
+	ty "alanktwong/dum/internal/types"
 	"context"
 )
 

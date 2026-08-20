@@ -1,9 +1,9 @@
 package plays
 
 import (
-	tk "awong/dotfiles/internal/tasks"
-	ty "awong/dotfiles/internal/types"
-	yml "awong/dotfiles/internal/yaml"
+	tk "alanktwong/dum/internal/tasks"
+	ty "alanktwong/dum/internal/types"
+	yml "alanktwong/dum/internal/yaml"
 	"testing"
 
 	"github.com/stretchr/testify/assert"

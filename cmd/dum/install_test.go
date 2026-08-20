@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"testing"
 
-	fy "awong/dotfiles/internal/factory"
-	pb "awong/dotfiles/internal/playbook"
+	fy "alanktwong/dum/internal/factory"
+	pb "alanktwong/dum/internal/playbook"
 
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"

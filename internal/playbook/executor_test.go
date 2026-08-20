@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"testing"
 
-	l "awong/dotfiles/internal/logging"
-	pl "awong/dotfiles/internal/plays"
-	ty "awong/dotfiles/internal/types"
+	l "alanktwong/dum/internal/logging"
+	pl "alanktwong/dum/internal/plays"
+	ty "alanktwong/dum/internal/types"
 
 	"github.com/charmbracelet/log"
 	"github.com/stretchr/testify/assert"

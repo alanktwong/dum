@@ -3,8 +3,8 @@
 package playbook
 
 import (
-	pl "awong/dotfiles/internal/plays"
-	t "awong/dotfiles/internal/types"
+	pl "alanktwong/dum/internal/plays"
+	t "alanktwong/dum/internal/types"
 	"fmt"
 
 	om "github.com/elliotchance/orderedmap/v3"

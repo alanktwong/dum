@@ -3,7 +3,7 @@ package plays
 import (
 	"testing"
 
-	yml "awong/dotfiles/internal/yaml"
+	yml "alanktwong/dum/internal/yaml"
 
 	"github.com/stretchr/testify/assert"
 )

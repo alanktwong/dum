@@ -1,5 +1,5 @@
 packages:
-  awong/dotfiles/internal/external/gen:
+  alanktwong/dum/internal/external/gen:
     config:
       all: false
       dir: 'internal/tasks'

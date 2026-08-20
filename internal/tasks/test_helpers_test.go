@@ -1,7 +1,7 @@
 package tasks
 
 import (
-	i "awong/dotfiles/internal/tasks/installer"
+	i "alanktwong/dum/internal/tasks/installer"
 
 	mock "github.com/stretchr/testify/mock"
 )

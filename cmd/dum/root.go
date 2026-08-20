@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	fy "awong/dotfiles/internal/factory"
-	lg "awong/dotfiles/internal/logging"
-	pb "awong/dotfiles/internal/playbook"
+	fy "alanktwong/dum/internal/factory"
+	lg "alanktwong/dum/internal/logging"
+	pb "alanktwong/dum/internal/playbook"
 
 	"github.com/spf13/cobra"
 )

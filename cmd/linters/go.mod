@@ -1,4 +1,4 @@
-module awong/dotfiles/cmd/linters
+module alanktwong/dum/cmd/linters
 
 go 1.26.1
 

@@ -1,9 +1,9 @@
 package playbook
 
 import (
-	ext "awong/dotfiles/internal/external"
-	l "awong/dotfiles/internal/logging"
-	pl "awong/dotfiles/internal/plays"
+	ext "alanktwong/dum/internal/external"
+	l "alanktwong/dum/internal/logging"
+	pl "alanktwong/dum/internal/plays"
 	"context"
 	"fmt"
 

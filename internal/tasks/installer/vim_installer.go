@@ -2,9 +2,9 @@
 package installer
 
 import (
-	ext "awong/dotfiles/internal/external"
-	l "awong/dotfiles/internal/logging"
-	ty "awong/dotfiles/internal/types"
+	ext "alanktwong/dum/internal/external"
+	l "alanktwong/dum/internal/logging"
+	ty "alanktwong/dum/internal/types"
 	"context"
 	"fmt"
 )

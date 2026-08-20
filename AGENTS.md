@@ -6,7 +6,7 @@ This document provides guidelines for agentic coding agents operating in this re
 
 - **Project**: Dum - A CLI tool for managing software installations and configurations
 - **Language**: Go 1.26 (requires 1.24.4+)
-- **Module**: `awong/dotfiles`
+- **Module**: `alanktwong/dum`
 - **Description**: A hand-rolled CLI tool similar to Ansible, written in Go. Manages software installations and configurations on macOS/Linux laptops.
 - **Configuration**: Uses `dum.yml` for defining playbooks, plays, and tasks (legacy `installer.yml` still resolved as fallback)
 
@@ -98,8 +98,8 @@ Standard library imports first, then external packages:
 
 ```go
 import (
-    "awong/dotfiles/pkg/external"
-    l "awong/dotfiles/pkg/logging"
+    "alanktwong/dum/pkg/external"
+    l "alanktwong/dum/pkg/logging"
     "context"
     "fmt"
 
