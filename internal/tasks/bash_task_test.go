@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	i "awong/dotfiles/internal/tasks/installer"
-	ty "awong/dotfiles/internal/types"
+	i "alanktwong/dum/internal/tasks/installer"
+	ty "alanktwong/dum/internal/types"
 
 	"github.com/stretchr/testify/assert"
 )

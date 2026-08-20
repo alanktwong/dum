@@ -1,11 +1,11 @@
 package plays
 
 import (
-	ext "awong/dotfiles/internal/external"
-	l "awong/dotfiles/internal/logging"
-	t "awong/dotfiles/internal/tasks"
-	"awong/dotfiles/internal/types"
-	yml "awong/dotfiles/internal/yaml"
+	ext "alanktwong/dum/internal/external"
+	l "alanktwong/dum/internal/logging"
+	t "alanktwong/dum/internal/tasks"
+	"alanktwong/dum/internal/types"
+	yml "alanktwong/dum/internal/yaml"
 	"fmt"
 )
 

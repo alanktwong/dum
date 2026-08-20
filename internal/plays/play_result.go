@@ -1,7 +1,7 @@
 package plays
 
 import (
-	"awong/dotfiles/internal/types"
+	"alanktwong/dum/internal/types"
 )
 
 // PlayResult expresses the result of a Play execution.

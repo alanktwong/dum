@@ -2,13 +2,13 @@
 package factory
 
 import (
-	ext "awong/dotfiles/internal/external"
-	l "awong/dotfiles/internal/logging"
-	pb "awong/dotfiles/internal/playbook"
-	pl "awong/dotfiles/internal/plays"
-	ty "awong/dotfiles/internal/types"
-	tyg "awong/dotfiles/internal/types/gen"
-	yml "awong/dotfiles/internal/yaml"
+	ext "alanktwong/dum/internal/external"
+	l "alanktwong/dum/internal/logging"
+	pb "alanktwong/dum/internal/playbook"
+	pl "alanktwong/dum/internal/plays"
+	ty "alanktwong/dum/internal/types"
+	tyg "alanktwong/dum/internal/types/gen"
+	yml "alanktwong/dum/internal/yaml"
 	"fmt"
 )
 

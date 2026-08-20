@@ -20,11 +20,11 @@ func NewSchemaCommand(rootUse string, dum *SchemaCommand) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     use,
 		Aliases: []string{alias},
-		Short:   fmt.Sprintf("%v-%v (or %v) output or extract the JSON schema for installer.yml", rootUse, use, alias),
+		Short:   fmt.Sprintf("%v-%v (or %v) output or extract the JSON schema for dum.yml", rootUse, use, alias),
 		Long: strings.Join(
 			[]string{
 				fmt.Sprintf(
-					"%v-%v (or %v) is a command line tool that outputs the JSON schema for installer.yml configuration.",
+					"%v-%v (or %v) is a command line tool that outputs the JSON schema for dum.yml configuration.",
 					rootUse,
 					use,
 					alias,

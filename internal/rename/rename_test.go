@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	lg "awong/dotfiles/internal/logging"
+	lg "alanktwong/dum/internal/logging"
 
 	clog "github.com/charmbracelet/log"
 	"github.com/stretchr/testify/assert"

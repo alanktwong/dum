@@ -1,5 +1,5 @@
 packages:
-  awong/dotfiles/internal/external/gen:
+  alanktwong/dum/internal/external/gen:
     config:
       all: false
       dir: 'internal/factory/gen'
@@ -8,7 +8,7 @@ packages:
       include-auto-generated: false
     interfaces:
       Ext: {}
-  awong/dotfiles/internal/logging:
+  alanktwong/dum/internal/logging:
     config:
       all: false
       dir: 'internal/factory/gen'

@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"strings"
 
-	fy "awong/dotfiles/internal/factory"
-	lg "awong/dotfiles/internal/logging"
-	pb "awong/dotfiles/internal/playbook"
+	fy "alanktwong/dum/internal/factory"
+	lg "alanktwong/dum/internal/logging"
+	pb "alanktwong/dum/internal/playbook"
 
 	"github.com/spf13/cobra"
 )
@@ -62,8 +62,8 @@ func NewInstallCommand(rootUse string, dum *InstallCommand) *cobra.Command {
 		"  function  - runs a custom function from the playbook",
 		"",
 		"Config:",
-		"  Default:   $XDG_CONFIG_HOME/dum/installer.yml (or ~/.config/dum/installer.yml)",
-		"  Override:  --file flag or INSTALLER_CONFIG env var",
+		"  Default:   ./dum.yml, $XDG_CONFIG_HOME/dum/dum.yml, or legacy $XDG_CONFIG_HOME/dum/installer.yml",
+		"  Override:  --file flag or DUM_CONFIG env var",
 		"",
 		"Logging:",
 		"  Set ZSH_LOG_LEVEL env var to 'info' or 'debug', or use --verbose flag",
@@ -72,7 +72,7 @@ func NewInstallCommand(rootUse string, dum *InstallCommand) *cobra.Command {
 		"  Use --dryrun to preview what would run without making changes.",
 		"  Dry run output includes disabled plays and tasks, showing the full playbook manifest.",
 		"",
-		"Configuring the installer.yml:",
+		"Configuring dum.yml:",
 		"  # dir - create a directory",
 		"  - type: \"dir\"",
 		"    task: \"~/.dotfiles\"",

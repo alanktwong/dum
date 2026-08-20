@@ -1,5 +1,5 @@
 packages:
-  awong/dotfiles/internal/logging/gen:
+  alanktwong/dum/internal/logging/gen:
     config:
       all: false
       dir: 'internal/logging/gen'

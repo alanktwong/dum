@@ -3,7 +3,7 @@
 package external
 
 import (
-	"awong/dotfiles/internal/external/gen"
+	"alanktwong/dum/internal/external/gen"
 	"context"
 	"fmt"
 	"os"

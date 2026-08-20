@@ -3,7 +3,7 @@ package yaml
 import (
 	"fmt"
 
-	tyg "awong/dotfiles/internal/types/gen"
+	tyg "alanktwong/dum/internal/types/gen"
 )
 
 // TaskYAML represents a single task within a play.

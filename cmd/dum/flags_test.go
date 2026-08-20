@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/spf13/cobra"
@@ -9,43 +10,98 @@ import (
 )
 
 func TestGetDefaultConfig_Default(t *testing.T) {
-	t.Setenv("INSTALLER_CONFIG", "")
+	t.Setenv("DUM_CONFIG", "")
 	t.Setenv("XDG_CONFIG_HOME", "")
+	t.Chdir(t.TempDir())
 	result := GetDefaultConfig()
-	assert.Equal(t, "~/.config/dum/installer.yml", result)
+	assert.Equal(t, "~/.config/dum/dum.yml", result)
 }
 
 func TestGetDefaultConfig_XDGConfigHome(t *testing.T) {
-	t.Setenv("INSTALLER_CONFIG", "")
+	t.Setenv("DUM_CONFIG", "")
 	t.Setenv("XDG_CONFIG_HOME", "/custom/config")
+	t.Chdir(t.TempDir())
 	result := GetDefaultConfig()
-	assert.Equal(t, "/custom/config/dum/installer.yml", result)
+	assert.Equal(t, "/custom/config/dum/dum.yml", result)
 }
 
 func TestGetDefaultConfig_FromEnv(t *testing.T) {
-	t.Setenv("INSTALLER_CONFIG", "/custom/path.yml")
+	t.Setenv("DUM_CONFIG", "/custom/path.yml")
 	result := GetDefaultConfig()
 	assert.Equal(t, "/custom/path.yml", result)
 }
 
-func TestGetDefaultConfig_InstallerConfigTakesPrecedence(t *testing.T) {
-	t.Setenv("INSTALLER_CONFIG", "/custom/path.yml")
+func TestGetDefaultConfig_EnvTakesPrecedence(t *testing.T) {
+	t.Setenv("DUM_CONFIG", "/custom/path.yml")
 	t.Setenv("XDG_CONFIG_HOME", "/custom/config")
 
 	assert.Equal(t, "/custom/path.yml", GetDefaultConfig())
 }
 
-func TestGetDefaultConfig_RepeatedCallsAreEnvironmentIsolated(t *testing.T) {
-	t.Setenv("INSTALLER_CONFIG", "/first/path.yml")
+func TestGetDefaultConfig_CWDFile(t *testing.T) {
+	t.Setenv("DUM_CONFIG", "")
 	t.Setenv("XDG_CONFIG_HOME", "")
+	dir := t.TempDir()
+	t.Chdir(dir)
+	assert.NoError(t, os.WriteFile(filepath.Join(dir, "dum.yml"), []byte("playbook:\n  book: test\n"), 0o600))
+
+	assert.Equal(t, "dum.yml", GetDefaultConfig())
+}
+
+func TestGetDefaultConfig_XDGFile(t *testing.T) {
+	t.Setenv("DUM_CONFIG", "")
+	xdg := t.TempDir()
+	t.Setenv("XDG_CONFIG_HOME", xdg)
+	t.Chdir(t.TempDir())
+	assert.NoError(t, os.MkdirAll(filepath.Join(xdg, "dum"), 0o700))
+	assert.NoError(t, os.WriteFile(filepath.Join(xdg, "dum", "dum.yml"), []byte("playbook:\n  book: test\n"), 0o600))
+
+	assert.Equal(t, filepath.Join(xdg, "dum", "dum.yml"), GetDefaultConfig())
+}
+
+func TestGetDefaultConfig_LegacyInstallerFallback(t *testing.T) {
+	t.Setenv("DUM_CONFIG", "")
+	xdg := t.TempDir()
+	t.Setenv("XDG_CONFIG_HOME", xdg)
+	t.Chdir(t.TempDir())
+	assert.NoError(t, os.MkdirAll(filepath.Join(xdg, "dum"), 0o700))
+	assert.NoError(
+		t,
+		os.WriteFile(filepath.Join(xdg, "dum", "installer.yml"), []byte("playbook:\n  book: test\n"), 0o600),
+	)
+
+	assert.Equal(t, filepath.Join(xdg, "dum", "installer.yml"), GetDefaultConfig())
+}
+
+func TestGetDefaultConfig_CWDBeatsXDGAndLegacy(t *testing.T) {
+	t.Setenv("DUM_CONFIG", "")
+	xdg := t.TempDir()
+	t.Setenv("XDG_CONFIG_HOME", xdg)
+	dir := t.TempDir()
+	t.Chdir(dir)
+	assert.NoError(t, os.MkdirAll(filepath.Join(xdg, "dum"), 0o700))
+	assert.NoError(t, os.WriteFile(filepath.Join(xdg, "dum", "dum.yml"), []byte("playbook:\n  book: xdg\n"), 0o600))
+	assert.NoError(
+		t,
+		os.WriteFile(filepath.Join(xdg, "dum", "installer.yml"), []byte("playbook:\n  book: legacy\n"), 0o600),
+	)
+	assert.NoError(t, os.WriteFile(filepath.Join(dir, "dum.yml"), []byte("playbook:\n  book: cwd\n"), 0o600))
+
+	assert.Equal(t, "dum.yml", GetDefaultConfig())
+}
+
+func TestGetDefaultConfig_RepeatedCallsAreEnvironmentIsolated(t *testing.T) {
+	t.Setenv("DUM_CONFIG", "/first/path.yml")
+	t.Setenv("XDG_CONFIG_HOME", "")
+	t.Chdir(t.TempDir())
 	assert.Equal(t, "/first/path.yml", GetDefaultConfig())
 
-	t.Setenv("INSTALLER_CONFIG", "")
+	t.Setenv("DUM_CONFIG", "")
 	t.Setenv("XDG_CONFIG_HOME", "/second/config")
-	assert.Equal(t, "/second/config/dum/installer.yml", GetDefaultConfig())
+	assert.Equal(t, "/second/config/dum/dum.yml", GetDefaultConfig())
 
 	t.Setenv("XDG_CONFIG_HOME", "")
-	assert.Equal(t, "~/.config/dum/installer.yml", GetDefaultConfig())
+	assert.Equal(t, "~/.config/dum/dum.yml", GetDefaultConfig())
 }
 
 func TestAddGroupFlag(t *testing.T) {
@@ -58,7 +114,7 @@ func TestAddGroupFlag(t *testing.T) {
 }
 
 func TestAddFileFlag(t *testing.T) {
-	t.Setenv("INSTALLER_CONFIG", "")
+	t.Setenv("DUM_CONFIG", "")
 	cmd := &cobra.Command{Use: "test"}
 	AddFileFlag(cmd)
 

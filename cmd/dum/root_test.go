@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
 
-	gen "awong/dotfiles/internal/logging/gen"
+	gen "alanktwong/dum/internal/logging/gen"
 )
 
 func TestNewDum_RootCommand(t *testing.T) {

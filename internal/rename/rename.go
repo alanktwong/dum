@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	lg "awong/dotfiles/internal/logging"
+	lg "alanktwong/dum/internal/logging"
 )
 
 // Options describes a single file rename operation.

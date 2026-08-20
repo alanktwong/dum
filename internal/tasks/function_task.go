@@ -2,9 +2,9 @@
 package tasks
 
 import (
-	l "awong/dotfiles/internal/logging"
-	i "awong/dotfiles/internal/tasks/installer"
-	ty "awong/dotfiles/internal/types"
+	l "alanktwong/dum/internal/logging"
+	i "alanktwong/dum/internal/tasks/installer"
+	ty "alanktwong/dum/internal/types"
 	"context"
 	"fmt"
 )

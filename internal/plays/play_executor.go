@@ -1,9 +1,9 @@
 package plays
 
 import (
-	ext "awong/dotfiles/internal/external"
-	l "awong/dotfiles/internal/logging"
-	t "awong/dotfiles/internal/types"
+	ext "alanktwong/dum/internal/external"
+	l "alanktwong/dum/internal/logging"
+	t "alanktwong/dum/internal/types"
 	"context"
 	"fmt"
 )

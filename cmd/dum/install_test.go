@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"testing"
 
-	fy "awong/dotfiles/internal/factory"
-	pb "awong/dotfiles/internal/playbook"
+	fy "alanktwong/dum/internal/factory"
+	pb "alanktwong/dum/internal/playbook"
 
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
@@ -148,7 +148,7 @@ func TestRunInstall_ExecutorError(t *testing.T) {
 }
 
 func TestRunInstall_ViaCobra(t *testing.T) {
-	t.Setenv("INSTALLER_CONFIG", "/env/default.yml")
+	t.Setenv("DUM_CONFIG", "/env/default.yml")
 	dum, logger, factory, executor := newTestDumForInstall(t)
 	cmd := newTestInstallCmd(t, dum)
 	cmd.SetContext(context.Background())
