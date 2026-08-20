@@ -39,20 +39,6 @@ func (m *mockInstallExecutor) Install(ctx context.Context, input *pb.Input) (*pb
 	return r0, ret.Error(1)
 }
 
-// mockListExecutor implements listExecutor for testing.
-type mockListExecutor struct {
-	mock.Mock
-}
-
-func (m *mockListExecutor) List(ctx context.Context, input *pb.Input) (*pb.Result, error) {
-	ret := m.Called(ctx, input)
-	var r0 *pb.Result
-	if ret.Get(0) != nil {
-		r0 = ret.Get(0).(*pb.Result)
-	}
-	return r0, ret.Error(1)
-}
-
 // mockLogger implements lg.Logger for testing (only implements used methods).
 type mockLogger struct {
 	mock.Mock

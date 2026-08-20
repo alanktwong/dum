@@ -58,6 +58,18 @@ func (t *MasTask) Install(ctx context.Context, input *ty.TaskInput) (*ty.TaskRes
 		return result, nil
 	}
 	if !t.Enabled {
+		if input.DryRun {
+			err := t.Log.Printlnf(
+				"%v %s: mas install %s ... desc: %s",
+				TaskEllipsis,
+				TaskTypeName(t),
+				t.ID,
+				t.Description,
+			)
+			if err != nil {
+				return nil, fmt.Errorf("failed to log disabled mas: %w", err)
+			}
+		}
 		result, err := t.CreateTaskResult(input, false)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create task result: %w", err)
@@ -82,19 +94,6 @@ func (t *MasTask) Install(ctx context.Context, input *ty.TaskInput) (*ty.TaskRes
 		if err := t.Mas.Install(ctx, t.ID); err != nil {
 			return nil, fmt.Errorf("%s %s: mas install %s failed: %w", TaskEllipsis, input.Play, t.ID, err)
 		}
-	}
-	result, err := t.CreateTaskResult(input, true)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create task result: %w", err)
-	}
-	return result, nil
-}
-
-// List lists the task.
-func (t *MasTask) List(_ context.Context, input *ty.TaskInput) (*ty.TaskResult, error) {
-	err := t.Log.Printlnf("%v %s: mas install %s ... desc: %s", TaskEllipsis, TaskTypeName(t), t.ID, t.Description)
-	if err != nil {
-		return nil, fmt.Errorf("failed to list mas: %w", err)
 	}
 	result, err := t.CreateTaskResult(input, true)
 	if err != nil {

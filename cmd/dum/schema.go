@@ -33,7 +33,7 @@ func NewSchemaCommand(rootUse string, dum *SchemaCommand) *cobra.Command {
 				"This can be used for IDE autocomplete and validation in editors like",
 				"VS Code and JetBrains IDEs.",
 				"",
-				"For more info about playbooks, plays and tasks, see the help the install or list command.",
+				"For more info about playbooks, plays and tasks, see the help of the install command.",
 			},
 			"\n",
 		),

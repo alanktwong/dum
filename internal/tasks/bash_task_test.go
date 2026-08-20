@@ -179,32 +179,6 @@ func TestBashTask_Install_Failure(t *testing.T) {
 	mockLog.AssertExpectations(t)
 }
 
-func TestBashTask_List(t *testing.T) {
-	attrs := &ty.Attributes{
-		ID:          "test-bash",
-		Description: "test bash task",
-		Enabled:     true,
-	}
-	mockLog := i.NewMockLogger(t)
-	mockLog.On("Printlnf", "%s %s: %s", []any{"...........", "BashTask", "echo hello"}).Return(nil).Maybe()
-
-	task := &BashTask{
-		Attributes: *attrs,
-		Command:    "echo hello",
-		Log:        mockLog,
-	}
-
-	input := &ty.TaskInput{
-		Play: "test-play",
-	}
-
-	result, err := task.List(context.Background(), input)
-	assert.NoError(t, err)
-	assert.NotNil(t, result)
-	assert.True(t, result.Success)
-	mockLog.AssertExpectations(t)
-}
-
 func TestBashTask_GetAttributes(t *testing.T) {
 	attrs := &ty.Attributes{
 		ID:          "test-bash",
@@ -240,4 +214,41 @@ func TestBashTask_IsEnabled(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.True(t, task.IsEnabled())
+}
+
+func TestBashTask_Install_Disabled_DryRun(t *testing.T) {
+	attrs := &ty.Attributes{
+		ID:          "test-bash",
+		Description: "test bash task",
+		Enabled:     false,
+	}
+	mockLog := i.NewMockLogger(t)
+	mockLog.On(
+		"Debugf",
+		"%s %s START ... play: %s taskID: %s",
+		[]any{TaskEllipsis, "BashTask", "test-play", "test-bash"},
+	).Return().Maybe()
+	mockLog.On(
+		"Printlnf",
+		"%s %s: %s",
+		[]any{TaskEllipsis, "BashTask", "echo hello"},
+	).Return(nil)
+
+	task := &BashTask{
+		Attributes: *attrs,
+		Command:    "echo hello",
+		Utils:      new(MockExt),
+		Log:        mockLog,
+	}
+
+	input := &ty.TaskInput{
+		Play:   "test-play",
+		DryRun: true,
+	}
+
+	result, err := task.Install(context.Background(), input)
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.False(t, result.Success)
+	mockLog.AssertExpectations(t)
 }

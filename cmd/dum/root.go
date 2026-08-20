@@ -26,11 +26,6 @@ type InstallExecutor interface {
 	Install(context.Context, *pb.Input) (*pb.Result, error)
 }
 
-// ListExecutor lists a prepared playbook.
-type ListExecutor interface {
-	List(context.Context, *pb.Input) (*pb.Result, error)
-}
-
 type defaultFactoryProvider struct{}
 
 func (*defaultFactoryProvider) Provide(opts fy.InputOptions) (*pb.Input, error) {
@@ -47,7 +42,6 @@ type Dum struct {
 	Cmd             *cobra.Command
 	FactoryProvider FactoryProvider
 	InstallExecutor InstallExecutor
-	ListExecutor    ListExecutor
 }
 
 // NewDum constructs the root command and wires command dependencies.
@@ -65,12 +59,10 @@ func NewDum() *Dum {
 	}
 	logger := lg.NewLogger(lg.Options{Prefix: "", Level: GetLogLevel()})
 	installDum := newInstallDeps(logger)
-	listDum := newListDeps(logger)
 	logDum := newLogDeps(logger)
 	renameDum := newRenameDeps(logger)
 	schemaDum := newSchemaDeps()
 
-	rootCmd.AddCommand(NewListCommand(rootUse, listDum))
 	rootCmd.AddCommand(NewInstallCommand(rootUse, installDum))
 	rootCmd.AddCommand(NewRenameCommand(rootUse, renameDum))
 	rootCmd.AddCommand(NewLogCommand(rootUse, logDum))
@@ -81,7 +73,6 @@ func NewDum() *Dum {
 		Cmd:             rootCmd,
 		FactoryProvider: installDum.FactoryProvider,
 		InstallExecutor: installDum.Executor,
-		ListExecutor:    listDum.Executor,
 	}
 }
 

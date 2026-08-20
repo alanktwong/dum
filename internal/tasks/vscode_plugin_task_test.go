@@ -199,29 +199,6 @@ func TestVsCodePluginTask_Install_InstallError(t *testing.T) {
 	mockCode.AssertExpectations(t)
 }
 
-func TestVsCodePluginTask_List(t *testing.T) {
-	attrs := &ty.Attributes{
-		ID:          "ms-python.python",
-		Description: "test vscode task",
-		Enabled:     true,
-	}
-	mockLog := NewTestLogger(t)
-
-	task := &VsCodePluginTask{
-		Attributes: *attrs,
-		Log:        mockLog,
-	}
-
-	input := &ty.TaskInput{
-		Play: "test-play",
-	}
-
-	result, err := task.List(context.Background(), input)
-	assert.NoError(t, err)
-	assert.NotNil(t, result)
-	assert.True(t, result.Success)
-}
-
 func TestVsCodePluginTask_GetAttributes(t *testing.T) {
 	attrs := &ty.Attributes{
 		ID:          "ms-python.python",
@@ -257,4 +234,35 @@ func TestVsCodePluginTask_IsEnabled(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.True(t, task.IsEnabled())
+}
+
+func TestVsCodePluginTask_Install_Disabled_DryRun(t *testing.T) {
+	attrs := &ty.Attributes{
+		ID:          "ms-python.python",
+		Description: "test vscode task",
+		Enabled:     false,
+	}
+	mockLog := NewTestLogger(t)
+	mockLog.On(
+		"Printlnf",
+		"%v %s: code --install-extensions %s",
+		[]any{TaskEllipsis, "VsCodePluginTask", "ms-python.python"},
+	).Return(nil)
+
+	task := &VsCodePluginTask{
+		Attributes: *attrs,
+		Code:       new(MockCode),
+		Log:        mockLog,
+	}
+
+	input := &ty.TaskInput{
+		Play:   "test-play",
+		DryRun: true,
+	}
+
+	result, err := task.Install(context.Background(), input)
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.False(t, result.Success)
+	mockLog.AssertExpectations(t)
 }

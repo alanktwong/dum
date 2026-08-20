@@ -70,6 +70,12 @@ func (t *LinkTask) Install(ctx context.Context, input *ty.TaskInput) (*ty.TaskRe
 		return result, nil
 	}
 	if !t.Enabled {
+		if input.DryRun {
+			err := t.Log.Printlnf("%v %s: linking %v -> %s/%s", TaskEllipsis, TaskTypeName(t), t.ID, t.Root, target)
+			if err != nil {
+				return nil, fmt.Errorf("failed to log disabled link: %w", err)
+			}
+		}
 		result, err := t.CreateTaskResult(input, false)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create task result: %w", err)
@@ -89,20 +95,6 @@ func (t *LinkTask) Install(ctx context.Context, input *ty.TaskInput) (*ty.TaskRe
 		if t.Utils.SoftLink(ctx, rootPath, t.ID, target, t.Sudo) != nil {
 			return nil, fmt.Errorf("failed to link %v -> %s/%s: %w", t.ID, t.Root, target, err)
 		}
-	}
-	result, err := t.CreateTaskResult(input, true)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create task result: %w", err)
-	}
-	return result, nil
-}
-
-// List lists the task.
-func (t *LinkTask) List(_ context.Context, input *ty.TaskInput) (*ty.TaskResult, error) {
-	target := t.ProvideTarget()
-	err := t.Log.Printlnf("%v %s: linking %v -> %s/%s", TaskEllipsis, TaskTypeName(t), t.ID, t.Root, target)
-	if err != nil {
-		return nil, fmt.Errorf("failed to list link: %w", err)
 	}
 	result, err := t.CreateTaskResult(input, true)
 	if err != nil {

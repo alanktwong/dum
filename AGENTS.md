@@ -131,19 +131,14 @@ import (
 The codebase uses a task-based pattern:
 
 ```go
-// Lister can list given an input.
-type Lister interface {
-    List(ctx context.Context, input *Input) (*TaskResult, error)
-}
-
 // Installer can install given an input.
 type Installer interface {
     Install(ctx context.Context, input *Input) (*TaskResult, error)
 }
 
-// Task can list and install given an input.
+// Task can install given an input. Dry runs log disabled tasks instead of
+// skipping them so the output shows the full playbook manifest.
 type Task interface {
-    Lister
     Installer
 }
 ```

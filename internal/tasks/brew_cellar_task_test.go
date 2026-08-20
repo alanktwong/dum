@@ -199,31 +199,6 @@ func TestBrewCellarTask_Install_Failure(t *testing.T) {
 	mockBrew.AssertExpectations(t)
 }
 
-func TestBrewCellarTask_List(t *testing.T) {
-	attrs := &ty.Attributes{
-		ID:          "test-cellar",
-		Description: "test cellar task",
-		Enabled:     true,
-	}
-	mockLog := i.NewMockLogger(t)
-	mockLog.On("Printlnf", mock.Anything, mock.Anything, mock.Anything).Return(nil).Maybe()
-
-	task := &BrewCellarTask{
-		Attributes: *attrs,
-		Log:        mockLog,
-	}
-
-	input := &ty.TaskInput{
-		Play: "test-play",
-	}
-
-	result, err := task.List(context.Background(), input)
-	assert.NoError(t, err)
-	assert.NotNil(t, result)
-	assert.True(t, result.Success)
-	mockLog.AssertExpectations(t)
-}
-
 func TestBrewCellarTask_GetAttributes(t *testing.T) {
 	attrs := &ty.Attributes{
 		ID:          "test-cellar",
@@ -259,4 +234,40 @@ func TestBrewCellarTask_IsEnabled(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.True(t, task.IsEnabled())
+}
+
+func TestBrewCellarTask_Install_Disabled_DryRun(t *testing.T) {
+	attrs := &ty.Attributes{
+		ID:          "test-cellar",
+		Description: "test cellar task",
+		Enabled:     false,
+	}
+	mockLog := i.NewMockLogger(t)
+	mockLog.On(
+		"Debugf",
+		"%s %s START ... play: %s taskID: %s",
+		[]any{TaskEllipsis, "BrewCellarTask", "test-play", "test-cellar"},
+	).Return().Maybe()
+	mockLog.On(
+		"Printlnf",
+		"%v %s: brew install (Cellar) %s",
+		[]any{TaskEllipsis, "BrewCellarTask", "test-cellar"},
+	).Return(nil)
+
+	task := &BrewCellarTask{
+		Attributes: *attrs,
+		Brew:       new(MockBrew),
+		Log:        mockLog,
+	}
+
+	input := &ty.TaskInput{
+		Play:   "test-play",
+		DryRun: true,
+	}
+
+	result, err := task.Install(context.Background(), input)
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.False(t, result.Success)
+	mockLog.AssertExpectations(t)
 }

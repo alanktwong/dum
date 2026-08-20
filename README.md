@@ -20,7 +20,6 @@ ls dist
 | Command   | Alias | Description                                     |
 |-----------|-------|-------------------------------------------------|
 | `install` | `i`   | Runs plays and tasks for software installations |
-| `list`    | `ls`  | Lists plays and tasks from the playbook         |
 | `rename`  | `r`   | Renames files with various transformations      |
 | `log`     | `lg`  | Logging utilities for shell scripts             |
 
@@ -31,19 +30,11 @@ Installs software based on the playbook configuration:
 ```shell
 dum install                    # Install all plays
 dum install --group <name>    # Install specific play group
-dum install --dryrun       # Preview without installing
+dum install --dryrun       # Preview without installing (includes disabled plays and tasks)
 dum install -f <config.yml>   # Use custom config file
 ```
 
-### List Command
-
-Lists available plays and tasks:
-
-```shell
-dum list                      # List all plays
-dum list --group <name>       # List specific play group
-dum list -f <config.yml>      # Use custom config file
-```
+Use `--dryrun` to preview what would run without making changes. Dry run output includes disabled plays and tasks, showing the full playbook manifest.
 
 ### Rename Command
 
@@ -174,13 +165,13 @@ PUT 175.=175:
 
 ### Enums
 COVERAGE_THRESHOLD=90 make check-coverage
-We are using [go-enum](https://github.com/abice/go-enum) to generate enums from Go struct field tags. 
+We are using [go-enum](https://github.com/abice/go-enum) to generate enums from Go struct field tags.
 The generated enums, by convention, are suffixed as `_enum.go` and are gitignored.
 
 ### Mockery
 
 We are using [mockery](https://vektra.github.io/mockery/v3.0/) to generate
-mocks of Go interfaces for testing. 
+mocks of Go interfaces for testing.
 The mockery configurations live in `cfg/mockery.*.yml` and the generated
 mocks are gitignored since they should follow the naming convention `*_mocks.go`.
 

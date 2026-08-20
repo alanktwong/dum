@@ -222,29 +222,6 @@ func TestMasTask_Install_InstallError(t *testing.T) {
 	mockMas.AssertExpectations(t)
 }
 
-func TestMasTask_List(t *testing.T) {
-	attrs := &ty.Attributes{
-		ID:          "123456789",
-		Description: "test mas task",
-		Enabled:     true,
-	}
-	mockLog := NewTestLogger(t)
-
-	task := &MasTask{
-		Attributes: *attrs,
-		Log:        mockLog,
-	}
-
-	input := &ty.TaskInput{
-		Play: "test-play",
-	}
-
-	result, err := task.List(context.Background(), input)
-	assert.NoError(t, err)
-	assert.NotNil(t, result)
-	assert.True(t, result.Success)
-}
-
 func TestMasTask_GetAttributes(t *testing.T) {
 	attrs := &ty.Attributes{
 		ID:          "123456789",
@@ -280,4 +257,35 @@ func TestMasTask_IsEnabled(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.True(t, task.IsEnabled())
+}
+
+func TestMasTask_Install_Disabled_DryRun(t *testing.T) {
+	attrs := &ty.Attributes{
+		ID:          "123456789",
+		Description: "test mas task",
+		Enabled:     false,
+	}
+	mockLog := NewTestLogger(t)
+	mockLog.On(
+		"Printlnf",
+		"%v %s: mas install %s ... desc: %s",
+		[]any{TaskEllipsis, "MasTask", "123456789", "test mas task"},
+	).Return(nil)
+
+	task := &MasTask{
+		Attributes: *attrs,
+		Mas:        new(MockMas),
+		Log:        mockLog,
+	}
+
+	input := &ty.TaskInput{
+		Play:   "test-play",
+		DryRun: true,
+	}
+
+	result, err := task.Install(context.Background(), input)
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.False(t, result.Success)
+	mockLog.AssertExpectations(t)
 }

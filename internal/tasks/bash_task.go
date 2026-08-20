@@ -57,6 +57,11 @@ func (t *BashTask) IsEnabled() bool {
 func (t *BashTask) Install(ctx context.Context, input *ty.TaskInput) (*ty.TaskResult, error) {
 	t.Log.Debugf("%s %s START ... play: %s taskID: %s", TaskEllipsis, TaskTypeName(t), input.Play, t.ID)
 	if !t.Enabled {
+		if input.DryRun {
+			if err := t.logDisabledDryRun(); err != nil {
+				return nil, err
+			}
+		}
 		result, err := t.CreateTaskResult(input, false)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create task result: %w", err)
@@ -83,19 +88,15 @@ func (t *BashTask) Install(ctx context.Context, input *ty.TaskInput) (*ty.TaskRe
 	return result, nil
 }
 
-// List lists the task.
-func (t *BashTask) List(_ context.Context, input *ty.TaskInput) (*ty.TaskResult, error) {
+// logDisabledDryRun logs the command a disabled task would run during a dry run.
+func (t *BashTask) logDisabledDryRun() error {
 	cmd := t.Command
 	if cmd == "" {
 		cmd = t.Script
 	}
 	err := t.Log.Printlnf("%s %s: %s", TaskEllipsis, TaskTypeName(t), cmd)
 	if err != nil {
-		return nil, fmt.Errorf("failed to list command: %w", err)
+		return fmt.Errorf("failed to log disabled command: %w", err)
 	}
-	result, err := t.CreateTaskResult(input, true)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create task result: %w", err)
-	}
-	return result, nil
+	return nil
 }

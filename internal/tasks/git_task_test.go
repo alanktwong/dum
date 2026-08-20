@@ -254,32 +254,6 @@ func TestGitTask_Install_CloneError(t *testing.T) {
 	mockGit.AssertExpectations(t)
 }
 
-func TestGitTask_List(t *testing.T) {
-	attrs := &ty.Attributes{
-		ID:          "https://github.com/test/repo.git",
-		Description: "test git task",
-		Enabled:     true,
-	}
-	mockLog := newGitTestLogger(t)
-
-	task := &GitTask{
-		Attributes: *attrs,
-		Root:       "~/projects",
-		Name:       "repo",
-		Log:        mockLog,
-	}
-
-	input := &ty.TaskInput{
-		Play: "test-play",
-	}
-
-	result, err := task.List(context.Background(), input)
-	assert.NoError(t, err)
-	assert.NotNil(t, result)
-	assert.True(t, result.Success)
-	mockLog.AssertExpectations(t)
-}
-
 func TestGitTask_GetAttributes(t *testing.T) {
 	attrs := &ty.Attributes{
 		ID:          "https://github.com/test/repo.git",
@@ -333,4 +307,42 @@ func TestProvideName(t *testing.T) {
 		result := provideName(tt.id, tt.name)
 		assert.Equal(t, tt.want, result)
 	}
+}
+
+func TestGitTask_Install_Disabled_DryRun(t *testing.T) {
+	attrs := &ty.Attributes{
+		ID:          "https://github.com/test/repo.git",
+		Description: "test git task",
+		Enabled:     false,
+	}
+	mockLog := i.NewMockLogger(t)
+	mockLog.On(
+		"Debugf",
+		"%s %s START ... play: %s taskID: %s",
+		[]any{TaskEllipsis, "GitTask", "test-play", "https://github.com/test/repo.git"},
+	).Return().Maybe()
+	mockLog.On(
+		"Printlnf",
+		"%v %s: at %v, git clone %v %v",
+		[]any{TaskEllipsis, "GitTask", "~/projects", "https://github.com/test/repo.git", "repo"},
+	).Return(nil)
+
+	task := &GitTask{
+		Attributes: *attrs,
+		Root:       "~/projects",
+		Name:       "repo",
+		Git:        new(MockGit),
+		Log:        mockLog,
+	}
+
+	input := &ty.TaskInput{
+		Play:   "test-play",
+		DryRun: true,
+	}
+
+	result, err := task.Install(context.Background(), input)
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.False(t, result.Success)
+	mockLog.AssertExpectations(t)
 }

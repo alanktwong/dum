@@ -12,7 +12,6 @@ import (
 type PlayExec interface {
 	Initialize(input *PlayInput) (*PlayResult, error)
 	InstallPlay(ctx context.Context, p *Play, input *PlayInput) (*PlayResult, error)
-	ListPlay(ctx context.Context, p *Play, input *PlayInput) (*PlayResult, error)
 }
 
 // PlayExecutor performs the work of executing a play or task.
@@ -66,34 +65,6 @@ func (e *PlayExecutor) InstallPlay(ctx context.Context, p *Play, input *PlayInpu
 			taskResult, err := task.Install(ctx, taskInput)
 			if err != nil {
 				return nil, fmt.Errorf("failed to install task %s in play %v: %w", id, p.ID, err)
-			}
-			taskResults = append(taskResults, taskResult)
-		}
-	}
-	return NewPlayResult(input, taskResults), nil
-}
-
-// ListPlay lists a play.
-func (e *PlayExecutor) ListPlay(ctx context.Context, p *Play, input *PlayInput) (*PlayResult, error) {
-	var taskResults []*t.TaskResult
-	err := e.Log.Printlnf("%v Listing play (%v) ... %v", PlayEllipsis, p.ID, p.Description)
-	if err != nil {
-		return nil, fmt.Errorf("failed to list play %s: %w", p.ID, err)
-	}
-	taskMap := p.GetTasks(false)
-	for id, task := range taskMap.AllFromFront() {
-		if attributable, ok := task.(t.Attributable); ok {
-			taskInput := t.NewTaskInput(
-				input.DryRun,
-				attributable.GetAttributes().Sudo,
-				id,
-				p.ID,
-				input.PlayBook.GetID(),
-				input.PlayBook.GetJetBrainsApps(),
-			)
-			taskResult, err := task.List(ctx, taskInput)
-			if err != nil {
-				return nil, fmt.Errorf("failed to list task %s in play %v: %w", id, p.ID, err)
 			}
 			taskResults = append(taskResults, taskResult)
 		}

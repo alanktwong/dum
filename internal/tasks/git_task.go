@@ -64,6 +64,13 @@ func (t *GitTask) Install(ctx context.Context, input *ty.TaskInput) (*ty.TaskRes
 		return nil, fmt.Errorf("task root cannot be empty")
 	}
 	if !t.Enabled {
+		if input.DryRun {
+			name := provideName(t.ID, t.Name)
+			err := t.Log.Printlnf("%v %s: at %v, git clone %v %v", TaskEllipsis, TaskTypeName(t), t.Root, t.ID, name)
+			if err != nil {
+				return nil, fmt.Errorf("failed to log disabled git: %w", err)
+			}
+		}
 		result, err := t.CreateTaskResult(input, false)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create task result: %w", err)
@@ -87,20 +94,6 @@ func (t *GitTask) Install(ctx context.Context, input *ty.TaskInput) (*ty.TaskRes
 		if err := t.Git.Clone(ctx, t.ID, t.Name, rootPath, t.Sudo); err != nil {
 			return nil, fmt.Errorf("failed to git clone %v: %w", t.ID, err)
 		}
-	}
-	result, err := t.CreateTaskResult(input, true)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create task result: %w", err)
-	}
-	return result, nil
-}
-
-// List lists the task.
-func (t *GitTask) List(_ context.Context, input *ty.TaskInput) (*ty.TaskResult, error) {
-	name := provideName(t.ID, t.Name)
-	err := t.Log.Printlnf("%v %s: at %v, git clone %v %v", TaskEllipsis, TaskTypeName(t), t.Root, t.ID, name)
-	if err != nil {
-		return nil, fmt.Errorf("failed to list git: %w", err)
 	}
 	result, err := t.CreateTaskResult(input, true)
 	if err != nil {

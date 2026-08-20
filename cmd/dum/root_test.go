@@ -31,8 +31,8 @@ func TestNewDum_Subcommands(t *testing.T) {
 	}
 
 	assert.True(t, subcommands["install"])
-	assert.True(t, subcommands["list"])
 	assert.True(t, subcommands["rename"])
+	assert.False(t, subcommands["list"])
 	assert.True(t, subcommands["log"])
 	assert.True(t, subcommands["schema"])
 }
@@ -45,7 +45,6 @@ func TestNewDum_SubcommandAliases(t *testing.T) {
 		expectedAlias string
 	}{
 		{"install", "i"},
-		{"list", "ls"},
 		{"rename", "r"},
 		{"log", "lg"},
 		{"schema", "s"},
@@ -109,7 +108,6 @@ func TestNewDum_DependenciesSet(t *testing.T) {
 
 	assert.NotNil(t, dum.FactoryProvider)
 	assert.NotNil(t, dum.InstallExecutor)
-	assert.NotNil(t, dum.ListExecutor)
 	assert.NotNil(t, dum.Log)
 }
 

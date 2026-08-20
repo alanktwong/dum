@@ -3,8 +3,6 @@ package tasks
 
 import (
 	i "awong/dotfiles/internal/tasks/installer"
-	ty "awong/dotfiles/internal/types"
-	"context"
 	"reflect"
 )
 
@@ -13,10 +11,9 @@ const (
 	TaskEllipsis = i.TaskEllipsis
 )
 
-// Task represents a unit of work that can be installed or listed.
+// Task represents a unit of work that can be installed.
 type Task interface {
 	i.Installer
-	List(ctx context.Context, input *ty.TaskInput) (*ty.TaskResult, error)
 }
 
 // TaskTypeName returns the struct name of a task.

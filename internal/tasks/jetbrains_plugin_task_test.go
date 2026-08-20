@@ -241,34 +241,6 @@ func TestJetBrainsPluginTask_Install_Error(t *testing.T) {
 	mockJetBrains.AssertExpectations(t)
 }
 
-func TestJetBrainsPluginTask_List(t *testing.T) {
-	attrs := &ty.Attributes{
-		ID:          "test-plugin",
-		Description: "test jetbrains task",
-		Enabled:     true,
-	}
-	mockExt := new(MockExt)
-	mockExt.On("IsInstalled", "idea").Return(true)
-
-	task := &JetBrainsPluginTask{
-		Attributes: *attrs,
-		Apps:       []string{"idea"},
-		Utils:      mockExt,
-		Log:        NewTestLogger(t),
-	}
-
-	input := &ty.TaskInput{
-		Play:          "test-play",
-		JetBrainsApps: map[string]string{"idea": "ideaIU"},
-	}
-
-	result, err := task.List(context.Background(), input)
-	assert.NoError(t, err)
-	assert.NotNil(t, result)
-	assert.True(t, result.Success)
-	mockExt.AssertExpectations(t)
-}
-
 func TestJetBrainsPluginTask_activeApps(t *testing.T) {
 	mockExt := new(MockExt)
 	mockExt.On("IsInstalled", "idea").Return(true)
@@ -320,4 +292,42 @@ func TestJetBrainsPluginTask_IsEnabled(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.True(t, task.IsEnabled())
+}
+
+func TestJetBrainsPluginTask_Install_Disabled_DryRun(t *testing.T) {
+	attrs := &ty.Attributes{
+		ID:          "test-plugin",
+		Description: "test jetbrains task",
+		Enabled:     false,
+	}
+	mockExt := new(MockExt)
+	mockExt.On("IsInstalled", "idea").Return(true)
+
+	mockLog := NewTestLogger(t)
+	mockLog.On(
+		"Printlnf",
+		"%v %s: %s installPlugins %s",
+		[]any{TaskEllipsis, "JetBrainsPluginTask", "idea", "test-plugin"},
+	).Return(nil)
+
+	task := &JetBrainsPluginTask{
+		Attributes: *attrs,
+		Apps:       []string{"idea"},
+		Utils:      mockExt,
+		JetBrains:  new(MockJetBrainsApp),
+		Log:        mockLog,
+	}
+
+	input := &ty.TaskInput{
+		Play:          "test-play",
+		DryRun:        true,
+		JetBrainsApps: map[string]string{},
+	}
+
+	result, err := task.Install(context.Background(), input)
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.False(t, result.Success)
+	mockExt.AssertExpectations(t)
+	mockLog.AssertExpectations(t)
 }
