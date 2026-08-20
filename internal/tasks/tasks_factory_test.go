@@ -177,7 +177,7 @@ func TestTaskFactory_ProvideTasks_VsCodeTask(t *testing.T) {
 	assert.Equal(t, "test-vscode", vsTask.ID)
 }
 
-func TestTaskFactory_ProvideTasks_FunctionTask(t *testing.T) {
+func TestTaskFactory_ProvideTasks_UnknownType(t *testing.T) {
 	factory := NewTaskFactory()
 	tasks, err := factory.ProvideTasks([]yml.TaskYAML{
 		{
@@ -185,11 +185,9 @@ func TestTaskFactory_ProvideTasks_FunctionTask(t *testing.T) {
 			Type: "function",
 		},
 	})
-	assert.NoError(t, err)
-	assert.Len(t, tasks, 1)
-	fnTask, ok := tasks[0].(*FunctionTask)
-	assert.True(t, ok)
-	assert.Equal(t, "test-function", fnTask.ID)
+	assert.Nil(t, tasks)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "unknown task type function")
 }
 
 func TestTaskFactory_ProvideTasks_GitTask(t *testing.T) {

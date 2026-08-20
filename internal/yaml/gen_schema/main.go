@@ -51,7 +51,6 @@ func main() {
 													"brew",
 													"cask",
 													"cellar",
-													"function",
 													"mas",
 													"vscode",
 													"jetbrains",

@@ -3,14 +3,14 @@
   "properties": {
     "playbook": {
       "properties": {
+        "book": {
+          "type": "string"
+        },
         "description": {
           "type": "string"
         },
         "enabled": {
           "type": "boolean"
-        },
-        "id": {
-          "type": "string"
         },
         "jetbrains": {
           "items": {
@@ -30,7 +30,7 @@
               "enabled": {
                 "type": "boolean"
               },
-              "id": {
+              "play": {
                 "type": "string"
               },
               "tasks": {
@@ -51,9 +51,6 @@
                     "enabled": {
                       "type": "boolean"
                     },
-                    "id": {
-                      "type": "string"
-                    },
                     "name": {
                       "type": "string"
                     },
@@ -69,6 +66,9 @@
                     "target": {
                       "type": "string"
                     },
+                    "task": {
+                      "type": "string"
+                    },
                     "type": {
                       "enum": [
                         "bash",
@@ -78,7 +78,6 @@
                         "brew",
                         "cask",
                         "cellar",
-                        "function",
                         "mas",
                         "vscode",
                         "jetbrains"
@@ -88,7 +87,7 @@
                   },
                   "required": [
                     "type",
-                    "id"
+                    "task"
                   ],
                   "type": "object"
                 },
@@ -96,7 +95,7 @@
               }
             },
             "required": [
-              "id",
+              "play",
               "tasks"
             ],
             "type": "object"
@@ -108,7 +107,7 @@
         }
       },
       "required": [
-        "id",
+        "book",
         "plays"
       ],
       "type": "object"

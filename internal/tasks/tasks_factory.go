@@ -59,8 +59,6 @@ func (f *TaskFactory) provideTask(taskYAML yml.TaskYAML) (Task, error) {
 		return NewMasTask(attributes)
 	case tyg.TaskTypeVscode:
 		return NewVsCodePluginTask(attributes)
-	case tyg.TaskTypeFunction:
-		return NewFunctionTask(attributes)
 	case tyg.TaskTypeLink:
 		return NewLinkTask(attributes,
 			taskYAML.Root,

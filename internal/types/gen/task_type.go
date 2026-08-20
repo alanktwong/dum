@@ -2,5 +2,5 @@
 package gen
 
 // TaskType is an enum source.
-// ENUM(cask, cellar, brew, dir, function,  git, link, jetbrains, mas, vscode, bash).
+// ENUM(cask, cellar, brew, dir, git, link, jetbrains, mas, vscode, bash).
 type TaskType string

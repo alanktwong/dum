@@ -19,8 +19,4 @@ packages:
       pkgname: 'installer'
       filename: "external_mocks.go"
     interfaces:
-      Brew: {}
       Ext: {}
-      Git: {}
-      JetBrainsApp: {}
-      Mas: {}

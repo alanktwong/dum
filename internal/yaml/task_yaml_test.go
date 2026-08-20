@@ -37,6 +37,12 @@ func TestTaskYAML_Validate(t *testing.T) {
 			errMsg:  "invalid task type",
 		},
 		{
+			name:    "removed function type",
+			task:    TaskYAML{ID: "t1", Type: "function"},
+			wantErr: true,
+			errMsg:  "invalid task type: function",
+		},
+		{
 			name:    "bash with command",
 			task:    TaskYAML{ID: "t1", Type: "bash", Command: "echo hello"},
 			wantErr: false,
