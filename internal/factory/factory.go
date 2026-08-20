@@ -2,14 +2,15 @@
 package factory
 
 import (
-	ext "alanktwong/dum/internal/external"
-	l "alanktwong/dum/internal/logging"
-	pb "alanktwong/dum/internal/playbook"
-	pl "alanktwong/dum/internal/plays"
-	ty "alanktwong/dum/internal/types"
-	tyg "alanktwong/dum/internal/types/gen"
-	yml "alanktwong/dum/internal/yaml"
 	"fmt"
+
+	ext "github.com/alanktwong/dum/internal/external"
+	l "github.com/alanktwong/dum/internal/logging"
+	pb "github.com/alanktwong/dum/internal/playbook"
+	pl "github.com/alanktwong/dum/internal/plays"
+	ty "github.com/alanktwong/dum/internal/types"
+	tyg "github.com/alanktwong/dum/internal/types/gen"
+	yml "github.com/alanktwong/dum/internal/yaml"
 )
 
 // Factory provides the Factory for constructing Input from YML files.

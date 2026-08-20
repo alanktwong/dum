@@ -1,11 +1,12 @@
 package plays
 
 import (
-	ext "alanktwong/dum/internal/external"
-	l "alanktwong/dum/internal/logging"
-	t "alanktwong/dum/internal/types"
 	"context"
 	"fmt"
+
+	ext "github.com/alanktwong/dum/internal/external"
+	l "github.com/alanktwong/dum/internal/logging"
+	t "github.com/alanktwong/dum/internal/types"
 )
 
 // PlayExec abstracts play execution for testing.

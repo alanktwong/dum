@@ -2,11 +2,12 @@
 package logging
 
 import (
-	"alanktwong/dum/internal/logging/gen"
 	"fmt"
 	"os"
 	"sync"
 	"time"
+
+	"github.com/alanktwong/dum/internal/logging/gen"
 
 	"github.com/charmbracelet/log"
 )

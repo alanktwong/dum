@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
-	gen "alanktwong/dum/internal/logging/gen"
+	gen "github.com/alanktwong/dum/internal/logging/gen"
 )
 
 func newTestDumWithCmd(t *testing.T) (*LogCommand, *gen.MockLogger, *cobra.Command) {

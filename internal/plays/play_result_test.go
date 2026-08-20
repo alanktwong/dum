@@ -1,9 +1,10 @@
 package plays
 
 import (
-	pg "alanktwong/dum/internal/plays/gen"
-	ty "alanktwong/dum/internal/types"
 	"testing"
+
+	pg "github.com/alanktwong/dum/internal/plays/gen"
+	ty "github.com/alanktwong/dum/internal/types"
 
 	"github.com/stretchr/testify/assert"
 )

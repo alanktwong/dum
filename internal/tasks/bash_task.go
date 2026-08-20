@@ -2,11 +2,12 @@
 package tasks
 
 import (
-	ext "alanktwong/dum/internal/external"
-	l "alanktwong/dum/internal/logging"
-	ty "alanktwong/dum/internal/types"
 	"context"
 	"fmt"
+
+	ext "github.com/alanktwong/dum/internal/external"
+	l "github.com/alanktwong/dum/internal/logging"
+	ty "github.com/alanktwong/dum/internal/types"
 )
 
 // BashTask executes bash commands or scripts.

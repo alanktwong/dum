@@ -1,10 +1,11 @@
 package plays
 
 import (
-	tk "alanktwong/dum/internal/tasks"
-	ty "alanktwong/dum/internal/types"
-	yml "alanktwong/dum/internal/yaml"
 	"testing"
+
+	tk "github.com/alanktwong/dum/internal/tasks"
+	ty "github.com/alanktwong/dum/internal/types"
+	yml "github.com/alanktwong/dum/internal/yaml"
 
 	"github.com/stretchr/testify/assert"
 )

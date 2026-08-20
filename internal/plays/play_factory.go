@@ -1,12 +1,13 @@
 package plays
 
 import (
-	ext "alanktwong/dum/internal/external"
-	l "alanktwong/dum/internal/logging"
-	t "alanktwong/dum/internal/tasks"
-	"alanktwong/dum/internal/types"
-	yml "alanktwong/dum/internal/yaml"
 	"fmt"
+
+	ext "github.com/alanktwong/dum/internal/external"
+	l "github.com/alanktwong/dum/internal/logging"
+	t "github.com/alanktwong/dum/internal/tasks"
+	"github.com/alanktwong/dum/internal/types"
+	yml "github.com/alanktwong/dum/internal/yaml"
 )
 
 // PlayFactory creates Play instances from YML configuration.

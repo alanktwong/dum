@@ -1,11 +1,12 @@
 package playbook
 
 import (
-	ext "alanktwong/dum/internal/external"
-	l "alanktwong/dum/internal/logging"
-	pl "alanktwong/dum/internal/plays"
 	"context"
 	"fmt"
+
+	ext "github.com/alanktwong/dum/internal/external"
+	l "github.com/alanktwong/dum/internal/logging"
+	pl "github.com/alanktwong/dum/internal/plays"
 
 	om "github.com/elliotchance/orderedmap/v3"
 )

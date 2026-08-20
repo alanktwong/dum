@@ -1,12 +1,13 @@
 package factory
 
 import (
-	"alanktwong/dum/internal/tasks"
 	"os"
 	"path/filepath"
 	"testing"
 
-	yml "alanktwong/dum/internal/yaml"
+	"github.com/alanktwong/dum/internal/tasks"
+
+	yml "github.com/alanktwong/dum/internal/yaml"
 
 	"github.com/stretchr/testify/assert"
 )

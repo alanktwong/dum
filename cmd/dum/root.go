@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	fy "alanktwong/dum/internal/factory"
-	lg "alanktwong/dum/internal/logging"
-	pb "alanktwong/dum/internal/playbook"
+	fy "github.com/alanktwong/dum/internal/factory"
+	lg "github.com/alanktwong/dum/internal/logging"
+	pb "github.com/alanktwong/dum/internal/playbook"
 
 	"github.com/spf13/cobra"
 )

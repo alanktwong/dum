@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	lg "alanktwong/dum/internal/logging"
+	lg "github.com/alanktwong/dum/internal/logging"
 
 	clog "github.com/charmbracelet/log"
 	"github.com/spf13/cobra"

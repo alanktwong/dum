@@ -1,12 +1,13 @@
 package external
 
 import (
-	"alanktwong/dum/internal/external/gen"
 	"context"
 	"fmt"
 	"os"
 	"os/exec"
 	"strings"
+
+	"github.com/alanktwong/dum/internal/external/gen"
 )
 
 // Git is the abstraction for cloning a repository.

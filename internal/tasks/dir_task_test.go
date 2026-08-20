@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	i "alanktwong/dum/internal/tasks/installer"
-	ty "alanktwong/dum/internal/types"
+	i "github.com/alanktwong/dum/internal/tasks/installer"
+	ty "github.com/alanktwong/dum/internal/types"
 
 	"github.com/stretchr/testify/assert"
 	mock "github.com/stretchr/testify/mock"
