@@ -79,7 +79,7 @@ linters-build: ## build custom linters
 	@$(DISPATCH) linters-build
 
 .PHONY: release
-release: ## compile release binaries for all platforms (darwin/linux, arm64/amd64/386)
+release: ## compile release binaries for darwin/linux on arm64/amd64
 	@$(DISPATCH) release
 
 release-build: build  ## compile snapshot binaries without archives

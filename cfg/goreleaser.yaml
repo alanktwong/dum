@@ -4,6 +4,7 @@ before:
   hooks:
     - go mod tidy
     - go generate ./...
+    - go run ./cmd/dum schema --output cfg/installer.schema.json
 
 builds:
   - id: "dum"
@@ -13,8 +14,10 @@ builds:
       - CGO_ENABLED=0
     goos:
       - darwin
+      - linux
     goarch:
       - arm64
+      - amd64
     hooks:
       pre:
         - cmd: "test \"{{.Os}}\" != \"windows\" && exit 0; echo \"ERROR: Windows builds are not supported\"; exit 1"
@@ -41,6 +44,10 @@ archives:
     format_overrides:
       - goos: windows
         formats: ["zip"]
+
+checksum:
+  name_template: "{{ .ProjectName }}_{{ .Version }}_checksums.txt"
+  algorithm: sha256
 
 changelog:
   sort: asc
