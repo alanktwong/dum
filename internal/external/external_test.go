@@ -13,14 +13,18 @@ import (
 
 func TestDefaultExt_IsInstalled(t *testing.T) {
 	u := NewExt()
+	binDir := t.TempDir()
+	toolPath := filepath.Join(binDir, "test-tool")
+	assert.NoError(t, os.WriteFile(toolPath, []byte("#!/bin/sh\nexit 0\n"), 0o755))
+	t.Setenv("PATH", binDir+string(os.PathListSeparator)+os.Getenv("PATH"))
 	tests := []struct {
 		name    string
 		command string
 		want    bool
 	}{
 		{
-			name:    "bash is installed",
-			command: "bash",
+			name:    "temp command is installed",
+			command: "test-tool",
 			want:    true,
 		},
 		{
@@ -249,6 +253,8 @@ func TestDefaultExt_SoftLink(t *testing.T) {
 func TestDefaultUtils_ToAbsolutePath(t *testing.T) {
 	home, err := os.UserHomeDir()
 	assert.NoError(t, err)
+	testGoPath := filepath.Join(t.TempDir(), "go")
+	t.Setenv("GOPATH", testGoPath)
 	gopath := os.Getenv("GOPATH")
 	if gopath == "" {
 		gopath = filepath.Join(home, "go")
