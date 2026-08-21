@@ -171,6 +171,10 @@ jobs:
    - **Conventional Commits**: static
      `img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg`, linking
      to https://www.conventionalcommits.org.
+   - **GoDoc**: official `https://pkg.go.dev/badge/github.com/alanktwong/dum.svg`,
+     linking to `https://pkg.go.dev/github.com/alanktwong/dum`. Docs publish
+     automatically via pkg.go.dev on first fetch; no suffix needed while the
+     module stays v1.x (add `/v2+` path suffix if major bumps happen).
 2. **Development > Build Commands**: add `make tag` line matching AGENTS.md.
 3. **New "Versioning and Releases" subsection** under Development:
    - Conventional Commits required for all contributions; commitlint validates
