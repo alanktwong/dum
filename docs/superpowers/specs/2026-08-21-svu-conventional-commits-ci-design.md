@@ -84,11 +84,19 @@ on:
   pull_request:
   push:
     branches: [main]
+  schedule:
+    - cron: '0 6 * * 1' # Mondays 06:00 UTC
 ```
 
 The existing test/coverage job is unchanged; no commitlint job is added to
 CI. PR titles are not enforced — with `always: true`, an off-format squash
 title only risks an imprecise bump level, never a broken release.
+
+The weekly schedule is a build-rot sanity check: it re-runs the same test job
+against `main` so dependency or runner drift is caught even when nothing was
+merged. It never publishes — releases fire only on `v*` tag pushes. Note:
+GitHub disables scheduled workflows after 60 days of repo inactivity; any
+push or manual dispatch re-enables them.
 
 ## Section 4 — Release Pipeline
 
