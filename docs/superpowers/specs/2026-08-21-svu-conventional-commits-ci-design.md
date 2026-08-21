@@ -159,8 +159,20 @@ jobs:
 
 ### README.md
 
-1. **Development > Build Commands**: add `make tag` line matching AGENTS.md.
-2. **New "Versioning and Releases" subsection** under Development:
+1. **Badges** directly under the `# dum` title (style follows
+   [svu's README](https://github.com/caarlos0/svu/blob/main/README.md)):
+   - **Release**: `img.shields.io/github/v/release/alanktwong/dum`, linking to
+     the releases page.
+   - **License**: `img.shields.io/github/license/alanktwong/dum` (dynamic,
+     reads the existing `LICENSE`), linking to the license file.
+   - **Build status**: GitHub Actions native badge for `ci.yml`
+     (`github.com/alanktwong/dum/actions/workflows/ci.yml/badge.svg`),
+     linking to the Actions page.
+   - **Conventional Commits**: static
+     `img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg`, linking
+     to https://www.conventionalcommits.org.
+2. **Development > Build Commands**: add `make tag` line matching AGENTS.md.
+3. **New "Versioning and Releases" subsection** under Development:
    - Conventional Commits required for all contributions; commitlint validates
      local commit messages via pre-commit.
    - `make tag` computes and tags the next semver from merged conventional
