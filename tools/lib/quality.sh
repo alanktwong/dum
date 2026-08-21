@@ -26,7 +26,7 @@ quality_run_coverage_checker() (
 
     quality_write_coverage_config "$config_file"
     threshold="$(yq eval -r '.threshold.total' "$config_file")"
-    if go-test-coverage --config="$config_file" --threshold-file=-1 --threshold-package=-1 >"$output"; then
+    if go-test-coverage --config="$config_file" >"$output"; then
         cat "$output"
         return 0
     fi

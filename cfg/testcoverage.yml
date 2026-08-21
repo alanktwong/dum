@@ -21,7 +21,7 @@ override:
     threshold: 2
   - path: ^internal/types$
     threshold: 1
-  - path: ^cmd/dum(/|$)
+  - path: ^cmd/dum$
     threshold: 20
 
 exclude:
