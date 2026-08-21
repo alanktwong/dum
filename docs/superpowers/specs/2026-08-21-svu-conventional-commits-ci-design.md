@@ -1,0 +1,193 @@
+# Design: svu Semantic Versioning, Conventional Commit Enforcement, and CI Build/Release Pipelines
+
+Date: 2026-08-21
+Branch: `feature/svu`
+Status: Approved
+
+## Goal
+
+Adopt [svu](https://github.com/caarlos0/svu) for semantic versioning driven by
+[Conventional Commits](https://www.conventionalcommits.org), enforce commit
+format locally and in CI, run the build automatically on PRs and pushes to
+`main`, and publish releases via GoReleaser when a version tag is pushed.
+
+Non-goals:
+
+- No auto-tagging on merge to `main`; tagging stays a deliberate local action.
+- No changes to goreleaser build configuration (`cfg/goreleaser.yaml`).
+- No changes to how the Makefile derives `DUM_VERSION` for local builds.
+
+## Current State
+
+- Tags: `v0.2.2`, `v1.0.0`. History uses squash merges with conventional-style
+  PR titles (e.g., `refactor: rename module ... (#28)`).
+- `.svu.yml` already staged on this branch:
+  ```yaml
+  always: true # increment patch if no commits trigger version change
+  v0: true # prevent major version increments if current version is still v0
+  ```
+- `.commitlintrc.yml` exists, extending `@commitlint/config-conventional`.
+- pre-commit runs `gitlint` at `commit-msg` stage (general hygiene, not
+  conventional format). Both hooks will coexist.
+- `ci.yml` triggers only on `workflow_dispatch`; no release workflow exists.
+- Node is available locally via nvm (v22); repo tooling does not manage it.
+
+## Section 1 — svu Versioning
+
+- Add `svu` to the Homebrew install list in `setup_install_tools`
+  (`tools/lib/setup.sh`) and to `required_commands` in `setup_check_tools`.
+- New Makefile target:
+  ```make
+  .PHONY: tag
+  tag: ## compute next semver from conventional commits and create git tag
+  	@svu next --tag
+  ```
+- `make tag` computes the next version from conventional commits since the
+  last tag and creates an annotated git tag locally. The developer pushes it
+  manually (`git push origin <tag>`), which triggers the release workflow.
+- `.svu.yml` semantics: `always: true` guarantees at least a patch bump on
+  every tag; `v0: true` caps the major version at 0 until the project opts
+  into 1.x+ bumps.
+
+## Section 2 — Conventional Commit Enforcement
+
+### Local (pre-commit)
+
+```yaml
+- repo: https://github.com/alessandrojcm/commitlint-pre-commit-hook
+  rev: v9.18.0
+  hooks:
+    - id: commitlint
+      stages: [commit-msg]
+      additional_dependencies: ['@commitlint/config-conventional']
+```
+
+- Requires node/npm at hook runtime; provided by nvm in the developer shell.
+- `gitlint` remains alongside; concerns do not overlap (hygiene vs format).
+
+### Node via nvm (not brew)
+
+- New `.nvmrc` pinning node major version `22`.
+- `setup_check_tools` gains an nvm-aware check: if `node` is missing, source
+  `$NVM_DIR/nvm.sh` and run `nvm install` per `.nvmrc`; otherwise fail with an
+  instruction to install nvm. Brew list unchanged.
+- CI uses `actions/setup-node@v4` with `node-version-file: .nvmrc`.
+
+### CI (PR titles)
+
+New `commitlint` job in `ci.yml` using `wagoid/commitlint-github-action@v6`,
+validating PR titles (the signal that matters for this repo's squash-merge
+flow) against `.commitlintrc.yml`; the action also checks individual commit
+messages. Squash merges make the PR title the commit message svu later reads,
+so PR-title validation closes the loop. Failures link the configured
+`helpUrl`.
+
+## Section 3 — Automated Build
+
+`ci.yml` triggers become:
+
+```yaml
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches: [main]
+```
+
+The existing test/coverage job is unchanged; the new `commitlint` job runs
+alongside it.
+
+## Section 4 — Release Pipeline
+
+New `.github/workflows/release.yml`:
+
+```yaml
+on:
+  push:
+    tags: ['v*']
+permissions:
+  contents: write
+jobs:
+  setup:
+    uses: ./.github/workflows/common.yml # reuses ci-setup (go-enum etc.)
+    with:
+      go-version: '1.26'
+  release:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # goreleaser needs full history + tags
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.26'
+      - uses: goreleaser/goreleaser-action@v6
+        with:
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+```
+
+- Reusing `common.yml` matters: goreleaser's `before` hooks run
+  `go generate ./...`, which requires generated-tool binaries installed by
+  `ci-setup`.
+- `GITHUB_TOKEN` suffices for releases on a public repository.
+- Existing `cfg/goreleaser.yaml` reads the version from the pushed tag.
+
+## Section 5 — Documentation Updates
+
+### AGENTS.md
+
+1. **Build/Lint/Test Commands**: add `make tag` to the primary commands block:
+   ```bash
+   make tag            # Compute next semver from conventional commits and create git tag
+   ```
+2. **New "Versioning and Releases" section** after Code Generation:
+   - Versions follow [Conventional Commits](https://www.conventionalcommits.org);
+     enforced by commitlint locally (pre-commit) and on PR titles in CI.
+   - [svu](https://github.com/caarlos0/svu) computes the next version; config
+     lives in `.svu.yml` (`always: true`, `v0: true`).
+   - Release flow: squash-merge PRs with conventional titles → `make tag` →
+     `git push origin <tag>` → GoReleaser publishes via
+     `.github/workflows/release.yml`.
+3. **Development Setup**: note node is managed by nvm per `.nvmrc`
+   (`nvm install` picks it up), and that `make install` installs `svu` via brew.
+4. **Important Files**: add `.svu.yml`, `.commitlintrc.yml`, `.nvmrc`,
+   `.pre-commit-config.yaml`, and `.github/workflows/release.yml`.
+
+### README.md
+
+1. **Development > Build Commands**: add `make tag` line matching AGENTS.md.
+2. **New "Versioning and Releases" subsection** under Development:
+   - Conventional Commits required for all contributions; commitlint validates
+     local commit messages and PR titles.
+   - `make tag` computes and tags the next semver from merged conventional
+     commits; pushing the tag triggers an automated GoReleaser publish.
+   - Contributors need node (nvm-managed, see `.nvmrc`) for the pre-commit
+     commitlint hook.
+
+## End-to-End Flow
+
+1. Contributor opens PR → `commitlint` job validates title; tests + build run.
+2. Squash-merge with conventional title lands on `main` → full CI re-runs.
+3. Maintainer runs `make tag` → svu computes next semver, creates local tag.
+4. `git push origin <tag>` → `release.yml` builds and publishes via goreleaser.
+
+## Error Handling
+
+| Failure | Detection | Result |
+| --- | --- | --- |
+| node missing locally | `check_tools` nvm-aware check | Blocked early with install instruction |
+| Non-conventional PR title | `commitlint` CI job | Job fails, links conventional-commits spec |
+| Non-conventional local commit | pre-commit `commit-msg` hook | Commit rejected before creation |
+| No conventional commits since tag | svu with `always: true` | Patch bump instead of failure |
+| Major bump while on v0.x | svu with `v0: true` | Version stays within 0.x |
+
+## Verification Plan
+
+- `shellcheck` (already hooked) covers `tools/lib/setup.sh` changes.
+- Open a draft PR from the feature branch and watch both workflows run.
+- Run `svu next` (dry-run, no `--tag`) before creating the first real tag.
+- Confirm a deliberately malformed commit message is rejected by the local
+  hook and a malformed PR title fails the CI job.
