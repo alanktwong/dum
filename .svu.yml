@@ -1,0 +1,4 @@
+# svu configuration
+# https://github.com/caarlos0/svu
+always: true # increment patch if no commits trigger version change
+v0: true # prevent major version increments if current version is still v0
