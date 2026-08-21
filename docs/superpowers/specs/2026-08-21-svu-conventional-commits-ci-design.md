@@ -14,7 +14,6 @@ to `main`, and publish releases via GoReleaser when a version tag is pushed.
 Non-goals:
 
 - No auto-tagging on merge to `main`; tagging stays a deliberate local action.
-- No changes to goreleaser build configuration (`cfg/goreleaser.yaml`).
 - No changes to how the Makefile derives `DUM_VERSION` for local builds.
 
 ## Current State
@@ -135,6 +134,25 @@ jobs:
   `ci-setup`.
 - `GITHUB_TOKEN` suffices for releases on a public repository.
 - Existing `cfg/goreleaser.yaml` reads the version from the pushed tag.
+
+### Build matrix expansion
+
+`cfg/goreleaser.yaml` gains linux/amd64 support via the full cross product:
+
+```yaml
+goos:
+  - darwin
+  - linux
+goarch:
+  - arm64
+  - amd64
+```
+
+Four release targets: darwin/arm64, darwin/amd64, linux/arm64, linux/amd64 —
+matching the README's macOS/Linux claim. The archives template's existing
+linux/amd64 branches become live; windows branches remain dead (windows is
+still unsupported). The stale Makefile `release` target comment ("all
+platforms ... arm64/amd64/386") is corrected to list the actual four targets.
 
 ## Section 5 — Documentation Updates
 
