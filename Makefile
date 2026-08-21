@@ -85,6 +85,10 @@ release: ## compile release binaries for darwin/linux on arm64/amd64
 release-build: build  ## compile snapshot binaries without archives
 	@$(DISPATCH) release-build
 
+.PHONY: tag
+tag: ## compute next semver from conventional commits and create git tag
+	@svu next --tag
+
 ## Quality
 .PHONY: check
 check: build fmt fix lint vet test check-coverage ## runs code quality checks
