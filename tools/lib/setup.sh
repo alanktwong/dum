@@ -20,6 +20,7 @@ setup_install_tools() {
         mockery \
         pre-commit \
         shellcheck \
+        svu \
         trufflehog \
         yamlfmt \
         yq
@@ -76,6 +77,7 @@ setup_check_tools() {
         "mockery"
         "pre-commit"
         "shellcheck"
+        "svu"
         "trufflehog"
         "yamlfmt"
         "yq"
