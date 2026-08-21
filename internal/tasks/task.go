@@ -2,8 +2,9 @@
 package tasks
 
 import (
-	i "alanktwong/dum/internal/tasks/installer"
 	"reflect"
+
+	i "github.com/alanktwong/dum/internal/tasks/installer"
 )
 
 const (

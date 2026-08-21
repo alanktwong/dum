@@ -2,12 +2,13 @@
 package tasks
 
 import (
-	ext "alanktwong/dum/internal/external"
-	l "alanktwong/dum/internal/logging"
-	i "alanktwong/dum/internal/tasks/installer"
-	ty "alanktwong/dum/internal/types"
 	"context"
 	"fmt"
+
+	ext "github.com/alanktwong/dum/internal/external"
+	l "github.com/alanktwong/dum/internal/logging"
+	i "github.com/alanktwong/dum/internal/tasks/installer"
+	ty "github.com/alanktwong/dum/internal/types"
 )
 
 // BrewCaskTask installs a Homebrew Cask package.

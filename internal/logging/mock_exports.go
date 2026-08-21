@@ -1,8 +1,9 @@
 package logging
 
 import (
-	"alanktwong/dum/internal/logging/gen"
 	"testing"
+
+	"github.com/alanktwong/dum/internal/logging/gen"
 )
 
 // MockLogger is a mock of the Logger interface.

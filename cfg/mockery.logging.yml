@@ -1,5 +1,5 @@
 packages:
-  alanktwong/dum/internal/logging/gen:
+  github.com/alanktwong/dum/internal/logging/gen:
     config:
       all: false
       dir: 'internal/logging/gen'

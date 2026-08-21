@@ -1,4 +1,4 @@
-module alanktwong/dum
+module github.com/alanktwong/dum
 
 go 1.26.5
 

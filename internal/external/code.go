@@ -1,10 +1,11 @@
 package external
 
 import (
-	"alanktwong/dum/internal/external/gen"
 	"context"
 	"fmt"
 	"os/exec"
+
+	"github.com/alanktwong/dum/internal/external/gen"
 )
 
 // Code is an abstraction for vscode.

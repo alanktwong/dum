@@ -3,7 +3,7 @@ package plays
 import (
 	"context"
 
-	ty "alanktwong/dum/internal/types"
+	ty "github.com/alanktwong/dum/internal/types"
 
 	"github.com/stretchr/testify/mock"
 )

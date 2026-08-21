@@ -2,9 +2,10 @@
 package plays
 
 import (
-	t "alanktwong/dum/internal/tasks"
-	ty "alanktwong/dum/internal/types"
 	"fmt"
+
+	t "github.com/alanktwong/dum/internal/tasks"
+	ty "github.com/alanktwong/dum/internal/types"
 
 	om "github.com/elliotchance/orderedmap/v3"
 )

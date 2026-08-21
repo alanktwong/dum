@@ -1,7 +1,7 @@
 package plays
 
 import (
-	"alanktwong/dum/internal/types"
+	"github.com/alanktwong/dum/internal/types"
 )
 
 // PlayResult expresses the result of a Play execution.

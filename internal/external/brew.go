@@ -1,11 +1,12 @@
 package external
 
 import (
-	"alanktwong/dum/internal/external/gen"
 	"context"
 	"fmt"
 	"os/exec"
 	"path/filepath"
+
+	"github.com/alanktwong/dum/internal/external/gen"
 )
 
 // Brew is an abstraction for homebrew.

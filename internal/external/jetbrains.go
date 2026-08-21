@@ -1,12 +1,13 @@
 package external
 
 import (
-	"alanktwong/dum/internal/external/gen"
 	"context"
 	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
+
+	"github.com/alanktwong/dum/internal/external/gen"
 )
 
 // JetBrainsApp is an abstraction for jetbrains app.

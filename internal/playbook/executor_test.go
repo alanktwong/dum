@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"testing"
 
-	l "alanktwong/dum/internal/logging"
-	pl "alanktwong/dum/internal/plays"
-	ty "alanktwong/dum/internal/types"
+	l "github.com/alanktwong/dum/internal/logging"
+	pl "github.com/alanktwong/dum/internal/plays"
+	ty "github.com/alanktwong/dum/internal/types"
 
 	"github.com/charmbracelet/log"
 	"github.com/stretchr/testify/assert"

@@ -2,12 +2,13 @@
 package tasks
 
 import (
-	ext "alanktwong/dum/internal/external"
-	l "alanktwong/dum/internal/logging"
-	ty "alanktwong/dum/internal/types"
-	tyg "alanktwong/dum/internal/types/gen"
-	yml "alanktwong/dum/internal/yaml"
 	"fmt"
+
+	ext "github.com/alanktwong/dum/internal/external"
+	l "github.com/alanktwong/dum/internal/logging"
+	ty "github.com/alanktwong/dum/internal/types"
+	tyg "github.com/alanktwong/dum/internal/types/gen"
+	yml "github.com/alanktwong/dum/internal/yaml"
 )
 
 // TaskFactory creates Task instances from YML configuration.

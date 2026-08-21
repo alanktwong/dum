@@ -8,7 +8,7 @@ import (
 	"github.com/charmbracelet/log"
 	"github.com/stretchr/testify/assert"
 
-	gen "alanktwong/dum/internal/logging/gen"
+	gen "github.com/alanktwong/dum/internal/logging/gen"
 )
 
 // resetSingleton resets the logger singleton for testing.

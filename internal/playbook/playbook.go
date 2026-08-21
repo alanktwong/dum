@@ -3,9 +3,10 @@
 package playbook
 
 import (
-	pl "alanktwong/dum/internal/plays"
-	t "alanktwong/dum/internal/types"
 	"fmt"
+
+	pl "github.com/alanktwong/dum/internal/plays"
+	t "github.com/alanktwong/dum/internal/types"
 
 	om "github.com/elliotchance/orderedmap/v3"
 )

@@ -2,8 +2,9 @@
 package installer
 
 import (
-	ty "alanktwong/dum/internal/types"
 	"context"
+
+	ty "github.com/alanktwong/dum/internal/types"
 )
 
 const (

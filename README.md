@@ -8,7 +8,17 @@ Dum is a hand-rolled CLI tool similar to Ansible, written in Go. It manages soft
 
 ## Installation
 
+Requires [Go](https://go.dev) 1.26 or newer:
+
 ```shell
+go install github.com/alanktwong/dum/cmd/dum@latest
+```
+
+Or build from source:
+
+```shell
+git clone https://github.com/alanktwong/dum
+cd dum
 make clean build
 ls dist
 ```
@@ -166,11 +176,8 @@ make all             # Runs build and quality checks
 make clean           # Clean generated files
 ```
 
-PUT 175.=175:
-+COVERAGE_THRESHOLD=90 make check-coverage
-
 ### Enums
-COVERAGE_THRESHOLD=90 make check-coverage
+
 We are using [go-enum](https://github.com/abice/go-enum) to generate enums from Go struct field tags.
 The generated enums, by convention, are suffixed as `_enum.go` and are gitignored.
 

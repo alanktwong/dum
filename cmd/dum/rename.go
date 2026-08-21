@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	lg "alanktwong/dum/internal/logging"
-	rn "alanktwong/dum/internal/rename"
+	lg "github.com/alanktwong/dum/internal/logging"
+	rn "github.com/alanktwong/dum/internal/rename"
 
 	"github.com/spf13/cobra"
 )

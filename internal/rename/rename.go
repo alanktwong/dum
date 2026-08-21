@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	lg "alanktwong/dum/internal/logging"
+	lg "github.com/alanktwong/dum/internal/logging"
 )
 
 // Options describes a single file rename operation.

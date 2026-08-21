@@ -1,5 +1,5 @@
 packages:
-  alanktwong/dum/internal/external/gen:
+  github.com/alanktwong/dum/internal/external/gen:
     config:
       all: false
       dir: 'internal/tasks'

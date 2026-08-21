@@ -1,6 +1,6 @@
-module alanktwong/dum/cmd/linters
+module github.com/alanktwong/dum/cmd/linters
 
-go 1.26.1
+go 1.26.5
 
 require golang.org/x/tools v0.43.0
 

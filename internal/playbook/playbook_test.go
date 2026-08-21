@@ -1,9 +1,10 @@
 package playbook
 
 import (
-	pl "alanktwong/dum/internal/plays"
-	ty "alanktwong/dum/internal/types"
 	"testing"
+
+	pl "github.com/alanktwong/dum/internal/plays"
+	ty "github.com/alanktwong/dum/internal/types"
 
 	"github.com/stretchr/testify/assert"
 )

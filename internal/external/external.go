@@ -3,7 +3,6 @@
 package external
 
 import (
-	"alanktwong/dum/internal/external/gen"
 	"context"
 	"fmt"
 	"os"
@@ -14,6 +13,8 @@ import (
 	"slices"
 	"strings"
 	"syscall"
+
+	"github.com/alanktwong/dum/internal/external/gen"
 )
 
 type (
