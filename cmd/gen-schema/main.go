@@ -1,5 +1,7 @@
-//go:build gen_schema
-
+// Command gen-schema generates the JSON schema for dum.yml configuration.
+//
+// It runs as part of 'make generate' via the go:generate directive below and
+// writes the schema that is embedded into the dum binary by cmd/dum.
 package main
 
 import (
@@ -7,6 +9,8 @@ import (
 	"fmt"
 	"os"
 )
+
+//go:generate go run . ../../cmd/dum/installer.schema.json
 
 func main() {
 	schema := map[string]interface{}{
@@ -90,11 +94,12 @@ func main() {
 		os.Exit(1)
 	}
 
-	outputPath := "../../cfg/installer.schema.json"
+	outputPath := "../../cmd/dum/installer.schema.json"
 	if len(os.Args) > 1 {
 		outputPath = os.Args[1]
 	}
 
+	data = append(data, '\n')
 	err = os.WriteFile(outputPath, data, 0o644)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error writing schema: %v\n", err)
