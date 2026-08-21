@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"os/user"
 	"path/filepath"
 	"runtime"
 	"testing"
@@ -248,9 +247,12 @@ func TestDefaultExt_SoftLink(t *testing.T) {
 }
 
 func TestDefaultUtils_ToAbsolutePath(t *testing.T) {
-	u, err := user.Current()
+	home, err := os.UserHomeDir()
 	assert.NoError(t, err)
-	username := u.Username
+	gopath := os.Getenv("GOPATH")
+	if gopath == "" {
+		gopath = filepath.Join(home, "go")
+	}
 	utils := NewExt()
 	type args struct {
 		path string
@@ -274,7 +276,7 @@ func TestDefaultUtils_ToAbsolutePath(t *testing.T) {
 			args: args{
 				path: "~/test",
 			},
-			want:    fmt.Sprintf("/Users/%v/test", username),
+			want:    filepath.Join(home, "test"),
 			wantErr: assert.NoError,
 		},
 		{
@@ -282,7 +284,7 @@ func TestDefaultUtils_ToAbsolutePath(t *testing.T) {
 			args: args{
 				path: "$HOME/test",
 			},
-			want:    fmt.Sprintf("/Users/%v/test", username),
+			want:    filepath.Join(home, "test"),
 			wantErr: assert.NoError,
 		},
 		{
@@ -290,7 +292,7 @@ func TestDefaultUtils_ToAbsolutePath(t *testing.T) {
 			args: args{
 				path: "$GOPATH/src/test",
 			},
-			want:    fmt.Sprintf("/Users/%v/go/src/test", username),
+			want:    filepath.Join(gopath, "src", "test"),
 			wantErr: assert.NoError,
 		},
 		{
@@ -298,7 +300,7 @@ func TestDefaultUtils_ToAbsolutePath(t *testing.T) {
 			args: args{
 				path: "$HOME/test",
 			},
-			want:    fmt.Sprintf("/Users/%v/test", username),
+			want:    filepath.Join(home, "test"),
 			wantErr: assert.NoError,
 		},
 		{
