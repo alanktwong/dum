@@ -154,6 +154,22 @@ linux/amd64 branches become live; windows branches remain dead (windows is
 still unsupported). The stale Makefile `release` target comment ("all
 platforms ... arm64/amd64/386") is corrected to list the actual four targets.
 
+### Packaging and checksums
+
+Each target binary is packaged into a tar.gz archive together with
+`cfg/installer.schema.json`. GoReleaser generates a SHA256 checksums file
+covering every archive and uploads it to the GitHub Release alongside them,
+so downloads can be verified. Made explicit in `cfg/goreleaser.yaml`:
+
+```yaml
+checksum:
+  name_template: "{{ .ProjectName }}_{{ .Version }}_checksums.txt"
+  algorithm: sha256
+```
+
+Resulting release assets per tag: four `dum_<os>_<arch>_<version>-<commit>.tar.gz`
+archives plus `dum_<version>_checksums.txt`.
+
 ## Section 5 — Documentation Updates
 
 ### AGENTS.md
