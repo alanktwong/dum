@@ -2,6 +2,11 @@ name: CI
 
 on:
   workflow_dispatch:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '0 6 * * 1' # Mondays 06:00 UTC
 
 jobs:
   setup:
