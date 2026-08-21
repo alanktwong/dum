@@ -12,41 +12,55 @@ import (
 
 //go:generate go run . ../../cmd/dum/installer.schema.json
 
+const (
+	tObject  = "object"
+	tString  = "string"
+	tBoolean = "boolean"
+	tArray   = "array"
+
+	kType        = "type"
+	kEnabled     = "enabled"
+	kProperties  = "properties"
+	kDescription = "description"
+	kItems       = "items"
+	kRequired    = "required"
+)
+
 func main() {
-	schema := map[string]interface{}{
+	schema := map[string]any{
 		"$schema": "http://json-schema.org/draft-07/schema#",
 		"title":   "Dum Installer Config",
-		"type":    "object",
-		"properties": map[string]interface{}{
-			"playbook": map[string]interface{}{
-				"type": "object",
-				"properties": map[string]interface{}{
-					"book":        map[string]interface{}{"type": "string"},
-					"description": map[string]interface{}{"type": "string"},
-					"enabled":     map[string]interface{}{"type": "boolean"},
-					"sudo":        map[string]interface{}{"type": "boolean"},
-					"jetbrains": map[string]interface{}{
-						"type": "array",
-						"items": map[string]interface{}{
-							"type":                 "object",
-							"additionalProperties": map[string]interface{}{"type": "string"},
+		kType:     tObject,
+		kProperties: map[string]any{
+			"playbook": map[string]any{
+				kType: tObject,
+				kProperties: map[string]any{
+					"book":       map[string]any{kType: tString},
+					kDescription: map[string]any{kType: tString},
+					kEnabled:     map[string]any{kType: tBoolean},
+					"sudo":       map[string]any{kType: tBoolean},
+					"jetbrains": map[string]any{
+						kType: tArray,
+						kItems: map[string]any{
+							kType:                  tObject,
+							"additionalProperties": map[string]any{kType: tString},
 						},
 					},
-					"plays": map[string]interface{}{
-						"type": "array",
-						"items": map[string]interface{}{
-							"type": "object",
-							"properties": map[string]interface{}{
-								"play":        map[string]interface{}{"type": "string"},
-								"description": map[string]interface{}{"type": "string"},
-								"enabled":     map[string]interface{}{"type": "boolean"},
-								"tasks": map[string]interface{}{
-									"type": "array",
-									"items": map[string]interface{}{
-										"type": "object",
-										"properties": map[string]interface{}{
-											"type": map[string]interface{}{
-												"type": "string",
+					"plays": map[string]any{
+						kType: tArray,
+						kItems: map[string]any{
+							kType: tObject,
+							kProperties: map[string]any{
+								"play":       map[string]any{kType: tString},
+								kDescription: map[string]any{kType: tString},
+								kEnabled:     map[string]any{kType: tBoolean},
+								"tasks": map[string]any{
+									kType: tArray,
+									kItems: map[string]any{
+										kType: tObject,
+										kProperties: map[string]any{
+											kType: map[string]any{
+												kType: tString,
 												"enum": []string{
 													"bash",
 													"dir",
@@ -60,32 +74,32 @@ func main() {
 													"jetbrains",
 												},
 											},
-											"task":        map[string]interface{}{"type": "string"},
-											"description": map[string]interface{}{"type": "string"},
-											"enabled":     map[string]interface{}{"type": "boolean"},
-											"command":     map[string]interface{}{"type": "string"},
-											"script":      map[string]interface{}{"type": "string"},
-											"root":        map[string]interface{}{"type": "string"},
-											"target":      map[string]interface{}{"type": "string"},
-											"name":        map[string]interface{}{"type": "string"},
-											"tap":         map[string]interface{}{"type": "string"},
-											"apps": map[string]interface{}{
-												"type":  "array",
-												"items": map[string]interface{}{"type": "string"},
+											"task":       map[string]any{kType: tString},
+											kDescription: map[string]any{kType: tString},
+											kEnabled:     map[string]any{kType: tBoolean},
+											"command":    map[string]any{kType: tString},
+											"script":     map[string]any{kType: tString},
+											"root":       map[string]any{kType: tString},
+											"target":     map[string]any{kType: tString},
+											"name":       map[string]any{kType: tString},
+											"tap":        map[string]any{kType: tString},
+											"apps": map[string]any{
+												kType:  tArray,
+												kItems: map[string]any{kType: tString},
 											},
 										},
-										"required": []string{"type", "task"},
+										kRequired: []string{"type", "task"},
 									},
 								},
 							},
-							"required": []string{"play", "tasks"},
+							kRequired: []string{"play", "tasks"},
 						},
 					},
 				},
-				"required": []string{"book", "plays"},
+				kRequired: []string{"book", "plays"},
 			},
 		},
-		"required": []string{"playbook"},
+		kRequired: []string{"playbook"},
 	}
 
 	data, err := json.MarshalIndent(schema, "", "  ")
@@ -100,11 +114,10 @@ func main() {
 	}
 
 	data = append(data, '\n')
-	err = os.WriteFile(outputPath, data, 0o644)
+	// #nosec G703 -- outputPath is a build-time flag supplied by go:generate.
+	err = os.WriteFile(outputPath, data, 0o600)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error writing schema: %v\n", err)
 		os.Exit(1)
 	}
-
-	fmt.Printf("Generated JSON schema at %s\n", outputPath)
 }
