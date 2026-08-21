@@ -8,8 +8,8 @@ Status: Approved
 
 Adopt [svu](https://github.com/caarlos0/svu) for semantic versioning driven by
 [Conventional Commits](https://www.conventionalcommits.org), enforce commit
-format locally and in CI, run the build automatically on PRs and pushes to
-`main`, and publish releases via GoReleaser when a version tag is pushed.
+format locally via pre-commit, run the build automatically on PRs and pushes
+to `main`, and publish releases via GoReleaser when a version tag is pushed.
 
 Non-goals:
 
@@ -71,16 +71,8 @@ Non-goals:
 - `setup_check_tools` gains an nvm-aware check: if `node` is missing, source
   `$NVM_DIR/nvm.sh` and run `nvm install` per `.nvmrc`; otherwise fail with an
   instruction to install nvm. Brew list unchanged.
-- CI uses `actions/setup-node@v4` with `node-version-file: .nvmrc`.
-
-### CI (PR titles)
-
-New `commitlint` job in `ci.yml` using `wagoid/commitlint-github-action@v6`,
-validating PR titles (the signal that matters for this repo's squash-merge
-flow) against `.commitlintrc.yml`; the action also checks individual commit
-messages. Squash merges make the PR title the commit message svu later reads,
-so PR-title validation closes the loop. Failures link the configured
-`helpUrl`.
+- Node is a local-only dependency (pre-commit hook runtime); CI workflows do
+  not need it.
 
 ## Section 3 — Automated Build
 
@@ -94,8 +86,9 @@ on:
     branches: [main]
 ```
 
-The existing test/coverage job is unchanged; the new `commitlint` job runs
-alongside it.
+The existing test/coverage job is unchanged; no commitlint job is added to
+CI. PR titles are not enforced — with `always: true`, an off-format squash
+title only risks an imprecise bump level, never a broken release.
 
 ## Section 4 — Release Pipeline
 
@@ -145,7 +138,7 @@ jobs:
    ```
 2. **New "Versioning and Releases" section** after Code Generation:
    - Versions follow [Conventional Commits](https://www.conventionalcommits.org);
-     enforced by commitlint locally (pre-commit) and on PR titles in CI.
+     enforced locally by commitlint via pre-commit.
    - [svu](https://github.com/caarlos0/svu) computes the next version; config
      lives in `.svu.yml` (`always: true`, `v0: true`).
    - Release flow: squash-merge PRs with conventional titles → `make tag` →
@@ -161,7 +154,7 @@ jobs:
 1. **Development > Build Commands**: add `make tag` line matching AGENTS.md.
 2. **New "Versioning and Releases" subsection** under Development:
    - Conventional Commits required for all contributions; commitlint validates
-     local commit messages and PR titles.
+     local commit messages via pre-commit.
    - `make tag` computes and tags the next semver from merged conventional
      commits; pushing the tag triggers an automated GoReleaser publish.
    - Contributors need node (nvm-managed, see `.nvmrc`) for the pre-commit
@@ -169,7 +162,7 @@ jobs:
 
 ## End-to-End Flow
 
-1. Contributor opens PR → `commitlint` job validates title; tests + build run.
+1. Contributor opens PR → tests + build run automatically.
 2. Squash-merge with conventional title lands on `main` → full CI re-runs.
 3. Maintainer runs `make tag` → svu computes next semver, creates local tag.
 4. `git push origin <tag>` → `release.yml` builds and publishes via goreleaser.
@@ -179,7 +172,6 @@ jobs:
 | Failure | Detection | Result |
 | --- | --- | --- |
 | node missing locally | `check_tools` nvm-aware check | Blocked early with install instruction |
-| Non-conventional PR title | `commitlint` CI job | Job fails, links conventional-commits spec |
 | Non-conventional local commit | pre-commit `commit-msg` hook | Commit rejected before creation |
 | No conventional commits since tag | svu with `always: true` | Patch bump instead of failure |
 | Major bump while on v0.x | svu with `v0: true` | Version stays within 0.x |
@@ -187,7 +179,7 @@ jobs:
 ## Verification Plan
 
 - `shellcheck` (already hooked) covers `tools/lib/setup.sh` changes.
-- Open a draft PR from the feature branch and watch both workflows run.
+- Open a draft PR from the feature branch and watch the workflow run.
 - Run `svu next` (dry-run, no `--tag`) before creating the first real tag.
 - Confirm a deliberately malformed commit message is rejected by the local
-  hook and a malformed PR title fails the CI job.
+  hook.
