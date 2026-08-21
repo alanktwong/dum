@@ -30,6 +30,7 @@ make vet             # Go vet
 make fmt             # Go fmt
 make fix             # Runs go fix to update code to new language features
 make generate        # Run go generate and mockery
+make tag             # Compute next semver from conventional commits and create git tag
 make check-coverage  # Checks coverage meets minimum threshold (default 80%)
 make all             # Runs build and check (quality + build)
 make clean           # Clean generated files
@@ -51,6 +52,16 @@ We are using [mockery](https://vektra.github.io/mockery/v3.0/) to generate
 mocks of Go interfaces for testing.
 The mockery configurations live in `cfg/mockery.*.yml` and the generated
 mocks are gitignored since they should follow the naming convention `*_mocks.go`.
+
+### Versioning and Releases
+
+Versions follow [Conventional Commits](https://www.conventionalcommits.org), enforced locally by
+commitlint via pre-commit. [svu](https://github.com/caarlos0/svu) computes the next version from
+merged commits; configuration lives in `.svu.yml` (`always: true`, `v0: true`).
+
+Release flow: squash-merge PRs with conventional titles, run `make tag`, then
+`git push origin <tag>`. Pushing a tag triggers GoReleaser via `.github/workflows/release.yml`,
+which publishes per-platform archives and a SHA256 checksums file to the GitHub Release.
 
 ### Coverage Threshold
 
@@ -77,7 +88,7 @@ go test -v -race ./...
 ### Development Setup
 
 ```bash
-make install    # Install tools (go-enum, goimports, gocov, golangci-lint, mockery)
+make install    # Install tools (brew deps incl. svu/goreleaser; go-enum, goimports, gocov, golangci-lint, mockery). Node comes from nvm per .nvmrc
 make tidy       # Fix go.mod dependencies
 make vendor     # Vendor dependencies
 make coverage   # View coverage report in browser and check threshold
@@ -195,6 +206,11 @@ type Task interface {
 ## Important Files
 
 - `.golangci.yml` - Linter configuration
+- `.svu.yml` - svu versioning config
+- `.commitlintrc.yml` - commitlint conventional-commits config
+- `.nvmrc` - node version pin for the commitlint pre-commit hook
+- `.pre-commit-config.yaml` - local hook enforcement (incl. commitlint at commit-msg)
+- `.github/workflows/release.yml` - tag-push release pipeline
 - `cfg/mockery.yml` - Mock generation config
 - `cfg/goreleaser.yaml` - GoReleaser build config
 - `.editorconfig` - Editor formatting rules
