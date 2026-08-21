@@ -2,6 +2,8 @@ package external
 
 import (
 	"context"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -57,6 +59,7 @@ func TestBrewImpl_Tap_Error(t *testing.T) {
 }
 
 func TestBrewImpl_Prefix(t *testing.T) {
+	installFakeCommand(t, "brew", "#!/bin/sh\necho /opt/homebrew\n")
 	brew := &BrewImpl{Utils: &testExt{}}
 
 	prefix, err := brew.Prefix(context.Background())
@@ -65,6 +68,7 @@ func TestBrewImpl_Prefix(t *testing.T) {
 }
 
 func TestBrewImpl_InPath_Found(t *testing.T) {
+	installFakeCommand(t, "brew", "#!/bin/sh\necho /opt/homebrew\n")
 	mockUtils := &testExt{isDirResult: true}
 	brew := &BrewImpl{Utils: mockUtils}
 
@@ -81,8 +85,17 @@ func TestBrewImpl_InPath_NotFound(t *testing.T) {
 }
 
 func TestBrewImpl_InPath_PrefixError(t *testing.T) {
+	t.Setenv("PATH", t.TempDir())
 	brew := &BrewImpl{Utils: &testExt{}}
 
 	found := brew.InPath(context.Background(), "bin", "git")
 	assert.False(t, found)
+}
+
+func installFakeCommand(t *testing.T, name, script string) {
+	t.Helper()
+	binDir := t.TempDir()
+	path := filepath.Join(binDir, name)
+	assert.NoError(t, os.WriteFile(path, []byte(script), 0o755))
+	t.Setenv("PATH", binDir+string(os.PathListSeparator)+os.Getenv("PATH"))
 }

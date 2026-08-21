@@ -49,6 +49,7 @@ func TestMasTask_Install_EmptyDescription(t *testing.T) {
 		Attributes: *attrs,
 		Mas:        new(MockMas),
 		Log:        NewTestLogger(t),
+		Utils:      mockExtOSX(true),
 	}
 
 	input := &ty.TaskInput{
@@ -72,6 +73,7 @@ func TestMasTask_Install_Disabled(t *testing.T) {
 		Attributes: *attrs,
 		Mas:        new(MockMas),
 		Log:        NewTestLogger(t),
+		Utils:      mockExtOSX(true),
 	}
 
 	input := &ty.TaskInput{
@@ -98,6 +100,7 @@ func TestMasTask_Install_AlreadyInstalled(t *testing.T) {
 		Attributes: *attrs,
 		Mas:        mockMas,
 		Log:        NewTestLogger(t),
+		Utils:      mockExtOSX(true),
 	}
 
 	input := &ty.TaskInput{
@@ -125,6 +128,7 @@ func TestMasTask_Install_DryRun(t *testing.T) {
 		Attributes: *attrs,
 		Mas:        mockMas,
 		Log:        NewTestLogger(t),
+		Utils:      mockExtOSX(true),
 	}
 
 	input := &ty.TaskInput{
@@ -153,6 +157,7 @@ func TestMasTask_Install_Success(t *testing.T) {
 		Attributes: *attrs,
 		Mas:        mockMas,
 		Log:        NewTestLogger(t),
+		Utils:      mockExtOSX(true),
 	}
 
 	input := &ty.TaskInput{
@@ -180,6 +185,7 @@ func TestMasTask_Install_ListError(t *testing.T) {
 		Attributes: *attrs,
 		Mas:        mockMas,
 		Log:        NewTestLogger(t),
+		Utils:      mockExtOSX(true),
 	}
 
 	input := &ty.TaskInput{
@@ -208,6 +214,7 @@ func TestMasTask_Install_InstallError(t *testing.T) {
 		Attributes: *attrs,
 		Mas:        mockMas,
 		Log:        NewTestLogger(t),
+		Utils:      mockExtOSX(true),
 	}
 
 	input := &ty.TaskInput{
@@ -220,6 +227,36 @@ func TestMasTask_Install_InstallError(t *testing.T) {
 	assert.Nil(t, result)
 	assert.Contains(t, err.Error(), "mas install")
 	mockMas.AssertExpectations(t)
+}
+
+func mockExtOSX(isOSX bool) *MockExt {
+	ext := new(MockExt)
+	ext.On("IsOSX").Return(isOSX)
+	return ext
+}
+
+func TestMasTask_Install_UnsupportedOS(t *testing.T) {
+	attrs := &ty.Attributes{
+		ID:          "123456789",
+		Description: "test mas task",
+		Enabled:     true,
+	}
+	task := &MasTask{
+		Attributes: *attrs,
+		Mas:        new(MockMas),
+		Log:        NewTestLogger(t),
+		Utils:      mockExtOSX(false),
+	}
+
+	input := &ty.TaskInput{
+		Play:   "test-play",
+		DryRun: false,
+	}
+
+	result, err := task.Install(context.Background(), input)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "outside of macOS")
 }
 
 func TestMasTask_GetAttributes(t *testing.T) {
@@ -276,6 +313,7 @@ func TestMasTask_Install_Disabled_DryRun(t *testing.T) {
 		Attributes: *attrs,
 		Mas:        new(MockMas),
 		Log:        mockLog,
+		Utils:      mockExtOSX(true),
 	}
 
 	input := &ty.TaskInput{

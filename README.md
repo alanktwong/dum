@@ -1,5 +1,11 @@
 # dum
 
+[![Release](https://img.shields.io/github/v/release/alanktwong/dum)](https://github.com/alanktwong/dum/releases)
+[![License](https://img.shields.io/github/license/alanktwong/dum)](LICENSE)
+[![Build status](https://github.com/alanktwong/dum/actions/workflows/ci.yml/badge.svg)](https://github.com/alanktwong/dum/actions/workflows/ci.yml)
+[![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://www.conventionalcommits.org)
+[![GoDoc](https://pkg.go.dev/badge/github.com/alanktwong/dum.svg)](https://pkg.go.dev/github.com/alanktwong/dum)
+
 A CLI tool for managing software installations and configurations on macOS/Linux laptops.
 
 ## Overview
@@ -174,7 +180,18 @@ make coverage        # View coverage report in browser and check threshold
 make check-coverage  # Check coverage meets minimum threshold
 make all             # Runs build and quality checks
 make clean           # Clean generated files
+make tag             # Compute next semver from conventional commits and create git tag
 ```
+
+### Versioning and Releases
+
+Contributions follow [Conventional Commits](https://www.conventionalcommits.org); commitlint
+validates local commit messages via pre-commit (node required — managed by nvm, see `.nvmrc`).
+
+To cut a release: run `make tag` ([svu](https://github.com/caarlos0/svu) computes the next semver
+from merged conventional commits), then `git push origin <tag>`. Pushing the tag triggers
+GoReleaser, which publishes per-platform archives and a SHA256 checksums file to the GitHub
+Release.
 
 ### Enums
 

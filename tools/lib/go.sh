@@ -12,8 +12,14 @@ go_vendor() {
 
 go_generate() {
     go generate ./...
+    # The logging config must run first: it generates internal/logging/gen,
+    # which later configs need to compile when they scan internal/logging
+    # (mock_exports.go references the generated types).
+    mockery --config cfg/mockery.logging.yml || return $?
+    local config
     for config in cfg/mockery*.yml; do
-        mockery --config "$config"
+        [[ "$config" == "cfg/mockery.logging.yml" ]] && continue
+        mockery --config "$config" || return $?
     done
 }
 

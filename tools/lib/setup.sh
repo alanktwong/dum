@@ -20,6 +20,7 @@ setup_install_tools() {
         mockery \
         pre-commit \
         shellcheck \
+        svu \
         trufflehog \
         yamlfmt \
         yq
@@ -58,6 +59,20 @@ setup_check_tools() {
         return 1
     fi
 
+    # Ensure node is available via nvm before checking commands.
+    if ! command -v node &>/dev/null; then
+        export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
+        if [[ -s "$NVM_DIR/nvm.sh" ]]; then
+            # shellcheck disable=SC1091
+            . "$NVM_DIR/nvm.sh"
+            nvm install
+        else
+            echo >&2 "node is required but nvm was not found at $NVM_DIR."
+            echo >&2 "Install nvm (https://github.com/nvm-sh/nvm), run 'nvm install', then retry."
+            return 1
+        fi
+    fi
+
     if [[ ":$PATH:" != *":$GOPATH/bin:"* ]] && [[ ":$PATH:" != *"$GOPATH/bin"* ]]; then
         echo >&2 "\$GOPATH/bin is not in your \$PATH."
         echo >&2 "Add the following to your shell config: export PATH=\"\$PATH:\$GOPATH/bin\""
@@ -74,8 +89,11 @@ setup_check_tools() {
         "goreleaser"
         "jq"
         "mockery"
+        "node"
+        "npm"
         "pre-commit"
         "shellcheck"
+        "svu"
         "trufflehog"
         "yamlfmt"
         "yq"
@@ -95,4 +113,5 @@ setup_ci_tools() {
     go install github.com/abice/go-enum@latest
     go install github.com/vektra/mockery/v3@latest
     go install golang.org/x/tools/cmd/goimports@latest
+    go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest
 }
