@@ -113,4 +113,5 @@ setup_ci_tools() {
     go install github.com/abice/go-enum@latest
     go install github.com/vektra/mockery/v3@latest
     go install golang.org/x/tools/cmd/goimports@latest
+    go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest
 }
