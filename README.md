@@ -38,6 +38,7 @@ ls dist
 | `install` | `i`   | Runs plays and tasks for software installations |
 | `rename`  | `r`   | Renames files with various transformations      |
 | `log`     | `lg`  | Logging utilities for shell scripts             |
+| `schema`  | `s`   | Prints or extracts the embedded JSON schema for `dum.yml` |
 
 ### Install Command
 
@@ -152,6 +153,16 @@ Dum sits in the space between Ansible (full configuration management) and shell-
 **What makes Dum different:** Dum combines Go performance with an Ansible-like playbook/task model specifically tailored for personal workstation setup. It offers JSON schema validation for config files, a `--dryrun` preview mode, and a growing set of opinionated task types (brew, git, vscode, jetbrains, mas) without the overhead of a full configuration management tool.
 
 ## Development
+
+### CLI surfaces
+
+Every `main.go` binary in the repository:
+
+| Path             | Purpose                                                                                                                     |
+|------------------|-----------------------------------------------------------------------------------------------------------------------------|
+| `cmd/dum`        | The `dum` binary: `install` (`i`), `rename` (`r`), `log` (`lg`) with levels `debug d`, `info i`, `success s`, `warn w`, `error e`, and `schema` (`s`) for the embedded JSON schema |
+| `cmd/gen-schema` | Build-time tool run via `go:generate`; regenerates `cmd/dum/installer.schema.json`. Not user-facing                          |
+| `cmd/linters`    | Standalone `go/analysis` linter (own go.mod) flagging single-character import aliases; wired into golangci-lint as a plugin  |
 
 ### Build automation
 

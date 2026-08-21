@@ -198,6 +198,7 @@ type Task interface {
 
 ```
 /cmd/dum/               # CLI entry point and all Cobra-facing command packages
+/cmd/gen-schema/         # Codegen tool writing the embedded JSON schema
 /cmd/linters/            # Custom lint tooling
 /internal/factory/       # Typed installer configuration and runtime construction
 /internal/playbook/      # Core task execution logic
@@ -207,6 +208,16 @@ type Task interface {
 /internal/types/         # Shared domain types
 /internal/yaml/          # Typed installer YAML loading and validation
 ```
+
+### CLI Entry Points
+
+Every `main.go` binary surface in the repository:
+
+| Path             | Purpose                                                                                                                                        |
+|------------------|------------------------------------------------------------------------------------------------------------------------------------------------|
+| `cmd/dum`        | The user-facing `dum` binary. Subcommands: `install` (`i`) runs plays/tasks, `rename` (`r`) transforms filenames, `log` (`lg`) emits leveled messages for shell scripts (`debug d`, `info i`, `success s`, `warn w`, `error e`), `schema` (`s`) prints or extracts the embedded JSON schema for `dum.yml` |
+| `cmd/gen-schema` | Build-time tool run via `go:generate`; regenerates `cmd/dum/installer.schema.json` from the config model. Not user-facing                      |
+| `cmd/linters`    | Standalone `go/analysis` linter (own go.mod) that flags single-character import aliases; registered as a golangci-lint plugin                   |
 
 ## Important Files
 
