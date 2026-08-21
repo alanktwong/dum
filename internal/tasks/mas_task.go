@@ -14,8 +14,9 @@ import (
 // MasTask installs a Mac App Store application.
 type MasTask struct {
 	ty.Attributes
-	Mas ext.Mas
-	Log l.Logger
+	Mas   ext.Mas
+	Utils ext.Ext
+	Log   l.Logger
 }
 
 // NewMasTask returns a new MasTask for installing a Mac App Store application.
@@ -29,6 +30,7 @@ func NewMasTask(attributes *ty.Attributes) (*MasTask, error) {
 	return &MasTask{
 		Attributes: *attributes,
 		Mas:        ext.NewMas(),
+		Utils:      ext.NewExt(),
 		Log:        l.Log(),
 	}, nil
 }
@@ -76,6 +78,9 @@ func (t *MasTask) Install(ctx context.Context, input *ty.TaskInput) (*ty.TaskRes
 			return nil, fmt.Errorf("failed to create task result: %w", err)
 		}
 		return result, nil
+	}
+	if !t.Utils.IsOSX() {
+		return nil, fmt.Errorf("cannot install mas app %s outside of macOS", t.ID)
 	}
 	masList, err := t.Mas.List(ctx)
 	if err != nil {
