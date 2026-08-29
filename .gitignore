@@ -763,7 +763,6 @@ tags
 vendor
 *_mocks.go
 *_enum.go
-cfg/installer.schema.json
 ######################
 # development
 ######################

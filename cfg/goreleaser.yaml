@@ -40,7 +40,7 @@ archives:
       {{- if .Arm }}v{{ .Arm }}{{ end }}_
       {{- .Version }}-{{ .ShortCommit }}
     files:
-      - cfg/installer.schema.json
+      - cmd/dum/installer.schema.json
     format_overrides:
       - goos: windows
         formats: ["zip"]
