@@ -558,7 +558,7 @@ de-duplication remain correct; whitespace check passes; no generated outputs or 
 changes remain. The lockfile previously resolved all 68 tool/platform targets. Native x64 installs
 remain deferred to PR CI and must be confirmed before merge.
 
-- [ ] **Step 5: Commit the tracked implementation plan**
+- [x] **Step 5: Commit the tracked implementation plan**
 
 After updating completed checkboxes and leaving the x64 PR-CI gate explicitly pending, commit the
 plan:
