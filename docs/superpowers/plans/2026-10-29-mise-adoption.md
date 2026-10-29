@@ -524,6 +524,7 @@ independent checks:
 ```bash
 mise run test
 mise run check-coverage
+mise run coverage
 mise run vet
 mise run release
 mise run release-build
