@@ -1,0 +1,134 @@
+[tools]
+go = "1.26.10"
+node = "22.19.0"
+python = "3.13.18"
+
+"aqua:git-lfs/git-lfs" = "3.8.1"
+"aqua:golangci/golangci-lint" = "2.15.0"
+"aqua:vektra/mockery" = "3.8.1"
+"aqua:goreleaser/goreleaser" = "2.19.0"
+"aqua:caarlos0/svu" = "3.4.1"
+"aqua:trufflesecurity/trufflehog" = "3.99.7"
+"aqua:jqlang/jq" = "1.8.2"
+"aqua:mikefarah/yq" = "4.54.1"
+"aqua:koalaman/shellcheck" = "0.11.0"
+"aqua:pre-commit/pre-commit" = "4.7.0"
+"aqua:google/yamlfmt" = "0.21.0"
+
+"go:github.com/abice/go-enum" = "0.9.5"
+"go:golang.org/x/tools/cmd/goimports" = "0.52.0"
+"go:github.com/vladopajic/go-test-coverage/v2" = "2.19.0"
+
+[settings]
+lockfile = true
+
+[env]
+_.file = ".env"
+
+[tasks.install]
+description = "Set up repository hooks and Git LFS"
+run = "./tools/build.sh install"
+
+[tasks.check_tools]
+description = "Check required development tools"
+run = "./tools/build.sh check_tools"
+
+[tasks.clean]
+description = "Clean binary and generated files"
+run = "./tools/build.sh clean"
+
+[tasks.tidy]
+description = "Tidy Go dependencies"
+wait_for = ["fmt"]
+run = "./tools/build.sh tidy"
+
+[tasks.vendor]
+description = "Vendor Go dependencies"
+depends = ["tidy"]
+run = "./tools/build.sh vendor"
+
+[tasks.generate]
+description = "Generate Go code and mocks"
+wait_for = ["vendor"]
+run = "./tools/build.sh generate"
+
+[tasks.build]
+description = "Build dum locally"
+depends = ["fmt", "vendor", "generate"]
+run = "./tools/build.sh make_out && ./tools/build.sh build"
+
+[tasks.linters-build]
+description = "Build custom linters"
+run = "./tools/build.sh linters-build"
+
+[tasks.release]
+description = "Compile local release snapshots"
+run = "./tools/build.sh release"
+
+[tasks.release-build]
+description = "Compile snapshot binaries"
+depends = ["build"]
+run = "./tools/build.sh release-build"
+
+[tasks.tag]
+description = "Compute and create the next semver tag"
+run = "svu next --tag"
+
+[tasks.check]
+description = "Run code quality checks"
+depends = ["build", "fmt", "fix", "lint", "vet", "test", "check-coverage"]
+wait_for = ["build"]
+run = "./tools/build.sh check"
+
+[tasks.lint]
+description = "Run Go linters"
+depends = ["build"]
+wait_for = ["fix"]
+run = "./tools/build.sh lint"
+
+[tasks.vet]
+description = "Run go vet"
+wait_for = ["lint"]
+run = "./tools/build.sh vet"
+
+[tasks.fmt]
+description = "Format Go code"
+run = "./tools/build.sh fmt"
+
+[tasks.fix]
+description = "Run go fix"
+wait_for = ["build"]
+run = "./tools/build.sh fix"
+
+[tasks.test]
+description = "Run tests with coverage"
+depends = ["build"]
+wait_for = ["vet"]
+run = "./tools/build.sh test"
+
+[tasks.coverage]
+description = "Generate an HTML coverage report"
+depends = ["test"]
+run = "./tools/build.sh coverage"
+
+[tasks.check-coverage]
+description = "Check the coverage threshold"
+depends = ["test"]
+run = "./tools/build.sh check-coverage"
+
+[tasks.profile]
+description = "Profile tests"
+run = "./tools/build.sh profile"
+
+[tasks.bench]
+description = "Run benchmarks"
+run = "./tools/build.sh bench"
+
+[tasks.all]
+description = "Build and run all quality checks"
+depends = ["build", "check"]
+run = "./tools/build.sh all"
+
+[tasks.help]
+description = "List mise tasks"
+run = "mise tasks ls"

@@ -1,6 +1,6 @@
 // Command gen-schema generates the JSON schema for dum.yml configuration.
 //
-// It runs as part of 'make generate' via the go:generate directive below and
+// It runs as part of 'mise run generate' via the go:generate directive below and
 // writes the schema that is embedded into the dum binary by cmd/dum.
 package main
 

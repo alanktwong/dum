@@ -30,16 +30,12 @@ rhard)
     repository_rhard
     ;;
 install)
-    announce "Installing tools ..."
+    announce "Setting up repository hooks and Git LFS ..."
     setup_install_tools
     ;;
 check_tools)
     announce "Checking tools ..."
     setup_check_tools
-    ;;
-ci-setup)
-    announce "Installing CI tools ..."
-    setup_ci_tools
     ;;
 clean)
     announce "Cleaning up ..."

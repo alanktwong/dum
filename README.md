@@ -25,7 +25,8 @@ Or build from source:
 ```shell
 git clone https://github.com/alanktwong/dum
 cd dum
-make clean build
+mise trust && mise install --locked
+mise run clean && mise run build
 ls dist
 ```
 
@@ -166,40 +167,76 @@ Every `main.go` binary in the repository:
 
 ### Build automation
 
-The repository's shell automation has one entry point: `tools/build.sh`. It must be run from the repository root. The Makefile targets are the supported wrappers for normal development; they pass the output directory, version, and coverage settings to the dispatcher while preserving the commands below.
+The repository's shell recipes live in `tools/build.sh` and `tools/lib/*.sh`. Use mise tasks for
+normal development; they load the locked tools and environment before calling the dispatcher.
+`tools/build.sh` remains available for direct dispatcher access and must be run from the repository
+root.
 
 ```shell
-make help                 # List the Makefile wrappers
-./tools/build.sh help     # List dispatcher subcommands
-./tools/build.sh make_out # Create the output directory
-./tools/build.sh build    # Invoke the build recipe directly
-./tools/build.sh test     # Invoke the test recipe directly
+mise tasks ls                 # List supported tasks
+mise run help                 # Same task list
+mise run build                # Run normal build task
+mise run test                 # Run tests with coverage
+./tools/build.sh help         # List direct dispatcher subcommands
+./tools/build.sh check-lfs-hook  # Run direct hook check
 ```
 
-The former standalone tool scripts are now dispatcher subcommands. Use `./tools/build.sh check-lfs-hook`, `./tools/build.sh coverage-check`, or `./tools/build.sh cpd` when those direct checks are needed. Run the dispatcher from the repository root; Makefile wrappers handle that automatically.
+The former standalone tool scripts are dispatcher subcommands. Use
+`./tools/build.sh check-lfs-hook`, `./tools/build.sh coverage-check`, or
+`./tools/build.sh cpd` when those direct checks are needed.
+
+### Developer setup
+
+Install mise once using a supported method from the
+[mise installation guide](https://mise.jdx.dev/installing-mise.html); Homebrew is optional and is
+not a project dev-tool dependency. In the repository, trust the config and install locked tools:
+
+```shell
+mise trust && mise install --locked
+```
+
+For project tools and `.env` to activate automatically on directory changes—including for Git
+hooks—add the appropriate activation command to your shell startup file:
+
+```shell
+eval "$(mise activate bash)"  # bash
+eval "$(mise activate zsh)"   # zsh
+mise activate fish | source   # fish
+```
+
+Remove any old `direnv hook` line from your shell startup file. The repository no longer has
+`.envrc`, so a stale direnv hook silently stops setting `__PROJECT_DIRENV_INSTALLED` and loading
+Git LFS/pre-commit setup and optional `.env`. Explicit `mise run ...` tasks work without shell
+activation.
+
+Run repository hook and Git LFS setup once after installing tools:
+
+```shell
+mise run install
+```
 
 ### Build Commands
 
 ```shell
-make build           # Local build
-make test            # Run tests with coverage
-make lint            # Run golangci-lint
-make vet             # Go vet
-make fmt             # Go fmt
-make fix             # Runs go fix to update code to new language features
-make coverage        # View coverage report in browser and check threshold
-make check-coverage  # Check coverage meets minimum threshold
-make all             # Runs build and quality checks
-make clean           # Clean generated files
-make tag             # Compute next semver from conventional commits and create git tag
+mise run build           # Local build
+mise run test            # Run tests with coverage
+mise run lint            # Run golangci-lint
+mise run vet             # Go vet
+mise run fmt             # Go fmt
+mise run fix             # Run go fix to update code to new language features
+mise run coverage        # Generate the HTML coverage report
+mise run check-coverage  # Check coverage meets minimum threshold
+mise run all             # Run build and quality checks
+mise run clean           # Clean generated files
+mise run tag             # Compute next semver from conventional commits and create git tag
 ```
 
 ### Versioning and Releases
 
 Contributions follow [Conventional Commits](https://www.conventionalcommits.org); commitlint
-validates local commit messages via pre-commit (node required — managed by nvm, see `.nvmrc`).
+validates local commit messages via pre-commit. Node is managed by mise.
 
-To cut a release: run `make tag` ([svu](https://github.com/caarlos0/svu) computes the next semver
+To cut a release: run `mise run tag` ([svu](https://github.com/caarlos0/svu) computes the next semver
 from merged conventional commits), then `git push origin <tag>`. Pushing the tag triggers
 GoReleaser, which publishes per-platform archives and a SHA256 checksums file to the GitHub
 Release.
@@ -219,7 +256,7 @@ mocks are gitignored since they should follow the naming convention `*_mocks.go`
 ### JSON Schema
 
 The JSON schema for `dum.yml` is generated by `cmd/gen-schema` via a
-`go:generate` directive. Run `make generate` to regenerate
+`go:generate` directive. Run `mise run generate` to regenerate
 `cmd/dum/installer.schema.json`, which is embedded into the binary; commit the
 updated file when task types or config fields change.
 
@@ -228,7 +265,7 @@ updated file when task types or config fields change.
 Default minimum coverage is **80%**. Override via environment variable:
 
 ```shell
-COVERAGE_THRESHOLD=90 make check-coverage
+COVERAGE_THRESHOLD=90 mise run check-coverage
 ```
 
 ### Linting Principles
@@ -241,4 +278,4 @@ This project enforces strict import alias standards and enables comprehensive li
    - Vendor: `clog`, `omv3`, `ca`, `tt`, `asrt`, `mck`, `yamlv3`
 3. **Comprehensive linting** - 34 linters enabled via golangci-lint covering correctness, security, performance, and style.
 
-Run `make lint` to lint. Use `golangci-lint run ./... --fix` to auto-fix import alias issues.
+Run `mise run lint` to lint. Use `golangci-lint run ./... --fix` to auto-fix import alias issues.
