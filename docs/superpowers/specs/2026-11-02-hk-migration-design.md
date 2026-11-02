@@ -139,8 +139,9 @@ After setup:
    now pass, documenting the intentional policy change.
 4. Verify TruffleHog runs on pre-push and that Git LFS and hk both run without
    replacing one another.
-5. Run `hk fix --all --no-stage` for the one-time whitespace cleanup, review the
-   full diff (including Markdown rendering changes), then run `hk check --all`.
+5. Run `hk fix --all --step trailing-whitespace --no-stage` for the one-time
+   whitespace cleanup, review the full diff (including Markdown rendering
+   changes), then run `hk check --all`.
 
 Hook failures block the associated commit or push. Invalid hk configuration and
 unsupported Git versions must fail before hook installation. No CI changes are
