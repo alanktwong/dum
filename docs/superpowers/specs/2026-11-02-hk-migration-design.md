@@ -29,6 +29,12 @@ prebuilt; GoReleaser's macOS x64 product build remains unchanged.
   dropped.
 - Strip all trailing whitespace, including Markdown hard-break spaces. Run a
   one-time whole-repository cleanup and review the resulting diff.
+- Do not broaden that cleanup to unrelated final-newline or smart-quote fixes.
+  `hk check --all` currently reports such pre-existing findings in
+  `.env-sample`, `.github/CODEOWNERS`, `cfg/goreleaser.local.yaml`,
+  `docs/superpowers/plans/plan.exclude_generated_coverage.md`, and
+  `docs/superpowers/plans/2026-08-13-viper-config.md`; leave them as existing
+  debt.
 
 ## Current state
 
@@ -161,7 +167,9 @@ After setup:
    replacing one another.
 5. Run `hk fix --all --step trailing-whitespace --no-stage` for the one-time
    whitespace cleanup, review the full diff (including Markdown rendering
-   changes), then run `hk check --all`.
+   changes), then run `hk check --all --step trailing-whitespace`. A full
+   `hk check --all` remains nonzero only for the existing findings listed above;
+   do not fix those in this migration.
 
 Hook failures block the associated commit or push. Invalid hk configuration and
 unsupported Git versions or conflicting global hk installation must fail

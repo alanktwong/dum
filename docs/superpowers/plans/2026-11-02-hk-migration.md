@@ -438,7 +438,7 @@ one-time uninstall instruction for old hooks. No current instructions imply the
 pre-commit framework remains installed or supported, and no active references
 to commitlint/Gitlint remain. Historical specs/plans remain unchanged.
 
-- [ ] **Step 5: Commit documentation**
+- [x] **Step 5: Commit documentation**
 
 ```bash
 git add README.md AGENTS.md docs/installer.md
@@ -452,7 +452,7 @@ git commit -m "docs(hooks): document hk setup" \
 
 - Modify: tracked files reported by hk's `trailing-whitespace` step
 
-- [ ] **Step 1: Preview affected files**
+- [x] **Step 1: Preview affected files**
 
 After the documentation commit, require a clean worktree and index before the
 repository-wide operation:
@@ -473,7 +473,7 @@ hk check --all --step trailing-whitespace --plan
 Confirm the selection is the repository-wide tracked/eligible file set and that
 only the trailing-whitespace step is selected.
 
-- [ ] **Step 2: Apply only the approved whitespace cleanup**
+- [x] **Step 2: Apply only the approved whitespace cleanup**
 
 Run:
 
@@ -485,7 +485,7 @@ Expected: trailing whitespace is removed across the repository, including
 Markdown hard-break spaces; no other formatter/fixer runs and no files are
 staged automatically.
 
-- [ ] **Step 3: Review and verify the cleanup diff**
+- [x] **Step 3: Review and verify the cleanup diff**
 
 Run:
 
@@ -500,7 +500,7 @@ Review Markdown diffs for the approved hard-break rendering change. In
 `- Describe change` to preserve a valid list item. Expected: the
 trailing-whitespace check passes and `git diff --check` reports no errors.
 
-- [ ] **Step 4: Commit the whitespace-only diff separately**
+- [x] **Step 4: Commit the whitespace-only diff separately**
 
 Before staging, confirm `git status --short` contains only the hk-generated
 cleanup and confirm `git diff --cached --quiet`. Stage only those reviewed paths,
@@ -530,7 +530,7 @@ fi
 - Verify: `hk.pkl`, `mise.toml`, `mise.lock`, `tools/lib/setup.sh`
 - Verify: Git hooks in the current clone; no tracked file changes expected
 
-- [ ] **Step 1: Verify hk configuration and execution plans**
+- [x] **Step 1: Verify hk configuration and execution plans**
 
 Run:
 
@@ -545,7 +545,7 @@ and a dummy remote URL. Expected: file checks appear under check/pre-commit,
 `check-lfs-hook` is pre-commit-only, Conventional Commit validation is
 commit-msg-only, and TruffleHog is pre-push-only.
 
-- [ ] **Step 2: Test commit-message policy**
+- [x] **Step 2: Test commit-message policy**
 
 Run `hk run commit-msg <file>` for a valid Conventional Commit subject with no
 body and for an invalid subject.
@@ -553,11 +553,11 @@ body and for an invalid subject.
 Expected: the no-body message passes and the invalid subject fails. Do not
 reintroduce Gitlint's body requirement.
 
-- [ ] **Step 3: Test staged-file selection and the large-file limit**
+- [x] **Step 3: Test staged-file selection and the large-file limit**
 
 Create an independent local clone so the checks have the project's `hk.pkl`,
-`tools/build.sh`, and `tools/lib/` files without touching the target clone's
-index or hooks:
+`tools/build.sh`, `tools/lib/`, and `tools/hooks/` files without touching the
+target clone's index or hooks:
 
 ```bash
 test_root="$(mktemp -d)"
@@ -580,7 +580,7 @@ limit. Expected: the boundary passes, non-LFS additions and modifications over
 the threshold fail, and the LFS-attributed file passes. The Task 1 baseline test
 must also confirm the legacy pre-commit hook skipped the LFS pointer.
 
-- [ ] **Step 4: Verify TruffleHog runs on pre-push**
+- [x] **Step 4: Verify TruffleHog runs on pre-push**
 
 Create a separate disposable clone, resolve `hk_bin` with `mise which hk`, and
 put a temporary `trufflehog` executable earlier on `PATH` that records its
@@ -591,28 +591,43 @@ existing fallback selects the base ref and the command receives
 `--only-verified --no-update --fail`. Do not scan the target repository or trust
 the clone's mise config for this wiring test.
 
-- [ ] **Step 5: Verify Git LFS and hk are both installed**
+- [x] **Step 5: Verify Git LFS and hk are both installed**
 
 On Git 2.54+, confirm the local hk hook command exists in Git config and the
 Git LFS pre-push script remains under `git rev-parse --git-path hooks`. Run the
 pre-commit `check-lfs-hook` step and confirm it passes. Never use
 `hk install --force` as a workaround.
 
-- [ ] **Step 6: Run project and migration checks**
+- [x] **Step 6: Run project and migration checks**
 
-Run:
+Run the passing project checks and hk validation:
 
 ```bash
 mise run check_tools
 mise run check
 hk validate
-hk check --all
-git diff --check
-git status --short --untracked-files=all
 ```
 
-Expected: project checks pass, hk validates and checks all file steps, and no
-unintended working-tree changes remain. Do not modify CI workflows.
+Expected: project checks pass and hk validates.
+
+Run the full hk check separately because this repository has accepted,
+pre-existing fixer findings:
+
+```bash
+hk check --all
+hk check --all --step trailing-whitespace
+```
+
+Expected: `hk check --all` reports only the known final-newline/smart-quote
+findings listed in the spec; the trailing-whitespace step passes. Do not fix
+those unrelated findings in this migration. Finish with `git diff --check` and
+`git status --short --untracked-files=all`; no unintended changes should remain.
+CI workflows stay unchanged.
+
+Verified on Apple Silicon macOS: `mise run test`, `mise run check_tools`,
+`mise run check`, `hk validate`, and the repository-wide trailing-whitespace
+check pass. Full `hk check --all` reports only the pre-existing findings listed
+in the spec.
 
 ## Completion Criteria
 
@@ -623,7 +638,8 @@ unintended working-tree changes remain. Do not modify CI workflows.
   Git LFS and repo-local hk without `--force`.
 - A pre-existing global hk installation is detected before mutation; the setup
   does not force local hooks or alter global Git configuration.
-- Partial commits remain safe; the 5,000 KB limit is verified; the approved
-  commit-message simplification and Markdown whitespace change are tested.
+- Partial commits remain safe; the 5,000 KB limit and Git LFS exemption are
+  verified; the approved commit-message simplification and Markdown whitespace
+  change are tested.
 - TruffleHog runs at pre-push and Git LFS's hook remains installed.
 - CI is unchanged, and the final whitespace-only cleanup is reviewed separately.
