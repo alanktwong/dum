@@ -28,6 +28,7 @@ _.file = ".env"
 [tasks.install]
 description = "Set up repository hooks and Git LFS"
 run = "./tools/build.sh install"
+alias = "i"
 
 [tasks.check_tools]
 description = "Check required development tools"
@@ -36,6 +37,7 @@ run = "./tools/build.sh check_tools"
 [tasks.clean]
 description = "Clean binary and generated files"
 run = "./tools/build.sh clean"
+alias = "cl"
 
 [tasks.tidy]
 description = "Tidy Go dependencies"
@@ -79,6 +81,7 @@ description = "Run code quality checks"
 depends = ["build", "fmt", "fix", "lint", "vet", "test", "check-coverage"]
 wait_for = ["build"]
 run = "./tools/build.sh check"
+alias = "ch"
 
 [tasks.lint]
 description = "Run Go linters"
@@ -94,6 +97,7 @@ run = "./tools/build.sh vet"
 [tasks.fmt]
 description = "Format Go code"
 run = "./tools/build.sh fmt"
+alias = "f"
 
 [tasks.fix]
 description = "Run go fix"
@@ -105,6 +109,7 @@ description = "Run tests with coverage"
 depends = ["build"]
 wait_for = ["vet"]
 run = "./tools/build.sh test"
+alias = "t"
 
 [tasks.coverage]
 description = "Generate an HTML coverage report"
@@ -128,7 +133,9 @@ run = "./tools/build.sh bench"
 description = "Build and run all quality checks"
 depends = ["build", "check"]
 run = "./tools/build.sh all"
+alias = "a"
 
 [tasks.help]
 description = "List mise tasks"
-run = "mise tasks ls"
+run = "mise tasks ls -x"
+alias = "h"
