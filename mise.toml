@@ -58,6 +58,7 @@ run = "./tools/build.sh generate"
 description = "Build dum locally"
 depends = ["fmt", "vendor", "generate"]
 run = "./tools/build.sh make_out && ./tools/build.sh build"
+alias = "b"
 
 [tasks.linters-build]
 description = "Build custom linters"

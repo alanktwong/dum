@@ -34,11 +34,11 @@ ls dist
 
 ### Subcommands
 
-| Command   | Alias | Description                                     |
-|-----------|-------|-------------------------------------------------|
-| `install` | `i`   | Runs plays and tasks for software installations |
-| `rename`  | `r`   | Renames files with various transformations      |
-| `log`     | `lg`  | Logging utilities for shell scripts             |
+| Command   | Alias | Description                                               |
+| --------- | ----- | --------------------------------------------------------- |
+| `install` | `i`   | Runs plays and tasks for software installations           |
+| `rename`  | `r`   | Renames files with various transformations                |
+| `log`     | `lg`  | Logging utilities for shell scripts                       |
 | `schema`  | `s`   | Prints or extracts the embedded JSON schema for `dum.yml` |
 
 ### Install Command
@@ -110,13 +110,14 @@ Add to your `settings.json`:
 
 ```json
 {
-  "yaml.schemas": {
-    "installer.schema.json": "dum.yml"
-  }
+    "yaml.schemas": {
+        "installer.schema.json": "dum.yml"
+    }
 }
 ```
 
 Extract the schema:
+
 ```bash
 dum schema --output installer.schema.json
 ```
@@ -124,6 +125,7 @@ dum schema --output installer.schema.json
 ### JetBrains IDEs
 
 Place the schema in your IDE config directory:
+
 - macOS: `~/Library/Application Support/JetBrains/<IDE>/schemas`
 - Linux: `~/.config/JetBrains/<IDE>/schemas`
 
@@ -132,6 +134,7 @@ The IDE should automatically detect and use the schema for `dum.yml` files.
 ### Other Editors
 
 Extract the schema and configure your editor:
+
 ```bash
 dum schema --output installer.schema.json
 ```
@@ -142,14 +145,14 @@ Most YAML-aware editors support JSON Schema validation.
 
 Dum sits in the space between Ansible (full configuration management) and shell-based bootstrap scripts (one-shot setup). Here are related projects:
 
-| Tool | Language | Approach | Platform |
-|------|----------|----------|----------|
-| [Preflight](https://github.com/felixgeelhaar/preflight) | Go | Declarative YAML, compiler model (`plan → apply`), multi-platform package management | macOS, Linux |
-| [Omakub](https://github.com/basecamp/omakub) | Shell | Opinionated Ubuntu setup via `wget \| bash`, curated tool selections | Ubuntu |
-| [Omarchy](https://omarchy.org) | Shell | Ambitious take on Linux setup (companion to Omakub) | Linux |
-| [dotfiles-cli](https://github.com/wsoule/dotfiles-cli) | Go | Cross-platform package management (Homebrew/apt/pacman/yum), GNU Stow integration, JSON config | macOS, Linux |
-| [Chezmoi](https://www.chezmoi.io/) | Go | Declarative dotfile manager with templating, encryption, and host-specific configs | macOS, Linux, Windows |
-| [Ansible](https://github.com/ansible/ansible) | Python | Full configuration management with YAML playbooks, idempotent tasks, and a large module ecosystem | macOS, Linux |
+| Tool                                                    | Language | Approach                                                                                          | Platform              |
+| ------------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------- | --------------------- |
+| [Preflight](https://github.com/felixgeelhaar/preflight) | Go       | Declarative YAML, compiler model (`plan → apply`), multi-platform package management              | macOS, Linux          |
+| [Omakub](https://github.com/basecamp/omakub)            | Shell    | Opinionated Ubuntu setup via `wget \| bash`, curated tool selections                              | Ubuntu                |
+| [Omarchy](https://omarchy.org)                          | Shell    | Ambitious take on Linux setup (companion to Omakub)                                               | Linux                 |
+| [dotfiles-cli](https://github.com/wsoule/dotfiles-cli)  | Go       | Cross-platform package management (Homebrew/apt/pacman/yum), GNU Stow integration, JSON config    | macOS, Linux          |
+| [Chezmoi](https://www.chezmoi.io/)                      | Go       | Declarative dotfile manager with templating, encryption, and host-specific configs                | macOS, Linux, Windows |
+| [Ansible](https://github.com/ansible/ansible)           | Python   | Full configuration management with YAML playbooks, idempotent tasks, and a large module ecosystem | macOS, Linux          |
 
 **What makes Dum different:** Dum combines Go performance with an Ansible-like playbook/task model specifically tailored for personal workstation setup. It offers JSON schema validation for config files, a `--dryrun` preview mode, and a growing set of opinionated task types (brew, git, vscode, jetbrains, mas) without the overhead of a full configuration management tool.
 
@@ -159,11 +162,11 @@ Dum sits in the space between Ansible (full configuration management) and shell-
 
 Every `main.go` binary in the repository:
 
-| Path             | Purpose                                                                                                                     |
-|------------------|-----------------------------------------------------------------------------------------------------------------------------|
+| Path             | Purpose                                                                                                                                                                            |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `cmd/dum`        | The `dum` binary: `install` (`i`), `rename` (`r`), `log` (`lg`) with levels `debug d`, `info i`, `success s`, `warn w`, `error e`, and `schema` (`s`) for the embedded JSON schema |
-| `cmd/gen-schema` | Build-time tool run via `go:generate`; regenerates `cmd/dum/installer.schema.json`. Not user-facing                          |
-| `cmd/linters`    | Standalone `go/analysis` linter (own go.mod) flagging single-character import aliases; wired into golangci-lint as a plugin  |
+| `cmd/gen-schema` | Build-time tool run via `go:generate`; regenerates `cmd/dum/installer.schema.json`. Not user-facing                                                                                |
+| `cmd/linters`    | Standalone `go/analysis` linter (own go.mod) flagging single-character import aliases; wired into golangci-lint as a plugin                                                        |
 
 ### Build automation
 
@@ -217,18 +220,35 @@ mise run install
 
 ### Build Commands
 
+`mise run help` or `mise tasks ls -x`
+
+shows:
+
 ```shell
-mise run build           # Local build
-mise run test            # Run tests with coverage
-mise run lint            # Run golangci-lint
-mise run vet             # Go vet
-mise run fmt             # Go fmt
-mise run fix             # Run go fix to update code to new language features
-mise run coverage        # Generate the HTML coverage report
-mise run check-coverage  # Check coverage meets minimum threshold
-mise run all             # Run build and quality checks
-mise run clean           # Clean generated files
-mise run tag             # Compute next semver from conventional commits and create git tag
+Name            Aliases  Source       Description
+all             a        ./mise.toml  Build and run all quality checks
+bench                    ./mise.toml  Run benchmarks
+build           b        ./mise.toml  Build dum locally
+check           ch       ./mise.toml  Run code quality checks
+check-coverage           ./mise.toml  Check the coverage threshold
+check_tools              ./mise.toml  Check required development tools
+clean           cl       ./mise.toml  Clean binary and generated files
+coverage                 ./mise.toml  Generate an HTML coverage report
+fix                      ./mise.toml  Run go fix
+fmt             f        ./mise.toml  Format Go code
+generate                 ./mise.toml  Generate Go code and mocks
+help            h        ./mise.toml  List mise tasks
+install         i        ./mise.toml  Set up repository hooks and Git LFS
+lint                     ./mise.toml  Run Go linters
+linters-build            ./mise.toml  Build custom linters
+profile                  ./mise.toml  Profile tests
+release                  ./mise.toml  Compile local release snapshots
+release-build            ./mise.toml  Compile snapshot binaries
+tag                      ./mise.toml  Compute and create the next semver tag
+test            t        ./mise.toml  Run tests with coverage
+tidy                     ./mise.toml  Tidy Go dependencies
+vendor                   ./mise.toml  Vendor Go dependencies
+vet                      ./mise.toml  Run go vet
 ```
 
 ### Versioning and Releases
@@ -274,8 +294,8 @@ This project enforces strict import alias standards and enables comprehensive li
 
 1. **No single-letter import aliases** - Aliases like `l`, `i`, `t` are banned. Use descriptive 2+ character aliases.
 2. **Standardized aliases** - All internal and vendor packages must use defined aliases:
-   - Internal: `cd`, `ext`, `fy`, `lg`, `pb`, `pl`, `plg`, `tk`, `ti`, `ty`, `tyg`
-   - Vendor: `clog`, `omv3`, `ca`, `tt`, `asrt`, `mck`, `yamlv3`
+    - Internal: `cd`, `ext`, `fy`, `lg`, `pb`, `pl`, `plg`, `tk`, `ti`, `ty`, `tyg`
+    - Vendor: `clog`, `omv3`, `ca`, `tt`, `asrt`, `mck`, `yamlv3`
 3. **Comprehensive linting** - 34 linters enabled via golangci-lint covering correctness, security, performance, and style.
 
 Run `mise run lint` to lint. Use `golangci-lint run ./... --fix` to auto-fix import alias issues.
