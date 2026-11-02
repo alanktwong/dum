@@ -9,7 +9,7 @@ labels: small
 
 ## Changes
 <!-- List your changes, one per line -->
-- 
+- Describe change
 
 ## Related Issues
 <!-- e.g., Fixes #123, Related to #456 -->

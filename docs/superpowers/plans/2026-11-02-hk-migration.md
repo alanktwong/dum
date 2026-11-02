@@ -463,8 +463,10 @@ git diff --check
 hk check --all --step trailing-whitespace
 ```
 
-Review Markdown diffs for the approved hard-break rendering change. Expected:
-the trailing-whitespace check passes and `git diff --check` reports no errors.
+Review Markdown diffs for the approved hard-break rendering change. In
+`.github/PULL_REQUEST_TEMPLATE/brief.md`, replace the stripped blank bullet with
+`- Describe change` to preserve a valid list item. Expected: the
+trailing-whitespace check passes and `git diff --check` reports no errors.
 
 - [ ] **Step 4: Commit the whitespace-only diff separately**
 
