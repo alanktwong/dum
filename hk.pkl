@@ -1,0 +1,43 @@
+amends "package://github.com/jdx/hk/releases/download/v2.11.0/hk@2.11.0#/Config.pkl"
+import "package://github.com/jdx/hk/releases/download/v2.11.0/hk@2.11.0#/Builtins.pkl"
+
+fail_fast = false
+
+steps {
+  ["trailing-whitespace"] = Builtins.trailing_whitespace
+  ["check-added-large-files"] = (Builtins.check_added_large_files) {
+    check = "hk util check-added-large-files --maxkb 5000 {{files}}"
+  }
+  ["check-case-conflict"] = Builtins.check_case_conflict
+  ["check-merge-conflict"] = Builtins.check_merge_conflict
+  ["mixed-line-ending"] = Builtins.mixed_line_ending
+  ["end-of-file-fixer"] = Builtins.newlines
+  ["check-executables-have-shebangs"] = Builtins.check_executables_have_shebangs
+  ["detect-private-key"] = Builtins.detect_private_key
+  ["shellcheck"] = Builtins.shellcheck
+  ["fix-smartquotes"] = Builtins.fix_smart_quotes
+}
+
+hooks {
+  ["pre-commit"] {
+    steps {
+      ["check-lfs-hook"] {
+        check = "./tools/build.sh check-lfs-hook"
+      }
+    }
+  }
+
+  ["commit-msg"] {
+    steps {
+      ["conventional-commit"] = Builtins.check_conventional_commit
+    }
+  }
+
+  ["pre-push"] {
+    steps {
+      ["trufflehog"] {
+        check = #"bash -c 'default_branch=$(git rev-parse --abbrev-ref origin/HEAD 2>/dev/null || printf "%s" main); base_commit=$(git rev-parse --verify "$default_branch" 2>/dev/null || git rev-parse --verify HEAD^ 2>/dev/null || git rev-parse HEAD); trufflehog git file://. --since-commit "$base_commit" --branch HEAD --only-verified --no-update --fail'"#
+      }
+    }
+  }
+}
