@@ -10,7 +10,9 @@ hooks while preserving Git LFS integration and the approved policy changes.
 **Architecture:** Pin hk v2.11.0 in mise and define file checks in `hk.pkl` using
 hk builtins plus the existing TruffleHog Git scan. Install hooks repo-locally
 through `hk install --mise`, require Git 2.54+, keep Git LFS's own pre-push hook,
-and leave CI unchanged.
+and leave CI unchanged. The mise-managed hk setup supports Linux x64/arm64 and
+macOS arm64; Intel macOS developer setup is unsupported, while GoReleaser's
+macOS x64 product build remains unchanged.
 
 **Tech Stack:** mise, hk v2.11.0, Pkl configuration, Bash, Git 2.54+, Git LFS,
 ShellCheck, TruffleHog.
@@ -27,10 +29,10 @@ ShellCheck, TruffleHog.
 | --- | --- | --- |
 | `hk.pkl` | Create | Shared file checks plus explicit commit-msg and pre-push hooks. |
 | `mise.toml` | Modify | Pin hk; remove pre-commit and Python. Keep Node/npm. |
-| `mise.lock` | Regenerate | Lock hk and remaining tools for Linux/macOS x64/arm64. |
+| `mise.lock` | Regenerate | Lock hk for Linux x64/arm64 and macOS arm64. |
 | `tools/lib/setup.sh` | Modify | Enforce Git 2.54+, validate hk config, install hk and Git LFS. |
-| `README.md` | Modify | Explain hk setup, local commands, Git minimum, and upgrade cleanup. |
-| `AGENTS.md` | Modify | Replace active pre-commit instructions and file references. |
+| `README.md` | Modify | Explain hk setup, platform support, local commands, Git minimum, and upgrade cleanup. |
+| `AGENTS.md` | Modify | Replace active pre-commit instructions and document supported dev platforms. |
 | `docs/installer.md` | Modify | Remove pre-commit from the developer-tool reference list. |
 | `.pre-commit-config.yaml` | Delete | Remove the retired hook configuration after the migration audit. |
 | `.commitlintrc.yml` | Delete | Remove commitlint-only configuration. |
@@ -54,20 +56,20 @@ stop and separate them before continuing.
 - Modify: `mise.lock`
 - Read only: `.pre-commit-config.yaml`
 
-- [ ] **Step 1: Add hk v2.11.0 to the project toolchain**
+- [x] **Step 1: Add hk v2.11.0 to the project toolchain**
 
 From the repository root, add the pinned hk release with mise:
 
 ```bash
 mise use hk@2.11.0
-mise lock --platform linux-x64,linux-arm64,macos-x64,macos-arm64
+mise lock --platform linux-x64,linux-arm64,macos-arm64
 ```
 
 Keep pre-commit and Python in the tool list for this task so the existing
 configuration remains runnable during the audit. Review mise's selected hk
 backend; keep it consistent with the project's pinned binary-tool policy.
 
-- [ ] **Step 2: Install the locked tools and verify hk version**
+- [x] **Step 2: Install the locked tools and verify hk version**
 
 Run:
 
@@ -76,10 +78,11 @@ mise install --locked
 hk --version
 ```
 
-Expected: mise installs the lockfile successfully and hk reports version
-`2.11.0`.
+Expected: mise installs the lockfile successfully on Linux x64/arm64 and macOS
+arm64, and hk reports version `2.11.0`. Intel macOS is intentionally
+unsupported by this locked setup.
 
-- [ ] **Step 3: Audit the legacy config without adopting compatibility fallbacks**
+- [x] **Step 3: Audit the legacy config without adopting compatibility fallbacks**
 
 Write migration output outside the repository:
 
@@ -95,13 +98,15 @@ Inspect the generated file for hook coverage and unsupported arguments. It may
 contain steps that invoke pre-commit; use it only as an audit artifact and do
 not copy those compatibility steps into `hk.pkl`.
 
-- [ ] **Step 4: Add the native hk configuration**
+- [x] **Step 4: Add the native hk configuration**
 
 Create `hk.pkl` with this version-matched schema, builtins, and hook map:
 
 ```pkl
 amends "package://github.com/jdx/hk/releases/download/v2.11.0/hk@2.11.0#/Config.pkl"
 import "package://github.com/jdx/hk/releases/download/v2.11.0/hk@2.11.0#/Builtins.pkl"
+
+fail_fast = false
 
 steps {
   ["trailing-whitespace"] = Builtins.trailing_whitespace
@@ -111,7 +116,7 @@ steps {
   ["check-case-conflict"] = Builtins.check_case_conflict
   ["check-merge-conflict"] = Builtins.check_merge_conflict
   ["mixed-line-ending"] = Builtins.mixed_line_ending
-  ["end-of-file-fixer"] = Builtins.end_of_file_fixer
+  ["end-of-file-fixer"] = Builtins.newlines
   ["check-executables-have-shebangs"] = Builtins.check_executables_have_shebangs
   ["detect-private-key"] = Builtins.detect_private_key
   ["shellcheck"] = Builtins.shellcheck
@@ -136,7 +141,7 @@ hooks {
   ["pre-push"] {
     steps {
       ["trufflehog"] {
-        check = """bash -c 'default_branch=$(git rev-parse --abbrev-ref origin/HEAD 2>/dev/null || printf "%s" main); base_commit=$(git rev-parse --verify "$default_branch" 2>/dev/null || git rev-parse --verify HEAD^ 2>/dev/null || git rev-parse HEAD); trufflehog git file://. --since-commit "$base_commit" --branch HEAD --only-verified --no-update --fail'"""
+        check = #"bash -c 'default_branch=$(git rev-parse --abbrev-ref origin/HEAD 2>/dev/null || printf "%s" main); base_commit=$(git rev-parse --verify "$default_branch" 2>/dev/null || git rev-parse --verify HEAD^ 2>/dev/null || git rev-parse HEAD); trufflehog git file://. --since-commit "$base_commit" --branch HEAD --only-verified --no-update --fail'"#
       }
     }
   }
@@ -147,7 +152,7 @@ Top-level steps create hk's shared `check`, `fix`, and `pre-commit` behavior.
 Keep `check-lfs-hook` only on pre-commit; keep TruffleHog only on pre-push. Do
 not replace the Git-history scan with hk's filesystem TruffleHog builtin.
 
-- [ ] **Step 5: Validate config and inspect selected steps**
+- [x] **Step 5: Validate config and inspect selected steps**
 
 Run:
 
@@ -305,16 +310,17 @@ in Task 1. In `tools/lib/setup.sh`, require `git` and `hk`, retain Git LFS,
 Node, and npm, and remove `pre-commit` and `python3`. Keep the existing missing
 tool remediation message pointing to `mise install --locked`.
 
-Regenerate all lock platforms and install them:
+Regenerate lock entries for supported hk platforms and install them:
 
 ```bash
-mise lock --platform linux-x64,linux-arm64,macos-x64,macos-arm64
+mise lock --platform linux-x64,linux-arm64,macos-arm64
 mise install --locked
 mise run check_tools
 ```
 
 Expected: hk and Git LFS are found, no pre-commit or Python runner is required,
-and Node/npm remain available.
+Node/npm remain available, and hk is locked for Linux x64/arm64 and macOS arm64.
+Intel macOS cannot run `mise install --locked` for this toolchain.
 
 - [ ] **Step 6: Delete legacy hook and commitlint configuration**
 
@@ -363,8 +369,12 @@ mise tool list. Then document `mise trust && mise install --locked` and
 `mise run install` for hk and Git LFS setup. State the Git 2.54 minimum and
 repo-local `hk install --mise` behavior. Retain the bash/zsh/fish mise
 activation instructions and explain that local hk launchers need `mise` on
-Git's runtime `PATH`. Explain that setup stops with guidance if global hk hooks
-are configured, so contributors must choose one installation scope.
+Git's runtime `PATH`. State that the locked developer toolchain supports Linux
+x64/arm64 and macOS arm64; on Intel macOS, `mise install --locked` is expected
+to fail because hk has no x64 prebuilt. Clarify that GoReleaser's macOS x64
+product builds remain available. Explain that setup stops with guidance if
+global hk hooks are configured, so contributors must choose one installation
+scope.
 
 - [ ] **Step 2: Document local hk commands and intentional policy changes**
 
@@ -376,7 +386,9 @@ runs on push.
 - [ ] **Step 3: Update the agent and installer guides**
 
 In `AGENTS.md`, update setup commands, commit-message guidance, and Important
-Files to refer to `hk.pkl` and hk rather than `.pre-commit-config.yaml`.
+Files to refer to `hk.pkl` and hk rather than `.pre-commit-config.yaml`. State
+the same Linux x64/arm64 and macOS arm64 dev-tool support, with Intel macOS
+`mise install --locked` expected to fail.
 In `docs/installer.md`, remove the obsolete pre-commit tool reference and add
 the hk reference in the same list.
 
