@@ -140,7 +140,7 @@ Following installed via home brew
 * [lua](https://www.lua.org/) - Powerful, lightweight programming language
 * [openssl](https://openssl.org/) - Cryptography and SSL/TLS Toolkit
 * [pandoc](https://pandoc.org/) convert files from one markup format into another
-* [pre-commit](https://pre-commit.com/) A framework for managing and maintaining multi-language pre-commit hooks.
+* [hk](https://hk.jdx.dev/) Git hook manager for local checks and fixes.
 * [protobuf](https://protobuf.dev/) - language-neutral, platform-neutral extensible mechanisms for serializing structured data.
 * [ripgrep](https://github.com/BurntSushi/ripgrep) is a line-oriented search tool that recursively searches the current directory for a regex pattern. By default, ripgrep will respect gitignore rules and automatically skip hidden files/directories and binary files.
 * [scc](https://github.com/boyter/scc) counts blank lines, comment lines, and physical lines of source code in many programming languages.

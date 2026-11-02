@@ -175,7 +175,7 @@ hk run pre-push --plan origin https://example.invalid/repo.git
 Expected: hk validates the Pkl config, the plans include the intended hooks,
 and no final hk step invokes pre-commit or prek.
 
-- [ ] **Step 6: Commit the config and temporary hk pin**
+- [x] **Step 6: Commit the config and temporary hk pin**
 
 ```bash
 git add hk.pkl mise.toml mise.lock
@@ -195,7 +195,7 @@ git commit -m "build(hooks): add hk configuration" \
 - Delete: `.pre-commit-config.yaml`
 - Delete: `.commitlintrc.yml`
 
-- [ ] **Step 1: Remove existing pre-commit shims before changing the tool list**
+- [x] **Step 1: Remove existing pre-commit shims before changing the tool list**
 
 On an existing clone, while the old mise config and pre-commit executable are
 still available, run:
@@ -214,7 +214,7 @@ grep -q '^git lfs pre-push' "$hooks_dir/pre-push"
 
 Expected: both pre-commit shims are removed and the Git LFS check succeeds.
 
-- [ ] **Step 2: Write the failing Git-version install test**
+- [x] **Step 2: Write the failing Git-version install test**
 
 Use a temporary Bash harness that sources `tools/lib/setup.sh`, stubs `git` and
 `hk`, and puts a logging `pre-commit` stub first on `PATH`. The `git` function
@@ -237,7 +237,7 @@ return status 1 for the global-hook query when no global hk install exists and
 status 0 when simulating `hook.hk-*` entries. Also simulate status 128 for an
 unreadable global config and assert fail-closed behavior.
 
-- [ ] **Step 3: Add a portable Bash Git-version guard**
+- [x] **Step 3: Add a portable Bash Git-version guard**
 
 In `tools/lib/setup.sh`, add a helper that reads `git --version`, parses the
 major/minor components with Bash regular-expression matching, and rejects
@@ -284,15 +284,16 @@ setup_check_no_global_hk_hooks() {
 }
 ```
 
-Call `setup_check_git_version` from both `setup_check_tools` and
-`setup_install_tools`. In `setup_install_tools`, perform the version check, run
-`hk validate`, and call `setup_check_no_global_hk_hooks` before any hook
-changes. If a global hk hook is configured, fail with its scope-conflict
-message; do not call `hk install --force-local` or modify global Git config. If
-none is configured, run `git lfs install --force` followed by
-`hk install --mise`.
+Call `setup_check_git_version || return` from both `setup_check_tools` and
+`setup_install_tools`. In `setup_install_tools`, run `hk validate || return` and
+`setup_check_no_global_hk_hooks || return` before any hook changes. These
+explicit returns must stop setup even when a caller invokes the function from a
+conditional and Bash `errexit` is suppressed. If a global hk hook is configured,
+fail with its scope-conflict message; do not call `hk install --force-local` or
+modify global Git config. If none is configured, run `git lfs install --force`
+followed by `hk install --mise`.
 
-- [ ] **Step 4: Run the version-guard test green**
+- [x] **Step 4: Run the version-guard test green**
 
 Re-run the temporary harness from Step 2.
 
@@ -303,7 +304,7 @@ Git-version output, and a global Git config read error must each fail before Git
 LFS or hk installation, with readable errors. Only exit status 1 from the
 global hook query means "no matching global hk hooks."
 
-- [ ] **Step 5: Update the required-tool list and retire old dependencies**
+- [x] **Step 5: Update the required-tool list and retire old dependencies**
 
 In `mise.toml`, remove the pre-commit and Python entries; keep the hk pin added
 in Task 1. In `tools/lib/setup.sh`, require `git` and `hk`, retain Git LFS,
@@ -322,13 +323,13 @@ Expected: hk and Git LFS are found, no pre-commit or Python runner is required,
 Node/npm remain available, and hk is locked for Linux x64/arm64 and macOS arm64.
 Intel macOS cannot run `mise install --locked` for this toolchain.
 
-- [ ] **Step 6: Delete legacy hook and commitlint configuration**
+- [x] **Step 6: Delete legacy hook and commitlint configuration**
 
 Delete `.pre-commit-config.yaml` and `.commitlintrc.yml`. Do not delete
 historical references under `docs/superpowers/specs/` or
 `docs/superpowers/plans/`.
 
-- [ ] **Step 7: Install hooks and verify Git LFS coexistence**
+- [x] **Step 7: Install hooks and verify Git LFS coexistence**
 
 On Git 2.54+, run:
 
@@ -344,7 +345,7 @@ hooks, and
 If global `hook.hk-*` entries are detected, setup must stop before changing
 hooks and explain the scope conflict. Do not pass `--force` or `--force-local`.
 
-- [ ] **Step 8: Commit the runner transition**
+- [x] **Step 8: Commit the runner transition**
 
 ```bash
 git add -A -- tools/lib/setup.sh mise.toml mise.lock \
@@ -361,7 +362,7 @@ git commit -m "build(hooks): replace pre-commit with hk" \
 - Modify: `AGENTS.md`
 - Modify: `docs/installer.md`
 
-- [ ] **Step 1: Document the existing-clone upgrade order**
+- [x] **Step 1: Document the existing-clone upgrade order**
 
 In `README.md`, explain that existing clones must run both pre-commit
 uninstall commands while the old tool is available, before switching to the new
@@ -376,14 +377,14 @@ product builds remain available. Explain that setup stops with guidance if
 global hk hooks are configured, so contributors must choose one installation
 scope.
 
-- [ ] **Step 2: Document local hk commands and intentional policy changes**
+- [x] **Step 2: Document local hk commands and intentional policy changes**
 
 In `README.md`, replace active pre-commit/commitlint setup text with `hk check`,
 `hk fix`, and `hk check --all`. Say Conventional Commit subjects are validated
 locally, commit bodies are optional, CI remains unchanged, and TruffleHog now
 runs on push.
 
-- [ ] **Step 3: Update the agent and installer guides**
+- [x] **Step 3: Update the agent and installer guides**
 
 In `AGENTS.md`, update setup commands, commit-message guidance, and Important
 Files to refer to `hk.pkl` and hk rather than `.pre-commit-config.yaml`. State
@@ -392,7 +393,7 @@ the same Linux x64/arm64 and macOS arm64 dev-tool support, with Intel macOS
 In `docs/installer.md`, remove the obsolete pre-commit tool reference and add
 the hk reference in the same list.
 
-- [ ] **Step 4: Check active documentation references**
+- [x] **Step 4: Check active documentation references**
 
 Run:
 
@@ -400,9 +401,10 @@ Run:
 rg -n 'pre-commit|commitlint|gitlint' README.md AGENTS.md docs/installer.md
 ```
 
-Expected: any remaining pre-commit mention is only the one-time uninstall
-instruction; no current instructions imply pre-commit remains installed or
-supported. Historical specs/plans remain unchanged.
+Expected: `pre-commit` references are limited to hk's Git hook event and the
+one-time uninstall instruction for old hooks. No current instructions imply the
+pre-commit framework remains installed or supported, and no active references
+to commitlint/Gitlint remain. Historical specs/plans remain unchanged.
 
 - [ ] **Step 5: Commit documentation**
 
