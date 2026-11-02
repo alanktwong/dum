@@ -91,8 +91,9 @@ config-based hooks coexist with Git LFS's `.git/hooks/pre-push` hook.
   runner. Remove those commands from `setup_check_tools`; retain Node/npm for
   now as noted under non-goals.
 - Change `setup_install_tools` to check Git 2.54+ and run `hk validate` before
-  changing hook state, then install Git LFS and run repo-local
-  `hk install --mise`.
+  changing hook state. Detect global `hook.hk-*` entries and fail with guidance
+  to choose one installation scope; do not mutate global Git config or use
+  `--force-local`. Then install Git LFS and run repo-local `hk install --mise`.
 - Fail clearly on older Git and do not use `hk install --force`, which could
   replace Git LFS's pre-push hook on legacy Git.
 - `hk install --mise` requires `mise` on Git's runtime `PATH`; retain the
@@ -144,5 +145,5 @@ After setup:
    changes), then run `hk check --all`.
 
 Hook failures block the associated commit or push. Invalid hk configuration and
-unsupported Git versions must fail before hook installation. No CI changes are
-part of this migration.
+unsupported Git versions or conflicting global hk installation must fail
+before hook installation. No CI changes are part of this migration.
