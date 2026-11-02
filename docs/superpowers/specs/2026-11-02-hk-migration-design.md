@@ -60,7 +60,7 @@ pre-commit's aggregate failure reporting.
 | Existing check | hk configuration | Notes |
 | --- | --- | --- |
 | `trailing-whitespace` | `Builtins.trailing_whitespace` | Remove the Markdown exception; all trailing spaces are stripped. |
-| `check-added-large-files` | `Builtins.check_added_large_files` with its check command overridden to pass `--maxkb 5000` | Verify staged-add and Git LFS pointer behavior against the current hook. |
+| `check-added-large-files` | Custom hk step that skips `filter=lfs` paths, then calls `hk util check-added-large-files --maxkb 5000` | Preserve the threshold and pre-commit's Git LFS exemption. |
 | `check-case-conflict` | `Builtins.check_case_conflict` | |
 | `check-merge-conflict` | `Builtins.check_merge_conflict` | |
 | `mixed-line-ending` | `Builtins.mixed_line_ending` | Retain automatic normalization behavior. |
@@ -87,6 +87,11 @@ the current Git-history scan semantics.
 Git LFS remains independently installed with `git lfs install --force`. Keep
 `check-lfs-hook` as a pre-commit sanity check. With Git 2.54+, hk's repo-local
 config-based hooks coexist with Git LFS's `.git/hooks/pre-push` hook.
+
+Implement the large-file check in `tools/hooks/check-added-large-files.sh` so
+the per-file Git attribute check can exclude Git LFS paths before delegating the
+remaining files to hk's utility. Do not place this script under `tools/lib/`,
+which `tools/build.sh` sources as a library.
 
 ## Installation and toolchain
 
@@ -148,9 +153,10 @@ After setup:
    LFS's pre-push hook remains installed.
 2. Exercise staged/unstaged partial commits and confirm fixes are staged while
    unstaged edits are restored.
-3. Test the 5,000 KB large-file boundary, representative fix/check hooks, and
-   valid/invalid Conventional Commit subjects. A subject without a body should
-   now pass, documenting the intentional policy change.
+3. Test the 5,000 KB large-file boundary, verify Git LFS-attributed files are
+   skipped as before, and test valid/invalid Conventional Commit subjects. A
+   subject without a body should now pass, documenting the intentional policy
+   change.
 4. Verify TruffleHog runs on pre-push and that Git LFS and hk both run without
    replacing one another.
 5. Run `hk fix --all --step trailing-whitespace --no-stage` for the one-time

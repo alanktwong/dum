@@ -31,6 +31,7 @@ ShellCheck, TruffleHog.
 | `mise.toml` | Modify | Pin hk; remove pre-commit and Python. Keep Node/npm. |
 | `mise.lock` | Regenerate | Lock hk for Linux x64/arm64 and macOS arm64. |
 | `tools/lib/setup.sh` | Modify | Enforce Git 2.54+, validate hk config, install hk and Git LFS. |
+| `tools/hooks/check-added-large-files.sh` | Create | Skip Git LFS-attributed files, then check remaining paths with hk. |
 | `README.md` | Modify | Explain hk setup, platform support, local commands, Git minimum, and upgrade cleanup. |
 | `AGENTS.md` | Modify | Replace active pre-commit instructions and document supported dev platforms. |
 | `docs/installer.md` | Modify | Remove pre-commit from the developer-tool reference list. |
@@ -52,6 +53,7 @@ stop and separate them before continuing.
 **Files:**
 
 - Create: `hk.pkl`
+- Create: `tools/hooks/check-added-large-files.sh`
 - Modify: `mise.toml`
 - Modify: `mise.lock`
 - Read only: `.pre-commit-config.yaml`
@@ -98,6 +100,13 @@ Inspect the generated file for hook coverage and unsupported arguments. It may
 contain steps that invoke pre-commit; use it only as an audit artifact and do
 not copy those compatibility steps into `hk.pkl`.
 
+Before removing the old config, record its LFS exemption in a disposable clone:
+track and stage a file larger than 5,000 KB with Git LFS, then run
+`pre-commit run check-added-large-files --files large-lfs.bin` and confirm it
+passes. An ordinary newly added file above the threshold must fail.
+Also verify that an oversized staged modification fails, matching the old hook's
+behavior for non-LFS files.
+
 - [x] **Step 4: Add the native hk configuration**
 
 Create `hk.pkl` with this version-matched schema, builtins, and hook map:
@@ -111,7 +120,9 @@ fail_fast = false
 steps {
   ["trailing-whitespace"] = Builtins.trailing_whitespace
   ["check-added-large-files"] = (Builtins.check_added_large_files) {
-    check = "hk util check-added-large-files --maxkb 5000 {{files}}"
+    check = new Command {
+      argv = List("bash", "tools/hooks/check-added-large-files.sh", "5000", "{{files}}")
+    }
   }
   ["check-case-conflict"] = Builtins.check_case_conflict
   ["check-merge-conflict"] = Builtins.check_merge_conflict
@@ -146,6 +157,27 @@ hooks {
     }
   }
 }
+```
+
+Create `tools/hooks/check-added-large-files.sh` with:
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+
+maxkb="${1:?maximum size in KB is required}"
+shift
+files=()
+for file in "$@"; do
+    if git check-attr filter -- "$file" | grep -q ': filter: lfs$'; then
+        continue
+    fi
+    files+=("$file")
+done
+
+if ((${#files[@]} > 0)); then
+    hk util check-added-large-files --maxkb "$maxkb" "${files[@]}"
+fi
 ```
 
 Top-level steps create hk's shared `check`, `fix`, and `pre-commit` behavior.
@@ -542,8 +574,11 @@ builtins and Git LFS remain available. Set
 Git LFS setup cannot modify the user's global Git config. Stage a file with a
 trailing-space fix, add a separate unstaged edit to the same file, run
 `"$hk_bin" run pre-commit`, and confirm the fix is staged while the unstaged
-edit is restored. Then test a newly added file at 5,000 KB and one byte over the
-limit, plus existing-file and Git LFS pointer behavior against the former hook.
+edit is restored. Then test a newly added file at 5,000 KB, one byte over the
+limit, an oversized staged modification, and an LFS-attributed file over the
+limit. Expected: the boundary passes, non-LFS additions and modifications over
+the threshold fail, and the LFS-attributed file passes. The Task 1 baseline test
+must also confirm the legacy pre-commit hook skipped the LFS pointer.
 
 - [ ] **Step 4: Verify TruffleHog runs on pre-push**
 

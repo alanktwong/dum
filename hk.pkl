@@ -6,7 +6,9 @@ fail_fast = false
 steps {
   ["trailing-whitespace"] = Builtins.trailing_whitespace
   ["check-added-large-files"] = (Builtins.check_added_large_files) {
-    check = "hk util check-added-large-files --maxkb 5000 {{files}}"
+    check = new Command {
+      argv = List("bash", "tools/hooks/check-added-large-files.sh", "5000", "{{files}}")
+    }
   }
   ["check-case-conflict"] = Builtins.check_case_conflict
   ["check-merge-conflict"] = Builtins.check_merge_conflict
