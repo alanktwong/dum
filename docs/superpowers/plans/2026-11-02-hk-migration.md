@@ -618,7 +618,7 @@ hk check --all
 hk check --all --step trailing-whitespace
 ```
 
-Expected: `hk check --all` reports only the known final-newline/smart-quote
+Expected: `hk check --all` reports only the known missing-final-newline
 findings listed in the spec; the trailing-whitespace step passes. Do not fix
 those unrelated findings in this migration. Finish with `git diff --check` and
 `git status --short --untracked-files=all`; no unintended changes should remain.

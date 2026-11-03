@@ -29,12 +29,10 @@ prebuilt; GoReleaser's macOS x64 product build remains unchanged.
   dropped.
 - Strip all trailing whitespace, including Markdown hard-break spaces. Run a
   one-time whole-repository cleanup and review the resulting diff.
-- Do not broaden that cleanup to unrelated final-newline or smart-quote fixes.
-  `hk check --all` currently reports such pre-existing findings in
-  `.env-sample`, `.github/CODEOWNERS`, `cfg/goreleaser.local.yaml`,
-  `docs/superpowers/plans/plan.exclude_generated_coverage.md`, and
-  `docs/superpowers/plans/2026-08-13-viper-config.md`; leave them as existing
-  debt.
+- Do not broaden that cleanup to unrelated final-newline fixes.
+  `hk check --all` reports pre-existing missing-final-newline findings in
+  `.env-sample`, `.github/CODEOWNERS`, and `cfg/goreleaser.local.yaml`; leave
+  them as existing debt.
 
 ## Current state
 

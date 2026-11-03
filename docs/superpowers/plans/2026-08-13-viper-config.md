@@ -25,7 +25,7 @@
 
 **Files:** `go.mod`, `go.sum`, `vendor/`
 
-- [ ] Add `github.com/spf13/viper` using the project’s existing dependency/vendor workflow.
+- [ ] Add `github.com/spf13/viper` using the project's existing dependency/vendor workflow.
 - [ ] Confirm `go.mod` uses the selected Viper version compatible with Go 1.26 and existing dependencies.
 - [ ] Run the repository dependency/vendor command required by `Makefile`.
 - [ ] Commit dependency changes:
