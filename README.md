@@ -243,6 +243,9 @@ staged files while restoring unstaged edits. The commit-msg hook validates
 Conventional Commit subjects (bodies are optional), and TruffleHog now runs on
 push alongside Git LFS. CI remains unchanged.
 
+See [docs/howto/git-hooks.md](docs/howto/git-hooks.md) for a full walkthrough of the hooks, how they are
+installed, and how to test them.
+
 ### Build Commands
 
 `mise run help` or `mise tasks ls -x`
