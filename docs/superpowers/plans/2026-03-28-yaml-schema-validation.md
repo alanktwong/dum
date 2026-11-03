@@ -452,7 +452,7 @@ type Config struct {
 func main() {
     // Use yaml.Tags to generate JSON schema
     // This is a simplified version - for production, use quicktype or go-jsonschema
-    
+
     // Read the struct and generate schema manually for now
     schema := map[string]interface{}{
         "$schema":     "http://json-schema.org/draft-07/schema#",

@@ -38,10 +38,20 @@ mise run all              # Run build and check (quality + build)
 mise run clean            # Clean generated files
 ```
 
-One-time setup: run `mise trust && mise install --locked` in the repository. Add the appropriate
-`mise activate` command to the shell startup file so tools and optional `.env` are available to Git
-hooks. Then run `mise run install` to install pre-commit hooks and configure Git LFS. Explicit
-`mise run ...` tasks work without shell activation.
+One-time setup: run `mise trust && mise install --locked` in the repository. The locked developer
+toolchain supports Linux x64/arm64 and macOS arm64. Intel macOS is unsupported because hk v2.11.0
+has no macOS x64 binary, so `mise install --locked` fails there; GoReleaser's macOS x64 product
+builds remain available. Add the appropriate `mise activate` command to the shell startup file so
+tools and optional `.env` are available to Git hooks. Then run `mise run install` to install repo-local
+hk hooks and configure Git LFS. Explicit `mise run ...` tasks work without shell activation.
+
+For existing clones, run `pre-commit uninstall` and `pre-commit uninstall --hook-type commit-msg`
+while the old tool config is still available, before switching to the hk-based tool list.
+
+Use `hk check` for modified files, `hk fix` to apply fixes, and `hk check --all` for a full local
+check. hk hook setup requires Git 2.54 or newer; `mise run install` fails before changing hooks if
+global hk hooks are configured. The commit-msg hook validates Conventional Commit subjects, and
+TruffleHog runs on pre-push alongside Git LFS. CI is unchanged.
 
 Remove stale `direnv hook` lines from shell startup files. `.envrc` is removed; an old direnv hook
 no longer sets `__PROJECT_DIRENV_INSTALLED` or loads `.env` and hook setup.
@@ -66,7 +76,7 @@ mocks are gitignored since they should follow the naming convention `*_mocks.go`
 ### Versioning and Releases
 
 Versions follow [Conventional Commits](https://www.conventionalcommits.org), enforced locally by
-commitlint via pre-commit. [svu](https://github.com/caarlos0/svu) computes the next version from
+hk at commit-msg; commit bodies are optional. [svu](https://github.com/caarlos0/svu) computes the next version from
 merged commits; configuration lives in `.svu.yml` (`always: true`, `v0: true`).
 
 Release flow: squash-merge PRs with conventional titles, run `mise run tag`, then
@@ -104,7 +114,7 @@ go test -v -race ./...
 
 ```bash
 mise install --locked  # Install pinned project tools
-mise run install       # Configure pre-commit hooks and Git LFS
+mise run install       # Configure hk hooks and Git LFS
 mise run tidy          # Fix go.mod dependencies
 mise run vendor        # Vendor dependencies
 mise run coverage      # Generate the HTML coverage report
@@ -235,9 +245,8 @@ Every `main.go` binary surface in the repository:
 
 - `.golangci.yml` - Linter configuration
 - `.svu.yml` - svu versioning config
-- `.commitlintrc.yml` - commitlint conventional-commits config
 - `mise.toml` / `mise.lock` - project tools, tasks, environment, and locked versions
-- `.pre-commit-config.yaml` - local hook enforcement (incl. commitlint at commit-msg)
+- `hk.pkl` - local hook enforcement for commits and pushes
 - `.github/workflows/release.yml` - tag-push release pipeline
 - `cfg/mockery.yml` - Mock generation config
 - `cfg/goreleaser.yaml` - GoReleaser build config

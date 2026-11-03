@@ -192,7 +192,17 @@ The former standalone tool scripts are dispatcher subcommands. Use
 
 Install mise once using a supported method from the
 [mise installation guide](https://mise.jdx.dev/installing-mise.html); Homebrew is optional and is
-not a project dev-tool dependency. In the repository, trust the config and install locked tools:
+not a project dev-tool dependency.
+
+For existing clones, remove the old pre-commit hooks while the old tool config
+is still available:
+
+```shell
+pre-commit uninstall
+pre-commit uninstall --hook-type commit-msg
+```
+
+Then, in the repository, trust the config and install locked tools:
 
 ```shell
 mise trust && mise install --locked
@@ -207,9 +217,14 @@ eval "$(mise activate zsh)"   # zsh
 mise activate fish | source   # fish
 ```
 
+The locked developer toolchain supports Linux x64/arm64 and macOS arm64. Intel
+macOS is unsupported for the mise-managed developer setup because hk v2.11.0 has
+no macOS x64 binary; `mise install --locked` is expected to fail there. This does
+not affect GoReleaser's macOS x64 product builds.
+
 Remove any old `direnv hook` line from your shell startup file. The repository no longer has
 `.envrc`, so a stale direnv hook silently stops setting `__PROJECT_DIRENV_INSTALLED` and loading
-Git LFS/pre-commit setup and optional `.env`. Explicit `mise run ...` tasks work without shell
+Git LFS/hk setup and optional `.env`. Explicit `mise run ...` tasks work without shell
 activation.
 
 Run repository hook and Git LFS setup once after installing tools:
@@ -217,6 +232,16 @@ Run repository hook and Git LFS setup once after installing tools:
 ```shell
 mise run install
 ```
+
+This installs repo-local hk hooks through mise and keeps Git LFS's own pre-push
+hook. Hook setup requires Git 2.54 or newer and stops if global hk hooks are
+configured; use only one hk installation scope.
+
+Use `hk check` to check modified files, `hk fix` to apply fixes, and
+`hk check --all` for a full local check. The pre-commit hook fixes and stages
+staged files while restoring unstaged edits. The commit-msg hook validates
+Conventional Commit subjects (bodies are optional), and TruffleHog now runs on
+push alongside Git LFS. CI remains unchanged.
 
 ### Build Commands
 
@@ -253,8 +278,8 @@ vet                      ./mise.toml  Run go vet
 
 ### Versioning and Releases
 
-Contributions follow [Conventional Commits](https://www.conventionalcommits.org); commitlint
-validates local commit messages via pre-commit. Node is managed by mise.
+Contributions follow [Conventional Commits](https://www.conventionalcommits.org); hk validates
+commit-message subjects locally. Commit bodies are optional. Node is managed by mise.
 
 To cut a release: run `mise run tag` ([svu](https://github.com/caarlos0/svu) computes the next semver
 from merged conventional commits), then `git push origin <tag>`. Pushing the tag triggers

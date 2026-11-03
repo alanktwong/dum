@@ -3,7 +3,7 @@ charset=utf-8
 # unix-style new lines but not necessarily a newLine ending every file
 end_of_line=lf
 insert_final_newline=false
-# 4-space indents 
+# 4-space indents
 indent_style=space
 indent_size=4
 
@@ -65,4 +65,3 @@ indent_size=2
 [{rake,rails,rcov,spec,spork,cucumber,Puppetfile,guardfile,vagrantfile,isolate,rakefile,gemfile,capfile,*.thor,*.rb,*.rake,*.rbw,*.ru,*.jbuilder,*.gemspec}]
 indent_style=space
 indent_size=2
-

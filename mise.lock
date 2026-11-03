@@ -234,35 +234,6 @@ url = "https://github.com/mikefarah/yq/releases/download/v4.54.1/yq_darwin_amd64
 url_api = "https://api.github.com/repos/mikefarah/yq/releases/assets/597222619"
 provenance = "cosign"
 
-[[tools."aqua:pre-commit/pre-commit"]]
-version = "4.7.0"
-backend = "aqua:pre-commit/pre-commit"
-specifiers = ["4.7.0"]
-
-[tools."aqua:pre-commit/pre-commit"."platforms.linux-arm64"]
-checksum = "sha256:393488513aed286d7a5a978a1fe79b2f5a8802927242a2d241ff10c1a8e8c885"
-checksum_source = "mise-versions"
-url = "https://github.com/pre-commit/pre-commit/releases/download/v4.7.0/pre-commit-4.7.0.pyz"
-url_api = "https://api.github.com/repos/pre-commit/pre-commit/releases/assets/637459099"
-
-[tools."aqua:pre-commit/pre-commit"."platforms.linux-x64"]
-checksum = "sha256:393488513aed286d7a5a978a1fe79b2f5a8802927242a2d241ff10c1a8e8c885"
-checksum_source = "mise-versions"
-url = "https://github.com/pre-commit/pre-commit/releases/download/v4.7.0/pre-commit-4.7.0.pyz"
-url_api = "https://api.github.com/repos/pre-commit/pre-commit/releases/assets/637459099"
-
-[tools."aqua:pre-commit/pre-commit"."platforms.macos-arm64"]
-checksum = "sha256:393488513aed286d7a5a978a1fe79b2f5a8802927242a2d241ff10c1a8e8c885"
-checksum_source = "mise-versions"
-url = "https://github.com/pre-commit/pre-commit/releases/download/v4.7.0/pre-commit-4.7.0.pyz"
-url_api = "https://api.github.com/repos/pre-commit/pre-commit/releases/assets/637459099"
-
-[tools."aqua:pre-commit/pre-commit"."platforms.macos-x64"]
-checksum = "sha256:393488513aed286d7a5a978a1fe79b2f5a8802927242a2d241ff10c1a8e8c885"
-checksum_source = "mise-versions"
-url = "https://github.com/pre-commit/pre-commit/releases/download/v4.7.0/pre-commit-4.7.0.pyz"
-url_api = "https://api.github.com/repos/pre-commit/pre-commit/releases/assets/637459099"
-
 [[tools."aqua:trufflesecurity/trufflehog"]]
 version = "3.99.7"
 backend = "aqua:trufflesecurity/trufflehog"
@@ -357,6 +328,29 @@ version = "0.52.0"
 backend = "go:golang.org/x/tools/cmd/goimports"
 specifiers = ["0.52.0"]
 
+[[tools.hk]]
+version = "2.11.0"
+backend = "packslip:github.com/jdx/hk"
+specifiers = ["2.11.0"]
+
+[tools.hk."platforms.linux-arm64"]
+checksum = "sha256:49cbba44159c17a760319ccfcca0fe4a07fa716f217c157ea734923160b8acb9"
+url = "https://github.com/jdx/hk/releases/download/v2.11.0/hk-aarch64-unknown-linux-gnu.tar.gz"
+signer = "sigstore-oidc:https://github.com/jdx/hk/.github/workflows/release.yml"
+repository_ids = { repository = "922514152" }
+
+[tools.hk."platforms.linux-x64"]
+checksum = "sha256:a461eb97df8e60c4447d1fdaa74a3d31598d7aba0d7a68ceebad0ff0405c3b5b"
+url = "https://github.com/jdx/hk/releases/download/v2.11.0/hk-x86_64-unknown-linux-gnu.tar.gz"
+signer = "sigstore-oidc:https://github.com/jdx/hk/.github/workflows/release.yml"
+repository_ids = { repository = "922514152" }
+
+[tools.hk."platforms.macos-arm64"]
+checksum = "sha256:65cc3490e93522b55abe8ae42c2b5ffe452f9fe58282455ad59d10bc0deab272"
+url = "https://github.com/jdx/hk/releases/download/v2.11.0/hk-aarch64-apple-darwin.tar.gz"
+signer = "sigstore-oidc:https://github.com/jdx/hk/.github/workflows/release.yml"
+repository_ids = { repository = "922514152" }
+
 [[tools.node]]
 version = "22.19.0"
 backend = "core:node"
@@ -377,28 +371,3 @@ url = "https://nodejs.org/dist/v22.19.0/node-v22.19.0-darwin-arm64.tar.gz"
 [tools.node."platforms.macos-x64"]
 checksum = "sha256:3cfed4795cd97277559763c5f56e711852d2cc2420bda1cea30c8aa9ac77ce0c"
 url = "https://nodejs.org/dist/v22.19.0/node-v22.19.0-darwin-x64.tar.gz"
-
-[[tools.python]]
-version = "3.13.18"
-backend = "core:python"
-specifiers = ["3.13.18"]
-
-[tools.python."platforms.linux-arm64"]
-checksum = "sha256:578d9da1983463ffb0c8c98ab0da2f18177f44069328eb0af847860c1eb05c3e"
-url = "https://github.com/astral-sh/python-build-standalone/releases/download/20261026/cpython-3.13.18+20261026-aarch64-unknown-linux-gnu-install_only_stripped.tar.gz"
-provenance = "github-attestations"
-
-[tools.python."platforms.linux-x64"]
-checksum = "sha256:df15fe60d3ff55bf9dcf25824b5572756bb8816ff93865a273d3301d7066a8b7"
-url = "https://github.com/astral-sh/python-build-standalone/releases/download/20261026/cpython-3.13.18+20261026-x86_64-unknown-linux-gnu-install_only_stripped.tar.gz"
-provenance = "github-attestations"
-
-[tools.python."platforms.macos-arm64"]
-checksum = "sha256:8392b6ea51d94391befb2c31ebe75463f045d0b69dfcf5e1bb3234e1f5fa3405"
-url = "https://github.com/astral-sh/python-build-standalone/releases/download/20261026/cpython-3.13.18+20261026-aarch64-apple-darwin-install_only_stripped.tar.gz"
-provenance = "github-attestations"
-
-[tools.python."platforms.macos-x64"]
-checksum = "sha256:7412c19d896c99431b74a18a5643e110449a7f9590fbab179c3e5ab27b9aa9e3"
-url = "https://github.com/astral-sh/python-build-standalone/releases/download/20261026/cpython-3.13.18+20261026-x86_64-apple-darwin-install_only_stripped.tar.gz"
-provenance = "github-attestations"

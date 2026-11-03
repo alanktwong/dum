@@ -9,7 +9,7 @@ labels: enhancement
 
 ## Acceptance Criteria
 <!-- Check off criteria as they are met -->
-- [ ] 
+- [ ]
 
 ## Changes
 <!-- Technical implementation details -->
