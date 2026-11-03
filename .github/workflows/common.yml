@@ -3,17 +3,18 @@ name: Common Setup
 on:
   workflow_call:
     inputs:
-      go-version:
-        type: string
-        default: '1.26'
+      cache:
+        type: boolean
+        default: true
 
 jobs:
   setup:
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: jdx/mise-action@v5
         with:
-          go-version: ${{ inputs.go-version }}
+          cache: ${{ inputs.cache }}
       - run: go mod download
-      - run: make ci-setup

@@ -17,6 +17,6 @@ labels: build-ci
 <!-- How was this tested? -->
 
 ## Checklist
-- [ ] Tests pass (`make test`)
-- [ ] Code lints (`make lint`)
-- [ ] Build succeeds (`make release-build` or `make build`)
+- [ ] Tests pass (`mise run test`)
+- [ ] Code lints (`mise run lint`)
+- [ ] Build succeeds (`mise run release-build` or `mise run build`)

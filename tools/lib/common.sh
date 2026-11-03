@@ -37,9 +37,8 @@ Subcommands:
     print-go-version  print the Go version
     make_out          create the output directory
   Setup:
-    install           install development tools
+    install           set up repository hooks and Git LFS
     check_tools       check required development tools
-    ci-setup          install tools needed by CI
   Repository:
     rhard             reset the repository
     clean             remove generated output

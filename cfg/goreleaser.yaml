@@ -3,7 +3,7 @@ version: 2
 before:
   hooks:
     - go mod tidy
-    - make generate
+    - ./tools/build.sh generate
     - go run ./cmd/dum schema --output cfg/installer.schema.json
 
 builds:

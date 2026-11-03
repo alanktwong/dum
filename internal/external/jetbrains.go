@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 
 	"github.com/alanktwong/dum/internal/external/gen"
 )
@@ -23,15 +24,20 @@ func NewJetBrains() *JetBrainsImpl {
 
 // IsInstalled implements JetBrainsApp.
 func (j *JetBrainsImpl) IsInstalled(ideName, plugin string) bool {
-	joined := filepath.Join(os.Getenv("HOME"),
+	base := filepath.Join(os.Getenv("HOME"),
 		"Library",
 		"Application Support",
-		"JetBrains",
+		"JetBrains")
+	joined := filepath.Join(base,
 		ideName,
 		"plugins",
 		plugin)
 	pluginPath := filepath.Clean(joined)
-	if _, err := os.Stat(pluginPath); err != nil {
+	rel, err := filepath.Rel(base, pluginPath)
+	if err != nil || rel == ".." || strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
+		return false
+	}
+	if _, err := os.Stat(pluginPath); err != nil { // #nosec G703 -- rel check above confines pluginPath to base.
 		// ctx.Log.Debugf("%v %v: plugin %v already installed for %s", TASK_ELLIPSIS, ctx.Play, app, t.ID)
 		return true
 	}

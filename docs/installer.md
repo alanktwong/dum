@@ -34,23 +34,25 @@ Above is the terminal command to override quarantine by macOS gatekeeper so that
 Assumes that:
 
 * Using Linux or MacOS
-* Installed Go 1.24.4+
+* Installed mise and ran `mise trust && mise install --locked` in the repository
 * Installed curl
 * Installed zip/unzip
 * Installed tar
-* Install repo in normal $GOPATH/src/dotfiles
+* Run build commands from the repository root
 
-The repository's shell automation has one entry point, `tools/build.sh`, and it must be run from the repository root. Makefile targets are wrappers around the same dispatcher and are the recommended interface for normal development. `make help` lists the wrappers; `./tools/build.sh help` lists the direct subcommands.
+The repository's shell recipes live in `tools/build.sh` and `tools/lib/*.sh`. mise tasks are the
+recommended interface for normal development; `mise tasks ls` lists available tasks and
+`./tools/build.sh help` lists direct dispatcher subcommands.
 
 ```shell
-make help
+mise tasks ls
 ./tools/build.sh help
 ```
 
-For a normal local build, preserve the Makefile workflow:
+For a normal local build:
 
 ```shell
-make clean build
+mise run clean && mise run build
 ls dist
 ```
 
@@ -101,7 +103,8 @@ See installer.yml
 
 ### Legacy host tooling
 
-The list below is historical host-tooling guidance, not a separate installer script. Repository build automation uses `tools/build.sh` and its Makefile wrappers described above.
+The list below is historical host-tooling guidance, not a separate installer script. Repository
+build automation uses mise tasks and the `tools/build.sh` dispatcher described above.
 
 #### [zsh](https://www.zsh.org/)
 
