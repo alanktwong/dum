@@ -30,6 +30,74 @@ func (restore *stagedRestore) cleanup() error {
 	return nil
 }
 
+// Restore verifies, stages, preflights, and applies one archive.
+func (s *Service) Restore(ctx context.Context, options RestoreOptions) (RestoreResult, error) {
+	if ctx == nil {
+		return RestoreResult{}, fmt.Errorf("restore: nil context")
+	}
+	if err := ctx.Err(); err != nil {
+		return RestoreResult{}, fmt.Errorf("restore: %w", err)
+	}
+	if options.Archive == "" {
+		return RestoreResult{}, fmt.Errorf("restore archive cannot be empty")
+	}
+
+	destination := options.Destination
+	if destination == "" {
+		var err error
+		destination, err = os.UserHomeDir()
+		if err != nil {
+			return RestoreResult{}, fmt.Errorf("resolve home directory: %w", err)
+		}
+	}
+	absDestination, err := filepath.Abs(destination)
+	if err != nil {
+		return RestoreResult{}, fmt.Errorf("resolve destination path %q: %w", destination, err)
+	}
+	destinationRoot, err := canonicalPath(absDestination)
+	if err != nil {
+		return RestoreResult{}, fmt.Errorf("resolve destination path %q: %w", destination, err)
+	}
+
+	staged, err := s.stageRestore(ctx, options)
+	if err != nil {
+		return RestoreResult{}, err
+	}
+	defer func() { _ = staged.cleanup() }()
+
+	if err := preflightDestination(destinationRoot, staged.Members, options.Overwrite); err != nil {
+		return RestoreResult{}, fmt.Errorf("preflight destination %q: %w", destinationRoot, err)
+	}
+	archivePath, err := filepath.Abs(options.Archive)
+	if err != nil {
+		return RestoreResult{}, fmt.Errorf("resolve archive path %q: %w", options.Archive, err)
+	}
+	result := RestoreResult{
+		ArchivePath: archivePath,
+		Destination: destinationRoot,
+		Paths:       make([]string, 0, len(staged.Manifest.Entries)),
+	}
+	for _, entry := range staged.Manifest.Entries {
+		result.Paths = append(result.Paths, entry.Path)
+	}
+	if options.DryRun {
+		return result, nil
+	}
+	if err := os.MkdirAll(destinationRoot, 0o755); err != nil {
+		return RestoreResult{}, fmt.Errorf("create destination %q: %w", destinationRoot, err)
+	}
+	destinationHandle, err := os.OpenRoot(destinationRoot)
+	if err != nil {
+		return RestoreResult{}, fmt.Errorf("open destination root %q: %w", destinationRoot, err)
+	}
+	applyErr := s.applyStagedRestore(ctx, destinationHandle, staged, options)
+	closeErr := destinationHandle.Close()
+	if err := errors.Join(applyErr, closeErr); err != nil {
+		return result, fmt.Errorf("apply restore to %q: %w", destinationRoot, err)
+	}
+	return result, nil
+}
+
 func (s *Service) stageRestore(ctx context.Context, options RestoreOptions) (*stagedRestore, error) {
 	if ctx == nil {
 		return nil, fmt.Errorf("restore: nil context")

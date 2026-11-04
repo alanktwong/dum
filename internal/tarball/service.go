@@ -9,9 +9,10 @@ import (
 
 // Service owns tarball operations and their logging dependency.
 type Service struct {
-	Log     lg.Logger
-	now     func() time.Time
-	publish func(sourcePath, targetPath string) error
+	Log         lg.Logger
+	now         func() time.Time
+	publish     func(sourcePath, targetPath string) error
+	changeOwner func(root *os.Root, path string, uid, gid int, symlink bool) error
 }
 
 // BackupOptions describes one backup invocation after CLI input resolution.
@@ -45,7 +46,19 @@ type BackupResult struct {
 	Artifacts []ArtifactSet
 }
 
+// RestoreResult describes the archive entries validated or restored.
+type RestoreResult struct {
+	ArchivePath string
+	Destination string
+	Paths       []string
+}
+
 // NewService constructs a tarball service.
 func NewService(logger lg.Logger) *Service {
-	return &Service{Log: logger, now: time.Now, publish: os.Link}
+	return &Service{
+		Log:         logger,
+		now:         time.Now,
+		publish:     os.Link,
+		changeOwner: changeOwnerDefault,
+	}
 }
