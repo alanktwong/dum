@@ -40,6 +40,7 @@ ls dist
 | `rename`  | `r`   | Renames files with various transformations                |
 | `log`     | `lg`  | Logging utilities for shell scripts                       |
 | `schema`  | `s`   | Prints or extracts the embedded JSON schema for `dum.yml` |
+| `tarball` | —     | Creates and restores checksummed tar archives             |
 
 ### Install Command
 
@@ -66,6 +67,51 @@ dum rename -b <n> <files...>                   # Trim n chars from back
 dum rename -i <n> <files...>                   # Add numeric suffix starting at n
 dum rename --dryrun <files...>                # Preview without renaming
 ```
+
+### Tarball Command
+
+Creates one gzip tarball per source, with SHA-256 and YAML inventory sidecars:
+
+```shell
+dum tarball backup ~/Documents                       # Explicit paths
+dum tarball backup --input input.yml                 # Paths from YAML
+dum tarball backup --input input.yml --dry-run       # Preview outputs
+dum tarball restore /path/to/Photos-2026-01-02-030405.tgz --dest /tmp/restore
+dum tarball restore --input input.yml --dry-run      # Preview list-based restore
+```
+
+`input.yml` is separate from the installer `dum.yml` and has no implicit
+default; pass it with `--input` for list-based backup or restore. Relative input
+paths resolve from the YAML file's directory. Explicit backup paths replace the
+YAML list; relative command-line paths resolve from the current directory.
+
+```yaml
+paths:
+  - Documents
+  - /mnt/archive/Photos
+```
+
+Each backup writes `<name>-<timestamp>.tgz`, the matching
+`<name>-<timestamp>.tgz.sha256` digest, and
+`<name>-<timestamp>.tgz.manifest.yaml` inventory. In-`$HOME` paths restore
+with their `$HOME`-relative layout; sources outside `$HOME` restore under the
+destination by basename. `--target` selects the archive directory (default:
+`$XDG_DATA_HOME/tarballs`, or `~/.local/share/tarballs`; `TGZ_TARGET` overrides
+it).
+
+List restore discovers `<basename>-*.tgz`. A single match is automatic;
+multiple matches use `fzf` or `gum` when installed. Missing or invalid entries
+are reported while later list entries continue processing.
+
+Restore requires both sidecars, verifies the archive hash and manifest before
+writing, and rejects legacy tarballs without sidecars. Existing files or links
+cause a conflict unless `--overwrite` is given; directory trees are never
+replaced. Absolute or escaping symlinks are recorded with a backup warning and
+require `--allow-unsafe-links` to restore. Ownership defaults to the current
+user; `--preserve-owner` opts into best-effort archived UID/GID restoration.
+When run as root, that option can assign files to other local accounts.
+SHA-256 detects changes only when the expected digest is trusted; it is not a
+signature or authenticity check.
 
 ### Log Command
 
