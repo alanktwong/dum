@@ -1,10 +1,17 @@
 package tarball
 
-import lg "github.com/alanktwong/dum/internal/logging"
+import (
+	"os"
+	"time"
+
+	lg "github.com/alanktwong/dum/internal/logging"
+)
 
 // Service owns tarball operations and their logging dependency.
 type Service struct {
-	Log lg.Logger
+	Log     lg.Logger
+	now     func() time.Time
+	publish func(sourcePath, targetPath string) error
 }
 
 // BackupOptions describes one backup invocation after CLI input resolution.
@@ -26,7 +33,19 @@ type RestoreOptions struct {
 	DryRun           bool
 }
 
+// ArtifactSet contains the archive and both required sidecars for one source.
+type ArtifactSet struct {
+	ArchivePath  string
+	ChecksumPath string
+	ManifestPath string
+}
+
+// BackupResult contains artifacts successfully created or planned by backup.
+type BackupResult struct {
+	Artifacts []ArtifactSet
+}
+
 // NewService constructs a tarball service.
 func NewService(logger lg.Logger) *Service {
-	return &Service{Log: logger}
+	return &Service{Log: logger, now: time.Now, publish: os.Link}
 }
