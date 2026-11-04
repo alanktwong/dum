@@ -18,9 +18,12 @@ const manifestSchemaVersion = 1
 type EntryType string
 
 const (
-	EntryTypeFile      EntryType = "file"
+	// EntryTypeFile identifies a regular file entry.
+	EntryTypeFile EntryType = "file"
+	// EntryTypeDirectory identifies a directory entry.
 	EntryTypeDirectory EntryType = "directory"
-	EntryTypeSymlink   EntryType = "symlink"
+	// EntryTypeSymlink identifies a symbolic link entry.
+	EntryTypeSymlink EntryType = "symlink"
 )
 
 // Manifest is the versioned inventory stored beside each archive.

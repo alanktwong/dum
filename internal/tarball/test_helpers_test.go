@@ -1,6 +1,7 @@
 package tarball
 
 import (
+	"archive/tar"
 	"compress/gzip"
 	"crypto/sha256"
 	"encoding/hex"
@@ -11,7 +12,6 @@ import (
 	"testing"
 	"time"
 
-	"archive/tar"
 	yamlv3 "gopkg.in/yaml.v3"
 )
 
@@ -78,7 +78,7 @@ func readTestArchive(t *testing.T, archivePath string) map[string]testArchiveEnt
 
 		name := strings.TrimSuffix(header.Name, "/")
 		entry := testArchiveEntry{Header: *header}
-		if header.Typeflag == tar.TypeReg || header.Typeflag == tar.TypeRegA {
+		if header.Typeflag == tar.TypeReg || header.Typeflag == 0 {
 			entry.Content, err = io.ReadAll(reader)
 			if err != nil {
 				t.Fatal(err)
@@ -102,7 +102,12 @@ func readTestManifest(t *testing.T, manifestPath string) Manifest {
 	return manifest
 }
 
-func writeTestArchiveFixture(t *testing.T, archivePath string, members []testArchiveMember, manifest Manifest) ArtifactSet {
+func writeTestArchiveFixture(
+	t *testing.T,
+	archivePath string,
+	members []testArchiveMember,
+	manifest Manifest,
+) ArtifactSet {
 	t.Helper()
 	manifestData, err := yamlv3.Marshal(manifest)
 	if err != nil {
@@ -111,7 +116,23 @@ func writeTestArchiveFixture(t *testing.T, archivePath string, members []testArc
 	return writeTestArchiveFixtureWithManifestData(t, archivePath, members, manifestData)
 }
 
-func writeTestArchiveFixtureWithManifestData(t *testing.T, archivePath string, members []testArchiveMember, manifestData []byte) ArtifactSet {
+func writeTestArchiveFixtureWithManifestData(
+	t *testing.T,
+	archivePath string,
+	members []testArchiveMember,
+	manifestData []byte,
+) ArtifactSet {
+	return writeTestArchiveFixtureWithManifestDataAndTrailingBytes(
+		t, archivePath, members, manifestData, nil,
+	)
+}
+
+func writeTestArchiveFixtureWithManifestDataAndTrailingBytes(
+	t *testing.T,
+	archivePath string,
+	members []testArchiveMember,
+	manifestData, trailingBytes []byte,
+) ArtifactSet {
 	t.Helper()
 	if err := os.MkdirAll(filepath.Dir(archivePath), 0o755); err != nil {
 		t.Fatal(err)
@@ -127,7 +148,7 @@ func writeTestArchiveFixtureWithManifestData(t *testing.T, archivePath string, m
 		if err := archive.WriteHeader(&header); err != nil {
 			t.Fatal(err)
 		}
-		if header.Typeflag == tar.TypeReg || header.Typeflag == tar.TypeRegA {
+		if header.Typeflag == tar.TypeReg || header.Typeflag == 0 {
 			if _, err := archive.Write(member.Data); err != nil {
 				t.Fatal(err)
 			}
@@ -135,6 +156,11 @@ func writeTestArchiveFixtureWithManifestData(t *testing.T, archivePath string, m
 	}
 	if err := archive.Close(); err != nil {
 		t.Fatal(err)
+	}
+	if len(trailingBytes) > 0 {
+		if _, err := compressed.Write(trailingBytes); err != nil {
+			t.Fatal(err)
+		}
 	}
 	if err := compressed.Close(); err != nil {
 		t.Fatal(err)

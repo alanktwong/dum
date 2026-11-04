@@ -53,7 +53,10 @@ func preflightDestination(destination string, members []archiveMember, overwrite
 
 			if member.Type == EntryTypeDirectory {
 				if info.Mode()&os.ModeSymlink != 0 || !info.IsDir() {
-					conflicts = append(conflicts, fmt.Errorf("destination path %q has a file/directory type conflict", currentPath))
+					conflicts = append(
+						conflicts,
+						fmt.Errorf("destination path %q has a file/directory type conflict", currentPath),
+					)
 				}
 				continue
 			}
@@ -62,7 +65,10 @@ func preflightDestination(destination string, members []archiveMember, overwrite
 				continue
 			}
 			if info.Mode()&os.ModeSymlink == 0 && !info.Mode().IsRegular() {
-				conflicts = append(conflicts, fmt.Errorf("destination path %q has unsupported type %s", currentPath, info.Mode().Type()))
+				conflicts = append(
+					conflicts,
+					fmt.Errorf("destination path %q has unsupported type %s", currentPath, info.Mode().Type()),
+				)
 				continue
 			}
 			if !overwrite {
@@ -73,7 +79,12 @@ func preflightDestination(destination string, members []archiveMember, overwrite
 	return errors.Join(conflicts...)
 }
 
-func (s *Service) applyStagedRestore(ctx context.Context, destination *os.Root, staged *stagedRestore, options RestoreOptions) error {
+func (s *Service) applyStagedRestore(
+	ctx context.Context,
+	destination *os.Root,
+	staged *stagedRestore,
+	options RestoreOptions,
+) error {
 	manifestEntries := make(map[string]ManifestEntry, len(staged.Manifest.Entries))
 	for _, entry := range staged.Manifest.Entries {
 		manifestEntries[entry.Path] = entry
@@ -139,17 +150,31 @@ func (s *Service) applyStagedRestore(ctx context.Context, destination *os.Root, 
 		if err := s.restoreOwner(destination, member.Path, manifestEntry, false, options.PreserveOwner); err != nil {
 			return fmt.Errorf("restore directory owner for %q: %w", member.Path, err)
 		}
-		if err := destination.Chmod(filepath.FromSlash(member.Path), os.FileMode(member.Header.Mode).Perm()); err != nil {
+		permissions, err := permissionsFromTarMode(member.Header.Mode)
+		if err != nil {
 			return fmt.Errorf("restore directory mode for %q: %w", member.Path, err)
 		}
-		if err := destination.Chtimes(filepath.FromSlash(member.Path), member.Header.ModTime, member.Header.ModTime); err != nil {
+		if err := destination.Chmod(filepath.FromSlash(member.Path), permissions); err != nil {
+			return fmt.Errorf("restore directory mode for %q: %w", member.Path, err)
+		}
+		if err := destination.Chtimes(
+			filepath.FromSlash(member.Path),
+			member.Header.ModTime,
+			member.Header.ModTime,
+		); err != nil {
 			return fmt.Errorf("restore directory timestamp for %q: %w", member.Path, err)
 		}
 	}
 	return nil
 }
 
-func (s *Service) applyStagedFile(destination *os.Root, stageDir string, member archiveMember, manifestEntry ManifestEntry, options RestoreOptions) error {
+func (s *Service) applyStagedFile(
+	destination *os.Root,
+	stageDir string,
+	member archiveMember,
+	manifestEntry ManifestEntry,
+	options RestoreOptions,
+) error {
 	tempPath, target, err := createTempFileInRoot(destination, member.Path)
 	if err != nil {
 		return err
@@ -181,10 +206,18 @@ func (s *Service) applyStagedFile(destination *os.Root, stageDir string, member 
 	if err := s.restoreOwner(destination, tempPath, manifestEntry, false, options.PreserveOwner); err != nil {
 		return err
 	}
-	if err := destination.Chmod(filepath.FromSlash(tempPath), os.FileMode(member.Header.Mode).Perm()); err != nil {
+	permissions, err := permissionsFromTarMode(member.Header.Mode)
+	if err != nil {
+		return fmt.Errorf("read archive mode: %w", err)
+	}
+	if err := destination.Chmod(filepath.FromSlash(tempPath), permissions); err != nil {
 		return fmt.Errorf("set file mode: %w", err)
 	}
-	if err := destination.Chtimes(filepath.FromSlash(tempPath), member.Header.ModTime, member.Header.ModTime); err != nil {
+	if err := destination.Chtimes(
+		filepath.FromSlash(tempPath),
+		member.Header.ModTime,
+		member.Header.ModTime,
+	); err != nil {
 		return fmt.Errorf("set file timestamp: %w", err)
 	}
 	if options.Overwrite {
@@ -202,7 +235,12 @@ func (s *Service) applyStagedFile(destination *os.Root, stageDir string, member 
 	return nil
 }
 
-func (s *Service) applyStagedSymlink(destination *os.Root, member archiveMember, manifestEntry ManifestEntry, options RestoreOptions) error {
+func (s *Service) applyStagedSymlink(
+	destination *os.Root,
+	member archiveMember,
+	manifestEntry ManifestEntry,
+	options RestoreOptions,
+) error {
 	if options.Overwrite {
 		tempPath, err := createTempSymlinkInRoot(destination, member.Path, member.Header.Linkname)
 		if err != nil {
@@ -241,7 +279,16 @@ func (s *Service) restoreOwner(root *os.Root, memberPath string, entry ManifestE
 	if int64(uid) != *entry.UID || int64(gid) != *entry.GID {
 		return fmt.Errorf("uid/gid values are outside the platform range")
 	}
-	if uid == os.Geteuid() && gid == os.Getegid() {
+	info, err := root.Lstat(filepath.FromSlash(memberPath))
+	if err != nil {
+		return fmt.Errorf("inspect restored entry owner: %w", err)
+	}
+	ownerOf := s.ownerOf
+	if ownerOf == nil {
+		ownerOf = fileOwner
+	}
+	currentUID, currentGID, hasOwner := ownerOf(info)
+	if hasOwner && currentUID == *entry.UID && currentGID == *entry.GID {
 		return nil
 	}
 	changeOwner := s.changeOwner
@@ -260,15 +307,57 @@ func (s *Service) restoreOwner(root *os.Root, memberPath string, entry ManifestE
 
 func (s *Service) warnOwnerFallback(memberPath, reason string) {
 	if s.Log != nil {
-		s.Log.Warn("archive ownership not restored; using current owner", "path", memberPath, "reason", reason)
+		s.Log.Warn("archive ownership not restored", "path", memberPath, "reason", reason)
 	}
 }
 
 func changeOwnerDefault(root *os.Root, memberPath string, uid, gid int, symlink bool) error {
 	if symlink {
-		return root.Lchown(memberPath, uid, gid)
+		if err := root.Lchown(memberPath, uid, gid); err != nil {
+			return fmt.Errorf("change symlink owner: %w", err)
+		}
+		return nil
 	}
-	return root.Chown(memberPath, uid, gid)
+	if err := root.Chown(memberPath, uid, gid); err != nil {
+		return fmt.Errorf("change file owner: %w", err)
+	}
+	return nil
+}
+
+func permissionsFromTarMode(mode int64) (os.FileMode, error) {
+	if mode < 0 {
+		return 0, fmt.Errorf("archive mode cannot be negative")
+	}
+
+	var permissions os.FileMode
+	if mode&0o400 != 0 {
+		permissions |= 0o400
+	}
+	if mode&0o200 != 0 {
+		permissions |= 0o200
+	}
+	if mode&0o100 != 0 {
+		permissions |= 0o100
+	}
+	if mode&0o040 != 0 {
+		permissions |= 0o040
+	}
+	if mode&0o020 != 0 {
+		permissions |= 0o020
+	}
+	if mode&0o010 != 0 {
+		permissions |= 0o010
+	}
+	if mode&0o004 != 0 {
+		permissions |= 0o004
+	}
+	if mode&0o002 != 0 {
+		permissions |= 0o002
+	}
+	if mode&0o001 != 0 {
+		permissions |= 0o001
+	}
+	return permissions, nil
 }
 
 func createTempFileInRoot(root *os.Root, memberPath string) (string, *os.File, error) {

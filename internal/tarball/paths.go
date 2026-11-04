@@ -79,7 +79,8 @@ func validateTargetDoesNotOverlap(target string, sources []string) error {
 		if err != nil {
 			return fmt.Errorf("compare target %q with source %q: %w", target, source, err)
 		}
-		if relativeTarget == "." || (relativeTarget != ".." && !strings.HasPrefix(relativeTarget, ".."+string(filepath.Separator))) {
+		if relativeTarget == "." ||
+			(relativeTarget != ".." && !strings.HasPrefix(relativeTarget, ".."+string(filepath.Separator))) {
 			return fmt.Errorf("target %q overlaps source %q", target, source)
 		}
 	}
@@ -97,23 +98,7 @@ func canonicalPath(input string) (string, error) {
 	for {
 		_, err := os.Lstat(cursor)
 		if err == nil {
-			resolved, err := filepath.EvalSymlinks(cursor)
-			if err != nil {
-				return "", fmt.Errorf("resolve symlinks for %q: %w", cursor, err)
-			}
-			if len(suffix) > 0 {
-				info, err := os.Stat(resolved)
-				if err != nil {
-					return "", fmt.Errorf("inspect existing parent %q: %w", resolved, err)
-				}
-				if !info.IsDir() {
-					return "", fmt.Errorf("existing parent %q is not a directory", resolved)
-				}
-			}
-			for index := len(suffix) - 1; index >= 0; index-- {
-				resolved = filepath.Join(resolved, suffix[index])
-			}
-			return filepath.Clean(resolved), nil
+			return resolveCanonicalSuffix(cursor, suffix)
 		}
 		if !os.IsNotExist(err) {
 			return "", fmt.Errorf("inspect path %q: %w", cursor, err)
@@ -126,4 +111,31 @@ func canonicalPath(input string) (string, error) {
 		suffix = append(suffix, filepath.Base(cursor))
 		cursor = parent
 	}
+}
+
+func resolveCanonicalSuffix(existingPath string, suffix []string) (string, error) {
+	resolved, err := filepath.EvalSymlinks(existingPath)
+	if err != nil {
+		return "", fmt.Errorf("resolve symlinks for %q: %w", existingPath, err)
+	}
+	if len(suffix) > 0 {
+		if err := requireDirectory(resolved); err != nil {
+			return "", err
+		}
+	}
+	for index := len(suffix) - 1; index >= 0; index-- {
+		resolved = filepath.Join(resolved, suffix[index])
+	}
+	return filepath.Clean(resolved), nil
+}
+
+func requireDirectory(directory string) error {
+	info, err := os.Stat(directory)
+	if err != nil {
+		return fmt.Errorf("inspect existing parent %q: %w", directory, err)
+	}
+	if !info.IsDir() {
+		return fmt.Errorf("existing parent %q is not a directory", directory)
+	}
+	return nil
 }

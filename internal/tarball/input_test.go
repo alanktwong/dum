@@ -55,6 +55,7 @@ func TestLoadInput_RejectsInvalidInput(t *testing.T) {
 		data string
 	}{
 		{name: "malformed yaml", data: "paths: [\n"},
+		{name: "multiple documents", data: "paths:\n  - source\n---\npaths:\n  - other\n"},
 		{name: "missing paths", data: "{}\n"},
 		{name: "empty paths", data: "paths: []\n"},
 		{name: "empty path", data: "paths:\n  - ''\n"},

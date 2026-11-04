@@ -13,6 +13,7 @@ type Service struct {
 	now         func() time.Time
 	publish     func(sourcePath, targetPath string) error
 	changeOwner func(root *os.Root, path string, uid, gid int, symlink bool) error
+	ownerOf     func(os.FileInfo) (uid, gid int64, ok bool)
 }
 
 // BackupOptions describes one backup invocation after CLI input resolution.
@@ -26,7 +27,6 @@ type BackupOptions struct {
 // RestoreOptions describes one archive restore operation.
 type RestoreOptions struct {
 	Archive          string
-	Target           string
 	Destination      string
 	Overwrite        bool
 	AllowUnsafeLinks bool
@@ -60,5 +60,6 @@ func NewService(logger lg.Logger) *Service {
 		now:         time.Now,
 		publish:     os.Link,
 		changeOwner: changeOwnerDefault,
+		ownerOf:     fileOwner,
 	}
 }

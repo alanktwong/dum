@@ -68,8 +68,20 @@ func TestClassifySymlinkTarget(t *testing.T) {
 	}{
 		{name: "relative target stays in archive", memberPath: "Documents/link", target: "settings", unsafe: false},
 		{name: "relative parent stays in archive", memberPath: "Documents/link", target: "../Pictures", unsafe: false},
-		{name: "absolute target", memberPath: "Documents/link", target: "/etc/passwd", unsafe: true, warning: "absolute symlink target"},
-		{name: "relative target escapes archive", memberPath: "link", target: "../../outside", unsafe: true, warning: "symlink target escapes archive root"},
+		{
+			name:       "absolute target",
+			memberPath: "Documents/link",
+			target:     "/etc/passwd",
+			unsafe:     true,
+			warning:    "absolute symlink target",
+		},
+		{
+			name:       "relative target escapes archive",
+			memberPath: "link",
+			target:     "../../outside",
+			unsafe:     true,
+			warning:    "symlink target escapes archive root",
+		},
 	}
 
 	for _, test := range tests {

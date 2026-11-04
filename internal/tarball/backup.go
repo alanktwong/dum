@@ -35,11 +35,26 @@ func (s *Service) Backup(ctx context.Context, options BackupOptions) (BackupResu
 	if err := ctx.Err(); err != nil {
 		return BackupResult{}, fmt.Errorf("backup: %w", err)
 	}
+	plans, target, err := s.planBackup(options)
+	if err != nil {
+		return BackupResult{}, err
+	}
+	planned := backupResult(plans)
+	if options.DryRun {
+		return planned, nil
+	}
+	if err := os.MkdirAll(target, 0o750); err != nil {
+		return BackupResult{}, fmt.Errorf("create backup target %q: %w", target, err)
+	}
+	return s.writeBackupPlans(ctx, plans)
+}
+
+func (s *Service) planBackup(options BackupOptions) ([]backupPlan, string, error) {
 	if len(options.Paths) == 0 {
-		return BackupResult{}, fmt.Errorf("backup requires at least one path")
+		return nil, "", fmt.Errorf("backup requires at least one path")
 	}
 	if options.Target == "" {
-		return BackupResult{}, fmt.Errorf("backup target cannot be empty")
+		return nil, "", fmt.Errorf("backup target cannot be empty")
 	}
 
 	home := options.Home
@@ -47,42 +62,27 @@ func (s *Service) Backup(ctx context.Context, options BackupOptions) (BackupResu
 		var err error
 		home, err = os.UserHomeDir()
 		if err != nil {
-			return BackupResult{}, fmt.Errorf("resolve home directory: %w", err)
+			return nil, "", fmt.Errorf("resolve home directory: %w", err)
 		}
 	}
 	absoluteHome, err := filepath.Abs(home)
 	if err != nil {
-		return BackupResult{}, fmt.Errorf("resolve home path %q: %w", home, err)
+		return nil, "", fmt.Errorf("resolve home path %q: %w", home, err)
 	}
 	absoluteTarget, err := filepath.Abs(options.Target)
 	if err != nil {
-		return BackupResult{}, fmt.Errorf("resolve target path %q: %w", options.Target, err)
+		return nil, "", fmt.Errorf("resolve target path %q: %w", options.Target, err)
 	}
 
-	sources := make([]string, len(options.Paths))
-	for index, source := range options.Paths {
-		if source == "" {
-			return BackupResult{}, fmt.Errorf("backup path at index %d is empty", index)
-		}
-		absoluteSource, err := filepath.Abs(source)
-		if err != nil {
-			return BackupResult{}, fmt.Errorf("resolve source path %q: %w", source, err)
-		}
-		info, err := os.Lstat(absoluteSource)
-		if err != nil {
-			return BackupResult{}, fmt.Errorf("inspect source path %q: %w", absoluteSource, err)
-		}
-		if !info.IsDir() && !info.Mode().IsRegular() && info.Mode()&os.ModeSymlink == 0 {
-			return BackupResult{}, fmt.Errorf("unsupported source type at %q: %s", absoluteSource, info.Mode().Type())
-		}
-		sources[index] = filepath.Clean(absoluteSource)
+	sources, err := normalizeBackupSources(options.Paths)
+	if err != nil {
+		return nil, "", err
 	}
-
 	if err := validateUniqueBasenames(sources); err != nil {
-		return BackupResult{}, fmt.Errorf("validate backup paths: %w", err)
+		return nil, "", fmt.Errorf("validate backup paths: %w", err)
 	}
 	if err := validateTargetDoesNotOverlap(absoluteTarget, sources); err != nil {
-		return BackupResult{}, fmt.Errorf("validate backup target: %w", err)
+		return nil, "", fmt.Errorf("validate backup target: %w", err)
 	}
 
 	now := time.Now
@@ -94,7 +94,7 @@ func (s *Service) Backup(ctx context.Context, options BackupOptions) (BackupResu
 	for index, source := range sources {
 		memberRoot, err := archivePathForSource(absoluteHome, source)
 		if err != nil {
-			return BackupResult{}, fmt.Errorf("resolve archive root for %q: %w", source, err)
+			return nil, "", fmt.Errorf("resolve archive root for %q: %w", source, err)
 		}
 		base := filepath.Base(source)
 		archivePath := filepath.Join(absoluteTarget, fmt.Sprintf("%s-%s.tgz", base, timestamp))
@@ -105,23 +105,45 @@ func (s *Service) Backup(ctx context.Context, options BackupOptions) (BackupResu
 		}
 		for _, outputPath := range []string{artifacts.ArchivePath, artifacts.ChecksumPath, artifacts.ManifestPath} {
 			if err := ensurePathAbsent(outputPath); err != nil {
-				return BackupResult{}, fmt.Errorf("preflight output for %q: %w", source, err)
+				return nil, "", fmt.Errorf("preflight output for %q: %w", source, err)
 			}
 		}
 		plans[index] = backupPlan{source: source, memberRoot: memberRoot, artifacts: artifacts}
 	}
+	return plans, filepath.Clean(absoluteTarget), nil
+}
 
+func normalizeBackupSources(paths []string) ([]string, error) {
+	sources := make([]string, len(paths))
+	for index, source := range paths {
+		if source == "" {
+			return nil, fmt.Errorf("backup path at index %d is empty", index)
+		}
+		absoluteSource, err := filepath.Abs(source)
+		if err != nil {
+			return nil, fmt.Errorf("resolve source path %q: %w", source, err)
+		}
+		info, err := os.Lstat(absoluteSource)
+		if err != nil {
+			return nil, fmt.Errorf("inspect source path %q: %w", absoluteSource, err)
+		}
+		if !info.IsDir() && !info.Mode().IsRegular() && info.Mode()&os.ModeSymlink == 0 {
+			return nil, fmt.Errorf("unsupported source type at %q: %s", absoluteSource, info.Mode().Type())
+		}
+		sources[index] = filepath.Clean(absoluteSource)
+	}
+	return sources, nil
+}
+
+func backupResult(plans []backupPlan) BackupResult {
 	planned := BackupResult{Artifacts: make([]ArtifactSet, 0, len(plans))}
 	for _, plan := range plans {
 		planned.Artifacts = append(planned.Artifacts, plan.artifacts)
 	}
-	if options.DryRun {
-		return planned, nil
-	}
-	if err := os.MkdirAll(absoluteTarget, 0o755); err != nil {
-		return BackupResult{}, fmt.Errorf("create backup target %q: %w", absoluteTarget, err)
-	}
+	return planned
+}
 
+func (s *Service) writeBackupPlans(ctx context.Context, plans []backupPlan) (BackupResult, error) {
 	result := BackupResult{Artifacts: make([]ArtifactSet, 0, len(plans))}
 	var failures []error
 	for _, plan := range plans {
@@ -218,7 +240,7 @@ func (s *Service) writeArchive(ctx context.Context, output io.Writer, source, me
 			return fmt.Errorf("walk source path %q: %w", currentPath, walkErr)
 		}
 		if err := ctx.Err(); err != nil {
-			return err
+			return fmt.Errorf("backup source walk canceled: %w", err)
 		}
 
 		info, err := os.Lstat(currentPath)

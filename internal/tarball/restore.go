@@ -83,7 +83,7 @@ func (s *Service) Restore(ctx context.Context, options RestoreOptions) (RestoreR
 	if options.DryRun {
 		return result, nil
 	}
-	if err := os.MkdirAll(destinationRoot, 0o755); err != nil {
+	if err := os.MkdirAll(destinationRoot, 0o750); err != nil {
 		return RestoreResult{}, fmt.Errorf("create destination %q: %w", destinationRoot, err)
 	}
 	destinationHandle, err := os.OpenRoot(destinationRoot)
@@ -222,9 +222,16 @@ type contextReader struct {
 
 func (reader contextReader) Read(data []byte) (int, error) {
 	if err := reader.ctx.Err(); err != nil {
-		return 0, err
+		return 0, fmt.Errorf("archive snapshot read canceled: %w", err)
 	}
-	return reader.reader.Read(data)
+	n, err := reader.reader.Read(data)
+	if errors.Is(err, io.EOF) {
+		return n, io.EOF
+	}
+	if err != nil {
+		return n, fmt.Errorf("read archive snapshot: %w", err)
+	}
+	return n, nil
 }
 
 func containsUnsafeWarning(warning, reason string) bool {

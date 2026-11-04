@@ -24,7 +24,11 @@ func TestManifest_MarshalAndParse(t *testing.T) {
 		return
 	}
 	assert.Contains(t, string(data), "schema_version: 1")
-	assert.Less(t, strings.Index(string(data), "path: Documents\n"), strings.Index(string(data), "path: Documents/config-link"))
+	assert.Less(
+		t,
+		strings.Index(string(data), "path: Documents\n"),
+		strings.Index(string(data), "path: Documents/config-link"),
+	)
 
 	got, err := parseManifest(data)
 	if !assert.NoError(t, err) {

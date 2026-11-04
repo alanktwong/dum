@@ -3,8 +3,10 @@ package tarball
 import (
 	"archive/tar"
 	"context"
+	"errors"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -42,6 +44,15 @@ func TestStageRestore_RequiresBothSidecars(t *testing.T) {
 	if _, err := NewService(nil).stageRestore(context.Background(), RestoreOptions{Archive: archivePath}); err == nil {
 		t.Fatal("expected missing sidecars to fail")
 	}
+}
+
+func TestStageRestore_RequiresManifestSidecar(t *testing.T) {
+	root := t.TempDir()
+	artifacts := writeValidRestoreFixture(t, filepath.Join(root, "archive.tgz"))
+	if err := os.Remove(artifacts.ManifestPath); err != nil {
+		t.Fatal(err)
+	}
+	assertStageRestoreFails(t, artifacts.ArchivePath)
 }
 
 func TestStageRestore_RejectsMalformedAndMismatchedChecksums(t *testing.T) {
@@ -102,7 +113,12 @@ func TestStageRestore_RejectsManifestArchiveMismatches(t *testing.T) {
 			header: tar.Header{
 				Name: "Documents/file.txt", Typeflag: tar.TypeReg, Mode: 0o644, Size: 7, Uid: 501, Gid: 20,
 			},
-			manifest:   ManifestEntry{Path: "Documents/file.txt", Type: EntryTypeFile, UID: int64Pointer(502), GID: int64Pointer(20)},
+			manifest: ManifestEntry{
+				Path: "Documents/file.txt",
+				Type: EntryTypeFile,
+				UID:  int64Pointer(502),
+				GID:  int64Pointer(20),
+			},
 			manifestID: "owner-mismatch",
 		},
 		{
@@ -120,7 +136,12 @@ func TestStageRestore_RejectsManifestArchiveMismatches(t *testing.T) {
 			root := t.TempDir()
 			archivePath := filepath.Join(root, test.manifestID+".tgz")
 			manifest := Manifest{SchemaVersion: 1, Entries: []ManifestEntry{test.manifest}}
-			writeTestArchiveFixture(t, archivePath, []testArchiveMember{{Header: test.header, Data: []byte("payload")}}, manifest)
+			writeTestArchiveFixture(
+				t,
+				archivePath,
+				[]testArchiveMember{{Header: test.header, Data: []byte("payload")}},
+				manifest,
+			)
 			assertStageRestoreFails(t, archivePath)
 		})
 	}
@@ -150,31 +171,62 @@ func TestStageRestore_RejectsArchivePathAttacks(t *testing.T) {
 		},
 		{
 			name: "hard link",
-			members: []testArchiveMember{{
-				Header: tar.Header{Name: "Documents/link", Typeflag: tar.TypeLink, Linkname: "Documents/file.txt", Mode: 0o600},
-			}},
+			members: []testArchiveMember{
+				{
+					Header: tar.Header{
+						Name:     "Documents/link",
+						Typeflag: tar.TypeLink,
+						Linkname: "Documents/file.txt",
+						Mode:     0o600,
+					},
+				},
+			},
 			manifest: "schema_version: 1\nentries:\n  - path: Documents/link\n    type: file\n",
 		},
 		{
 			name: "device entry",
-			members: []testArchiveMember{{
-				Header: tar.Header{Name: "Documents/device", Typeflag: tar.TypeChar, Devmajor: 1, Devminor: 3, Mode: 0o600},
-			}},
+			members: []testArchiveMember{
+				{
+					Header: tar.Header{
+						Name:     "Documents/device",
+						Typeflag: tar.TypeChar,
+						Devmajor: 1,
+						Devminor: 3,
+						Mode:     0o600,
+					},
+				},
+			},
 			manifest: "schema_version: 1\nentries:\n  - path: Documents/device\n    type: file\n",
 		},
 		{
 			name: "duplicate archive path",
 			members: []testArchiveMember{
-				{Header: tar.Header{Name: "Documents/file.txt", Typeflag: tar.TypeReg, Mode: 0o600, Size: 1}, Data: []byte("a")},
-				{Header: tar.Header{Name: "Documents/file.txt", Typeflag: tar.TypeReg, Mode: 0o600, Size: 1}, Data: []byte("b")},
+				{
+					Header: tar.Header{Name: "Documents/file.txt", Typeflag: tar.TypeReg, Mode: 0o600, Size: 1},
+					Data:   []byte("a"),
+				},
+				{
+					Header: tar.Header{Name: "Documents/file.txt", Typeflag: tar.TypeReg, Mode: 0o600, Size: 1},
+					Data:   []byte("b"),
+				},
 			},
 			manifest: "schema_version: 1\nentries:\n  - path: Documents/file.txt\n    type: file\n",
 		},
 		{
 			name: "member below archive symlink",
 			members: []testArchiveMember{
-				{Header: tar.Header{Name: "Documents/link", Typeflag: tar.TypeSymlink, Linkname: "target", Mode: 0o777}},
-				{Header: tar.Header{Name: "Documents/link/file.txt", Typeflag: tar.TypeReg, Mode: 0o600, Size: 1}, Data: []byte("a")},
+				{
+					Header: tar.Header{
+						Name:     "Documents/link",
+						Typeflag: tar.TypeSymlink,
+						Linkname: "target",
+						Mode:     0o777,
+					},
+				},
+				{
+					Header: tar.Header{Name: "Documents/link/file.txt", Typeflag: tar.TypeReg, Mode: 0o600, Size: 1},
+					Data:   []byte("a"),
+				},
 			},
 			manifest: "schema_version: 1\nentries:\n  - path: Documents/link\n    type: symlink\n    target: target\n  - path: Documents/link/file.txt\n    type: file\n",
 		},
@@ -268,6 +320,45 @@ func TestStageRestore_RejectsInvalidGzipAndTruncatedArchive(t *testing.T) {
 	})
 }
 
+func TestStageRestore_RejectsDataAfterTarTerminator(t *testing.T) {
+	archivePath := filepath.Join(t.TempDir(), "trailing-data.tgz")
+	writeTestArchiveFixtureWithManifestDataAndTrailingBytes(
+		t,
+		archivePath,
+		validRestoreMembers(),
+		mustMarshalTestManifest(t, validRestoreManifest()),
+		[]byte("unexpected expanded data"),
+	)
+
+	assertStageRestoreFails(t, archivePath)
+}
+
+func TestContextReaderWrapsCancellationAndSourceErrors(t *testing.T) {
+	t.Run("canceled context", func(t *testing.T) {
+		ctx, cancel := context.WithCancel(context.Background())
+		cancel()
+		reader := contextReader{ctx: ctx, reader: strings.NewReader("data")}
+		_, err := reader.Read(make([]byte, 1))
+		assert.ErrorIs(t, err, context.Canceled)
+	})
+
+	t.Run("underlying reader error", func(t *testing.T) {
+		sourceErr := errors.New("source read failed")
+		reader := contextReader{ctx: context.Background(), reader: failingTestReader{err: sourceErr}}
+		_, err := reader.Read(make([]byte, 1))
+		assert.ErrorIs(t, err, sourceErr)
+		assert.Contains(t, err.Error(), "read archive snapshot")
+	})
+}
+
+type failingTestReader struct {
+	err error
+}
+
+func (reader failingTestReader) Read([]byte) (int, error) {
+	return 0, reader.err
+}
+
 func writeValidRestoreFixture(t *testing.T, archivePath string) ArtifactSet {
 	t.Helper()
 	return writeTestArchiveFixture(t, archivePath, validRestoreMembers(), validRestoreManifest())
@@ -276,7 +367,10 @@ func writeValidRestoreFixture(t *testing.T, archivePath string) ArtifactSet {
 func validRestoreMembers() []testArchiveMember {
 	return []testArchiveMember{
 		{Header: tar.Header{Name: "Documents/", Typeflag: tar.TypeDir, Mode: 0o755}},
-		{Header: tar.Header{Name: "Documents/file.txt", Typeflag: tar.TypeReg, Mode: 0o644, Size: 7}, Data: []byte("payload")},
+		{
+			Header: tar.Header{Name: "Documents/file.txt", Typeflag: tar.TypeReg, Mode: 0o644, Size: 7},
+			Data:   []byte("payload"),
+		},
 	}
 }
 
@@ -331,7 +425,9 @@ func TestStageRestore_RejectsManifestOwnerMismatchWhenFieldsOmitted(t *testing.T
 func TestStageRestore_RejectsUnsafeSymlinkManifestMarkerMismatch(t *testing.T) {
 	root := t.TempDir()
 	archivePath := filepath.Join(root, "unsafe-marker-mismatch.tgz")
-	manifest := []byte("schema_version: 1\nentries:\n  - path: link\n    type: symlink\n    target: /etc/passwd\n    unsafe: false\n")
+	manifest := []byte(
+		"schema_version: 1\nentries:\n  - path: link\n    type: symlink\n    target: /etc/passwd\n    unsafe: false\n",
+	)
 	writeTestArchiveFixtureWithManifestData(t, archivePath, []testArchiveMember{{
 		Header: tar.Header{Name: "link", Typeflag: tar.TypeSymlink, Linkname: "/etc/passwd", Mode: 0o777},
 	}}, manifest)

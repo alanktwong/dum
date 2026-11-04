@@ -106,6 +106,28 @@ func TestBackup_DryRunReportsArtifactsWithoutWriting(t *testing.T) {
 	assert.NoDirExists(t, target)
 }
 
+func TestBackup_CreatesTargetWithRestrictedPermissions(t *testing.T) {
+	root := t.TempDir()
+	home := filepath.Join(root, "home")
+	source := filepath.Join(home, "Documents")
+	writeTestFile(t, filepath.Join(source, "file.txt"), []byte("data"), 0o600, time.Time{})
+	target := filepath.Join(root, "archives")
+
+	_, err := newBackupTestService().Backup(context.Background(), BackupOptions{
+		Paths: []string{source}, Target: target, Home: home,
+	})
+	if !assert.NoError(t, err) {
+		return
+	}
+	info, err := os.Stat(target)
+	if !assert.NoError(t, err) {
+		return
+	}
+	permissions := info.Mode().Perm()
+	assert.Equal(t, os.FileMode(0o700), permissions&0o700)
+	assert.Zero(t, permissions&^os.FileMode(0o750))
+}
+
 func TestBackup_RejectsBasenameCollisionBeforeWriting(t *testing.T) {
 	root := t.TempDir()
 	home := filepath.Join(root, "home")

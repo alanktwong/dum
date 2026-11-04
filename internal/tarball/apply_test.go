@@ -84,8 +84,18 @@ func TestRestore_OverwriteReplacesLeafSymlink(t *testing.T) {
 	}}
 	artifacts := writeTestArchiveFixture(t, archivePath, []testArchiveMember{
 		{Header: tar.Header{Name: "Documents/", Typeflag: tar.TypeDir, Mode: 0o755}},
-		{Header: tar.Header{Name: "Documents/settings", Typeflag: tar.TypeReg, Mode: 0o600, Size: 7}, Data: []byte("setting")},
-		{Header: tar.Header{Name: "Documents/settings-link", Typeflag: tar.TypeSymlink, Linkname: "settings", Mode: 0o777}},
+		{
+			Header: tar.Header{Name: "Documents/settings", Typeflag: tar.TypeReg, Mode: 0o600, Size: 7},
+			Data:   []byte("setting"),
+		},
+		{
+			Header: tar.Header{
+				Name:     "Documents/settings-link",
+				Typeflag: tar.TypeSymlink,
+				Linkname: "settings",
+				Mode:     0o777,
+			},
+		},
 	}, manifest)
 	destination := filepath.Join(root, "destination")
 	if err := os.MkdirAll(filepath.Join(destination, "Documents"), 0o755); err != nil {
@@ -239,6 +249,26 @@ func TestRestore_CreatesImplicitParents(t *testing.T) {
 	}
 }
 
+func TestRestore_CreatesDestinationWithRestrictedPermissions(t *testing.T) {
+	root := t.TempDir()
+	artifacts := writeValidRestoreFixture(t, filepath.Join(root, "archive.tgz"))
+	destination := filepath.Join(root, "destination")
+
+	_, err := NewService(nil).Restore(context.Background(), RestoreOptions{
+		Archive: artifacts.ArchivePath, Destination: destination,
+	})
+	if !assert.NoError(t, err) {
+		return
+	}
+	info, err := os.Stat(destination)
+	if !assert.NoError(t, err) {
+		return
+	}
+	permissions := info.Mode().Perm()
+	assert.Equal(t, os.FileMode(0o700), permissions&0o700)
+	assert.Zero(t, permissions&^os.FileMode(0o750))
+}
+
 func TestRestore_DryRunDoesNotCreateDestination(t *testing.T) {
 	root := t.TempDir()
 	artifacts := writeValidRestoreFixture(t, filepath.Join(root, "archive.tgz"))
@@ -292,6 +322,31 @@ func TestRestore_PreservesModeAndModificationTimeAndUsesCurrentOwner(t *testing.
 	assert.Zero(t, ownerChanges)
 }
 
+func TestPermissionsFromTarModeKeepsOnlyOrdinaryPermissionBits(t *testing.T) {
+	tests := []struct {
+		name string
+		mode int64
+		want os.FileMode
+	}{
+		{name: "ordinary bits", mode: 0o640, want: 0o640},
+		{name: "setuid stripped", mode: 0o4755, want: 0o755},
+		{name: "high bits ignored", mode: 1<<50 | 0o604, want: 0o604},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got, err := permissionsFromTarMode(test.mode)
+			if !assert.NoError(t, err) {
+				return
+			}
+			assert.Equal(t, test.want, got)
+		})
+	}
+
+	_, err := permissionsFromTarMode(-1)
+	assert.Error(t, err)
+}
+
 func TestRestore_PreserveOwnerOptIn(t *testing.T) {
 	root := t.TempDir()
 	archivePath := filepath.Join(root, "owner.tgz")
@@ -319,6 +374,42 @@ func TestRestore_PreserveOwnerOptIn(t *testing.T) {
 	}
 	assert.Equal(t, int(uid), gotUID)
 	assert.Equal(t, int(gid), gotGID)
+}
+
+func TestRestore_PreserveOwnerChecksReusedDirectoryEvenWhenArchiveOwnerIsCurrent(t *testing.T) {
+	root := t.TempDir()
+	archivePath := filepath.Join(root, "current-owner.tgz")
+	uid := int64(os.Geteuid())
+	gid := int64(os.Getegid())
+	manifest := Manifest{SchemaVersion: 1, Entries: []ManifestEntry{{
+		Path: "Documents", Type: EntryTypeDirectory, UID: int64Pointer(uid), GID: int64Pointer(gid),
+	}}}
+	artifacts := writeTestArchiveFixture(t, archivePath, []testArchiveMember{{
+		Header: tar.Header{Name: "Documents/", Typeflag: tar.TypeDir, Mode: 0o755, Uid: int(uid), Gid: int(gid)},
+	}}, manifest)
+	destination := filepath.Join(root, "destination")
+	if err := os.MkdirAll(filepath.Join(destination, "Documents"), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	service := NewService(nil)
+	ownerChanges := 0
+	service.ownerOf = func(os.FileInfo) (int64, int64, bool) {
+		return uid + 1, gid + 1, true
+	}
+	service.changeOwner = func(_ *os.Root, _ string, gotUID, gotGID int, _ bool) error {
+		ownerChanges++
+		assert.Equal(t, int(uid), gotUID)
+		assert.Equal(t, int(gid), gotGID)
+		return nil
+	}
+
+	_, err := service.Restore(context.Background(), RestoreOptions{
+		Archive: artifacts.ArchivePath, Destination: destination, PreserveOwner: true,
+	})
+	if !assert.NoError(t, err) {
+		return
+	}
+	assert.Equal(t, 1, ownerChanges)
 }
 
 func TestRestore_ClearedOwnerMetadataUsesCurrentOwner(t *testing.T) {
@@ -351,7 +442,7 @@ func TestRestore_ClearedOwnerMetadataUsesCurrentOwner(t *testing.T) {
 	}
 }
 
-func TestRestore_PreserveOwnerDeniedFallsBackToCurrentOwner(t *testing.T) {
+func TestRestore_PreserveOwnerDeniedRetainsReusedDirectoryOwner(t *testing.T) {
 	root := t.TempDir()
 	archivePath := filepath.Join(root, "owner-denied.tgz")
 	uid := int64(os.Geteuid() + 1000)
@@ -376,7 +467,7 @@ func TestRestore_PreserveOwnerDeniedFallsBackToCurrentOwner(t *testing.T) {
 	}
 
 	logger := gen.NewMockLogger(t)
-	logger.On("Warn", mck.Anything, mck.Anything).Return().Once()
+	logger.On("Warn", "archive ownership not restored", mck.Anything).Return().Once()
 	service := NewService(logger)
 	service.changeOwner = func(_ *os.Root, _ string, _, _ int, _ bool) error {
 		return os.ErrPermission
@@ -415,7 +506,13 @@ func TestRestore_DoesNotApplyPAXExtendedAttributes(t *testing.T) {
 	if output, err := exec.Command(xattr, "-w", attribute, "probe-value", probe).CombinedOutput(); err != nil {
 		t.Skipf("filesystem does not support xattrs: %v (%s)", err, output)
 	}
-	if output, err := exec.Command(xattr, "-p", attribute, probe).Output(); err != nil || string(output) != "probe-value\n" {
+	if output, err := exec.Command(
+		xattr,
+		"-p",
+		attribute,
+		probe,
+	).Output(); err != nil ||
+		string(output) != "probe-value\n" {
 		t.Skip("xattr probe could not be read back")
 	}
 
