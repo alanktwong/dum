@@ -212,7 +212,7 @@ type Task interface {
 
 - **No single-letter aliases**: Aliases like `l`, `i`, `t` are banned
 - **Required aliases**: All internal and vendor packages must use standardized aliases:
-    - Internal: `cd`, `ext`, `fy`, `lg`, `pb`, `pl`, `plg`, `tk`, `ti`, `ty`, `tyg`
+    - Internal: `cd`, `ext`, `fy`, `lg`, `pb`, `pl`, `plg`, `tk`, `ti`, `tb`, `ty`, `tyg`
     - Vendor: `clog`, `omv3`, `ca`, `tt`, `asrt`, `mck`, `yamlv3`
 - **Auto-fix**: Run `golangci-lint run ./... --fix` to fix importas violations
 

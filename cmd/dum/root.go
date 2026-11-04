@@ -61,11 +61,13 @@ func NewDum() *Dum {
 	installDum := newInstallDeps(logger)
 	logDum := newLogDeps(logger)
 	renameDum := newRenameDeps(logger)
+	tarballDum := newTarballDeps(logger)
 	schemaDum := newSchemaDeps()
 
 	rootCmd.AddCommand(NewInstallCommand(rootUse, installDum))
 	rootCmd.AddCommand(NewRenameCommand(rootUse, renameDum))
 	rootCmd.AddCommand(NewLogCommand(rootUse, logDum))
+	rootCmd.AddCommand(NewTarballCommand(rootUse, tarballDum))
 	rootCmd.AddCommand(NewSchemaCommand(rootUse, schemaDum))
 
 	return &Dum{

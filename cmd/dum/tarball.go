@@ -1,0 +1,315 @@
+package main
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"os"
+	"path/filepath"
+
+	lg "github.com/alanktwong/dum/internal/logging"
+	tb "github.com/alanktwong/dum/internal/tarball"
+	ca "github.com/spf13/cobra"
+)
+
+const (
+	tarballInputFlag            = "input"
+	tarballTargetFlag           = "target"
+	tarballDestinationFlag      = "dest"
+	tarballOverwriteFlag        = "overwrite"
+	tarballAllowUnsafeLinksFlag = "allow-unsafe-links"
+	tarballPreserveOwnerFlag    = "preserve-owner"
+	tarballDryRunFlag           = "dry-run"
+)
+
+type archiveRestorer func(context.Context, tb.RestoreOptions) (tb.RestoreResult, error)
+
+// TarballCommand contains the dependencies used by tarball subcommands.
+type TarballCommand struct {
+	Log            lg.Logger
+	Service        *tb.Service
+	pickArchive    archivePicker
+	restoreArchive archiveRestorer
+}
+
+// NewTarballCommand constructs the tarball command and its subcommands.
+func NewTarballCommand(rootUse string, dum *TarballCommand) *ca.Command {
+	if dum == nil {
+		dum = newTarballDeps(nil)
+	}
+	if dum.Service == nil {
+		dum.Service = tb.NewService(dum.Log)
+	}
+	if dum.pickArchive == nil {
+		dum.pickArchive = selectArchive
+	}
+	if dum.restoreArchive == nil {
+		dum.restoreArchive = dum.Service.Restore
+	}
+
+	cmd := &ca.Command{
+		Use:   "tarball",
+		Short: "create and restore checksummed tar archives",
+		Long: fmt.Sprintf(
+			"%s tarball creates gzip tar archives with SHA-256 and YAML sidecars, then verifies and safely restores them.",
+			rootUse,
+		),
+	}
+	cmd.AddCommand(dum.newBackupCommand(rootUse))
+	cmd.AddCommand(dum.newRestoreCommand(rootUse))
+	return cmd
+}
+
+func (d *TarballCommand) newBackupCommand(rootUse string) *ca.Command {
+	cmd := &ca.Command{
+		Use:   "backup [PATH...]",
+		Short: "create one tarball and sidecars per path",
+		Example: fmt.Sprintf(
+			"  %s tarball backup ~/Documents\n  %s tarball backup --input input.yml\n  %s tarball backup --input input.yml --dry-run",
+			rootUse,
+			rootUse,
+			rootUse,
+		),
+		Args: ca.ArbitraryArgs,
+		RunE: func(cmd *ca.Command, args []string) error { return d.runBackup(cmd, args) },
+	}
+	cmd.Flags().String(tarballInputFlag, "", "read source paths from INPUT.yml (required when PATH is omitted)")
+	cmd.Flags().String(tarballTargetFlag, defaultTarballTarget(), "directory for tarballs and sidecars")
+	cmd.Flags().Bool(tarballDryRunFlag, false, "show planned outputs without writing files")
+	return cmd
+}
+
+func (d *TarballCommand) newRestoreCommand(rootUse string) *ca.Command {
+	cmd := &ca.Command{
+		Use:   "restore [ARCHIVE]",
+		Short: "verify and restore one tarball or archives from input.yml",
+		Example: fmt.Sprintf(
+			"  %s tarball restore /path/to/backup.tgz\n  %s tarball restore --input input.yml --dest /tmp/restore\n  %s tarball restore backup.tgz --allow-unsafe-links",
+			rootUse,
+			rootUse,
+			rootUse,
+		),
+		Args: ca.MaximumNArgs(1),
+		RunE: func(cmd *ca.Command, args []string) error { return d.runRestore(cmd, args) },
+	}
+	cmd.Flags().String(tarballInputFlag, "", "read list-based restore paths from INPUT.yml (required without ARCHIVE)")
+	cmd.Flags().String(tarballTargetFlag, defaultTarballTarget(), "directory containing tarballs and sidecars")
+	cmd.Flags().String(tarballDestinationFlag, "", "restore under DIR (default: $HOME)")
+	cmd.Flags().Bool(tarballOverwriteFlag, false, "replace conflicting files and links; never replace directories")
+	cmd.Flags().Bool(tarballAllowUnsafeLinksFlag, false, "allow recreating absolute or escaping symlinks")
+	cmd.Flags().Bool(tarballPreserveOwnerFlag, false, "attempt archived UID/GID restoration")
+	cmd.Flags().Bool(tarballDryRunFlag, false, "verify and report planned paths without changing destination")
+	return cmd
+}
+
+func (d *TarballCommand) runBackup(cmd *ca.Command, args []string) error {
+	if cmd.Context() == nil {
+		return fmt.Errorf("nil context")
+	}
+	inputPath, err := cmd.Flags().GetString(tarballInputFlag)
+	if err != nil {
+		return fmt.Errorf("read --input flag: %w", err)
+	}
+	target, err := cmd.Flags().GetString(tarballTargetFlag)
+	if err != nil {
+		return fmt.Errorf("read --target flag: %w", err)
+	}
+	dryRun, err := cmd.Flags().GetBool(tarballDryRunFlag)
+	if err != nil {
+		return fmt.Errorf("read --dry-run flag: %w", err)
+	}
+
+	paths := make([]string, 0, len(args))
+	if len(args) > 0 {
+		for _, source := range args {
+			absolute, err := filepath.Abs(source)
+			if err != nil {
+				return fmt.Errorf("resolve source path %q: %w", source, err)
+			}
+			paths = append(paths, filepath.Clean(absolute))
+		}
+	} else {
+		if inputPath == "" {
+			return fmt.Errorf("--input is required when no backup paths are supplied")
+		}
+		input, err := tb.LoadInput(cmd.Context(), inputPath)
+		if err != nil {
+			return fmt.Errorf("load backup input: %w", err)
+		}
+		paths = input.Paths
+	}
+
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return fmt.Errorf("resolve home directory: %w", err)
+	}
+	result, backupErr := d.Service.Backup(cmd.Context(), tb.BackupOptions{
+		Paths:  paths,
+		Target: target,
+		Home:   home,
+		DryRun: dryRun,
+	})
+	if err := printBackupResult(cmd, result, dryRun); err != nil {
+		return err
+	}
+	if backupErr != nil {
+		return fmt.Errorf("backup: %w", backupErr)
+	}
+	return nil
+}
+
+func (d *TarballCommand) runRestore(cmd *ca.Command, args []string) error {
+	if cmd.Context() == nil {
+		return fmt.Errorf("nil context")
+	}
+	inputPath, err := cmd.Flags().GetString(tarballInputFlag)
+	if err != nil {
+		return fmt.Errorf("read --input flag: %w", err)
+	}
+	target, err := cmd.Flags().GetString(tarballTargetFlag)
+	if err != nil {
+		return fmt.Errorf("read --target flag: %w", err)
+	}
+	destination, err := cmd.Flags().GetString(tarballDestinationFlag)
+	if err != nil {
+		return fmt.Errorf("read --dest flag: %w", err)
+	}
+	overwrite, err := cmd.Flags().GetBool(tarballOverwriteFlag)
+	if err != nil {
+		return fmt.Errorf("read --overwrite flag: %w", err)
+	}
+	allowUnsafeLinks, err := cmd.Flags().GetBool(tarballAllowUnsafeLinksFlag)
+	if err != nil {
+		return fmt.Errorf("read --allow-unsafe-links flag: %w", err)
+	}
+	preserveOwner, err := cmd.Flags().GetBool(tarballPreserveOwnerFlag)
+	if err != nil {
+		return fmt.Errorf("read --preserve-owner flag: %w", err)
+	}
+	dryRun, err := cmd.Flags().GetBool(tarballDryRunFlag)
+	if err != nil {
+		return fmt.Errorf("read --dry-run flag: %w", err)
+	}
+
+	options := tb.RestoreOptions{
+		Destination:      destination,
+		Overwrite:        overwrite,
+		AllowUnsafeLinks: allowUnsafeLinks,
+		PreserveOwner:    preserveOwner,
+		DryRun:           dryRun,
+	}
+	if len(args) == 1 {
+		options.Archive = args[0]
+		result, err := d.restoreArchive(cmd.Context(), options)
+		if err != nil {
+			return fmt.Errorf("restore %s: %w", args[0], err)
+		}
+		return printRestoreResult(cmd, result, dryRun)
+	}
+	if inputPath == "" {
+		return fmt.Errorf("--input is required when no archive is supplied")
+	}
+	input, err := tb.LoadInput(cmd.Context(), inputPath)
+	if err != nil {
+		return fmt.Errorf("load restore input: %w", err)
+	}
+	candidates, err := d.Service.DiscoverArchives(cmd.Context(), input.Paths, target)
+	if err != nil {
+		return fmt.Errorf("discover restore archives: %w", err)
+	}
+
+	var failures []error
+	for _, candidateSet := range candidates {
+		if len(candidateSet.Archives) == 0 {
+			err := fmt.Errorf("no archive for %s in %s", candidateSet.Source, target)
+			_, _ = fmt.Fprintf(cmd.ErrOrStderr(), "warning: %v\n", err)
+			failures = append(failures, err)
+			continue
+		}
+
+		archivePath := candidateSet.Archives[0]
+		if len(candidateSet.Archives) > 1 {
+			archivePath, err = d.pickArchive(cmd.Context(), candidateSet.Archives)
+			if err != nil {
+				wrapped := fmt.Errorf("select archive for %s: %w", candidateSet.Source, err)
+				_, _ = fmt.Fprintf(cmd.ErrOrStderr(), "error: %v\n", wrapped)
+				failures = append(failures, wrapped)
+				continue
+			}
+		}
+
+		options.Archive = archivePath
+		result, restoreErr := d.restoreArchive(cmd.Context(), options)
+		if restoreErr != nil {
+			wrapped := fmt.Errorf("restore %s: %w", archivePath, restoreErr)
+			_, _ = fmt.Fprintf(cmd.ErrOrStderr(), "error: %v\n", wrapped)
+			failures = append(failures, wrapped)
+			continue
+		}
+		if err := printRestoreResult(cmd, result, dryRun); err != nil {
+			failures = append(failures, fmt.Errorf("print restore result: %w", err))
+		}
+	}
+	return errors.Join(failures...)
+}
+
+func defaultTarballTarget() string {
+	if target := os.Getenv("TGZ_TARGET"); target != "" {
+		return target
+	}
+	dataHome := os.Getenv("XDG_DATA_HOME")
+	if dataHome == "" {
+		home, err := os.UserHomeDir()
+		if err != nil {
+			return ""
+		}
+		dataHome = filepath.Join(home, ".local", "share")
+	}
+	return filepath.Join(dataHome, "tarballs")
+}
+
+func printBackupResult(cmd *ca.Command, result tb.BackupResult, dryRun bool) error {
+	for _, artifacts := range result.Artifacts {
+		if dryRun {
+			for _, path := range []string{artifacts.ArchivePath, artifacts.ChecksumPath, artifacts.ManifestPath} {
+				if _, err := fmt.Fprintf(cmd.OutOrStdout(), "would create: %s\n", path); err != nil {
+					return fmt.Errorf("write backup plan: %w", err)
+				}
+			}
+			continue
+		}
+		if _, err := fmt.Fprintf(cmd.OutOrStdout(), "backed up: %s\n", artifacts.ArchivePath); err != nil {
+			return fmt.Errorf("write backup result: %w", err)
+		}
+	}
+	return nil
+}
+
+func printRestoreResult(cmd *ca.Command, result tb.RestoreResult, dryRun bool) error {
+	verb := "restored"
+	if dryRun {
+		verb = "would restore"
+	}
+	if _, err := fmt.Fprintf(
+		cmd.OutOrStdout(),
+		"%s: %s -> %s\n",
+		verb,
+		result.ArchivePath,
+		result.Destination,
+	); err != nil {
+		return fmt.Errorf("write restore result: %w", err)
+	}
+	if dryRun {
+		for _, path := range result.Paths {
+			destinationPath := filepath.Join(result.Destination, filepath.FromSlash(path))
+			if _, err := fmt.Fprintf(cmd.OutOrStdout(), "  %s\n", destinationPath); err != nil {
+				return fmt.Errorf("write restore plan: %w", err)
+			}
+		}
+	}
+	return nil
+}
+
+func newTarballDeps(logger lg.Logger) *TarballCommand {
+	return &TarballCommand{Log: logger, Service: tb.NewService(logger), pickArchive: selectArchive}
+}
