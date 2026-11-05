@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	lg "github.com/alanktwong/dum/internal/logging"
 	tb "github.com/alanktwong/dum/internal/tarball"
@@ -60,10 +61,47 @@ func NewTarballCommand(rootUse string, dum *TarballCommand) *ca.Command {
 	return cmd
 }
 
+// tarballInputFileDoc joins command-specific help lines around the shared
+// INPUT.yml format block used by list-based backup and restore.
+func tarballInputFileDoc(head []string, tail ...string) string {
+	const docLines = 12
+	lines := make([]string, 0, len(head)+docLines+len(tail))
+	lines = append(lines, head...)
+	lines = append(lines,
+		"INPUT.yml is a single YAML document with one required key, paths:",
+		"",
+		"  paths:",
+		"    - Documents              # relative to the input.yml directory",
+		"    - /mnt/archive/Photos    # absolute paths are used as-is",
+		"",
+		"Input rules:",
+		"  - paths must contain at least one non-empty entry",
+		"  - unknown keys and multiple YAML documents are rejected",
+		"  - relative entries resolve from the directory containing INPUT.yml",
+		"  - duplicate paths are rejected",
+	)
+	lines = append(lines, tail...)
+	return strings.Join(lines, "\n")
+}
+
 func (d *TarballCommand) newBackupCommand(rootUse string) *ca.Command {
 	cmd := &ca.Command{
 		Use:   "backup [PATH...]",
 		Short: "create one tarball and sidecars per path",
+		Long: tarballInputFileDoc(
+			[]string{
+				fmt.Sprintf(
+					"%s tarball backup creates one gzip tarball per source path with SHA-256 and YAML sidecars.",
+					rootUse,
+				),
+				"",
+				"When PATH is omitted, --input is required; sources are read from that file:",
+				"",
+			},
+			"",
+			"PATH arguments replace the list from INPUT.yml; relative PATH arguments resolve",
+			"from the current directory.",
+		),
 		Example: fmt.Sprintf(
 			"  %s tarball backup ~/Documents\n  %s tarball backup --input input.yml\n  %s tarball backup --input input.yml --dry-run",
 			rootUse,
@@ -83,6 +121,25 @@ func (d *TarballCommand) newRestoreCommand(rootUse string) *ca.Command {
 	cmd := &ca.Command{
 		Use:   "restore [ARCHIVE]",
 		Short: "verify and restore one tarball or archives from input.yml",
+		Long: tarballInputFileDoc(
+			[]string{
+				fmt.Sprintf(
+					"%s tarball restore verifies checksums and sidecars, then restores one archive.",
+					rootUse,
+				),
+				"",
+				"Without an ARCHIVE argument, --input is required. Each entry selects archives",
+				"from --target:",
+				"",
+			},
+			"",
+			"List restore matches <basename>-*.tgz under --target for each entry, where",
+			"<basename> is the final element of that entry. One match restores automatically;",
+			"multiple matches use fzf or gum when installed. Entries must have unique",
+			"basenames. Missing or invalid entries are reported while later entries continue.",
+			"",
+			"Passing ARCHIVE explicitly ignores INPUT.yml.",
+		),
 		Example: fmt.Sprintf(
 			"  %s tarball restore /path/to/backup.tgz\n  %s tarball restore --input input.yml --dest /tmp/restore\n  %s tarball restore backup.tgz --allow-unsafe-links",
 			rootUse,

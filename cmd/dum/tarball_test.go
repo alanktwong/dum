@@ -531,6 +531,27 @@ func TestTarballCommand_PickerOutputMustBeCandidate(t *testing.T) {
 	}
 }
 
+func TestTarballCommand_HelpExplainsInputYAMLShape(t *testing.T) {
+	for _, name := range []string{"backup", "restore"} {
+		command := newTestTarballCommand()
+		sub := findCommand(command.Commands(), name)
+		if !assert.NotNil(t, sub, "missing %s command", name) {
+			return
+		}
+		var output bytes.Buffer
+		sub.SetOut(&output)
+		sub.SetErr(&output)
+		assert.NoError(t, sub.Help())
+
+		help := output.String()
+		assert.Contains(t, help, "INPUT.yml", name)
+		assert.Contains(t, help, "  paths:", name)
+		assert.Contains(t, help, "- Documents", name)
+		assert.Contains(t, help, "relative to the input.yml directory", name)
+		assert.Contains(t, help, "duplicate paths are rejected", name)
+	}
+}
+
 func TestTarballCommand_RegistersRestoreSafetyFlags(t *testing.T) {
 	command := newTestTarballCommand()
 	restore := findCommand(command.Commands(), "restore")
