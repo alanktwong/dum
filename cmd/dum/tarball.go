@@ -48,16 +48,20 @@ func NewTarballCommand(rootUse string, dum *TarballCommand) *ca.Command {
 		dum.restoreArchive = dum.Service.Restore
 	}
 
+	use, alias := "tarball", "t"
 	cmd := &ca.Command{
-		Use:   "tarball",
-		Short: "create and restore checksummed tar archives",
+		Aliases: []string{alias},
+		Use:     use,
+		Short:   "create and restore checksummed tar archives",
 		Long: fmt.Sprintf(
-			"%s tarball creates gzip tar archives with SHA-256 and YAML sidecars, then verifies and safely restores them.",
+			"%s-%s (or %s) creates gzip tar archives with SHA-256 and YAML sidecars, then verifies and safely restores them.",
 			rootUse,
+			use,
+			alias,
 		),
 	}
-	cmd.AddCommand(dum.newBackupCommand(rootUse))
-	cmd.AddCommand(dum.newRestoreCommand(rootUse))
+	cmd.AddCommand(dum.newBackupCommand(rootUse, use))
+	cmd.AddCommand(dum.newRestoreCommand(rootUse, use))
 	return cmd
 }
 
@@ -84,15 +88,20 @@ func tarballInputFileDoc(head []string, tail ...string) string {
 	return strings.Join(lines, "\n")
 }
 
-func (d *TarballCommand) newBackupCommand(rootUse string) *ca.Command {
+func (d *TarballCommand) newBackupCommand(rootUse, tarballUse string) *ca.Command {
+	use, alias := "backup", "b"
 	cmd := &ca.Command{
-		Use:   "backup [PATH...]",
-		Short: "create one tarball and sidecars per path",
+		Use:     fmt.Sprintf("%s [PATH...]", use),
+		Aliases: []string{alias},
+		Short:   "create one tarball and sidecars per path",
 		Long: tarballInputFileDoc(
 			[]string{
 				fmt.Sprintf(
-					"%s tarball backup creates one gzip tarball per source path with SHA-256 and YAML sidecars.",
+					"%s %s %s (or %s) creates one gzip tarball per source path with SHA-256 and YAML sidecars.",
 					rootUse,
+					tarballUse,
+					use,
+					alias,
 				),
 				"",
 				"When PATH is omitted, --input is required; sources are read from that file:",
@@ -102,12 +111,16 @@ func (d *TarballCommand) newBackupCommand(rootUse string) *ca.Command {
 			"PATH arguments replace the list from INPUT.yml; relative PATH arguments resolve",
 			"from the current directory.",
 		),
-		Example: fmt.Sprintf(
-			"  %s tarball backup ~/Documents\n  %s tarball backup --input input.yml\n  %s tarball backup --input input.yml --dry-run",
-			rootUse,
-			rootUse,
-			rootUse,
-		),
+		Example: strings.Join([]string{
+			"  # Backup by PATH",
+			fmt.Sprintf("  %v %v %v ~/Documents", rootUse, tarballUse, use),
+			"",
+			"  # Backup in batch using an input yml",
+			fmt.Sprintf("  %v %v %v --input input.yml", rootUse, tarballUse, use),
+			"",
+			"  # Backup in batch using an input yml using the dry-run flag",
+			fmt.Sprintf("  %v %v %v --input input.yml --dry-run", rootUse, tarballUse, use),
+		}, "\n"),
 		Args: ca.ArbitraryArgs,
 		RunE: func(cmd *ca.Command, args []string) error { return d.runBackup(cmd, args) },
 	}
@@ -117,15 +130,20 @@ func (d *TarballCommand) newBackupCommand(rootUse string) *ca.Command {
 	return cmd
 }
 
-func (d *TarballCommand) newRestoreCommand(rootUse string) *ca.Command {
+func (d *TarballCommand) newRestoreCommand(rootUse, tarballUse string) *ca.Command {
+	use, alias := "restore", "r"
 	cmd := &ca.Command{
-		Use:   "restore [ARCHIVE]",
-		Short: "verify and restore one tarball or archives from input.yml",
+		Use:     fmt.Sprintf("%s [ARCHIVE]", use),
+		Aliases: []string{alias},
+		Short:   "verify and restore one tarball or archives from input.yml",
 		Long: tarballInputFileDoc(
 			[]string{
 				fmt.Sprintf(
-					"%s tarball restore verifies checksums and sidecars, then restores one archive.",
+					"%s %s %s (or %s) verifies checksums and sidecars, then restores one archive.",
 					rootUse,
+					tarballUse,
+					use,
+					alias,
 				),
 				"",
 				"Without an ARCHIVE argument, --input is required. Each entry selects archives",
@@ -140,15 +158,20 @@ func (d *TarballCommand) newRestoreCommand(rootUse string) *ca.Command {
 			"",
 			"Passing ARCHIVE explicitly ignores INPUT.yml.",
 		),
-		Example: fmt.Sprintf(
-			"  %s tarball restore /path/to/backup.tgz\n  %s tarball restore --input input.yml --dest /tmp/restore\n  %s tarball restore backup.tgz --allow-unsafe-links",
-			rootUse,
-			rootUse,
-			rootUse,
-		),
+		Example: strings.Join([]string{
+			"  # Restore by ARCHIVE",
+			fmt.Sprintf("  %v %v %v /path/to/backup.tgz", rootUse, tarballUse, use),
+			"",
+			"  # Restore in batch using an input yml",
+			fmt.Sprintf("  %v %v %v --input input.yml --dest /path/to/restore", rootUse, tarballUse, use),
+			"",
+			"  # Restore ARCHIVE allowing unsafe links",
+			fmt.Sprintf("  %v %v %v backup.tgz --allow-unsafe-links", rootUse, tarballUse, use),
+		}, "\n"),
 		Args: ca.MaximumNArgs(1),
 		RunE: func(cmd *ca.Command, args []string) error { return d.runRestore(cmd, args) },
 	}
+
 	cmd.Flags().String(tarballInputFlag, "", "read list-based restore paths from INPUT.yml (required without ARCHIVE)")
 	cmd.Flags().String(tarballTargetFlag, defaultTarballTarget(), "directory containing tarballs and sidecars")
 	cmd.Flags().String(tarballDestinationFlag, "", "restore under DIR (default: $HOME)")
