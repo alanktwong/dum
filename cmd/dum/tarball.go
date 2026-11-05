@@ -16,6 +16,7 @@ import (
 const (
 	tarballInputFlag            = "input"
 	tarballTargetFlag           = "target"
+	tarballTargetHelpDefault    = "TGZ_TARGET, else $XDG_DATA_HOME/tarballs, else ~/.local/share/tarballs"
 	tarballDestinationFlag      = "dest"
 	tarballOverwriteFlag        = "overwrite"
 	tarballAllowUnsafeLinksFlag = "allow-unsafe-links"
@@ -125,7 +126,7 @@ func (d *TarballCommand) newBackupCommand(rootUse, tarballUse string) *ca.Comman
 		RunE: func(cmd *ca.Command, args []string) error { return d.runBackup(cmd, args) },
 	}
 	cmd.Flags().String(tarballInputFlag, "", "read source paths from INPUT.yml (required when PATH is omitted)")
-	cmd.Flags().String(tarballTargetFlag, defaultTarballTarget(), "directory for tarballs and sidecars")
+	addTarballTargetFlag(cmd, "directory for tarballs and sidecars")
 	cmd.Flags().Bool(tarballDryRunFlag, false, "show planned outputs without writing files")
 	return cmd
 }
@@ -173,7 +174,7 @@ func (d *TarballCommand) newRestoreCommand(rootUse, tarballUse string) *ca.Comma
 	}
 
 	cmd.Flags().String(tarballInputFlag, "", "read list-based restore paths from INPUT.yml (required without ARCHIVE)")
-	cmd.Flags().String(tarballTargetFlag, defaultTarballTarget(), "directory containing tarballs and sidecars")
+	addTarballTargetFlag(cmd, "directory containing tarballs and sidecars")
 	cmd.Flags().String(tarballDestinationFlag, "", "restore under DIR (default: $HOME)")
 	cmd.Flags().Bool(tarballOverwriteFlag, false, "replace conflicting files and links; never replace directories")
 	cmd.Flags().Bool(tarballAllowUnsafeLinksFlag, false, "allow recreating absolute or escaping symlinks")
@@ -346,6 +347,11 @@ func defaultTarballTarget() string {
 		dataHome = filepath.Join(home, ".local", "share")
 	}
 	return filepath.Join(dataHome, "tarballs")
+}
+
+func addTarballTargetFlag(cmd *ca.Command, usage string) {
+	cmd.Flags().String(tarballTargetFlag, defaultTarballTarget(), usage)
+	cmd.Flags().Lookup(tarballTargetFlag).DefValue = tarballTargetHelpDefault
 }
 
 func printBackupResult(cmd *ca.Command, result tb.BackupResult, dryRun bool) error {

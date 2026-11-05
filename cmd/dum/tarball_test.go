@@ -101,6 +101,46 @@ func TestTarballCommand_TargetDefaultPrecedence(t *testing.T) {
 	}
 }
 
+func TestTarballCommand_TargetHelpUsesSymbolicDefault(t *testing.T) {
+	const expectedHelpDefault = "TGZ_TARGET, else $XDG_DATA_HOME/tarballs, else ~/.local/share/tarballs"
+
+	home := t.TempDir()
+	dataHome := filepath.Join(t.TempDir(), "xdg-data")
+	envTarget := filepath.Join(t.TempDir(), "env-target")
+	t.Setenv("HOME", home)
+	t.Setenv("XDG_DATA_HOME", dataHome)
+	t.Setenv("TGZ_TARGET", envTarget)
+
+	for _, name := range []string{"backup", "restore"} {
+		t.Run(name, func(t *testing.T) {
+			command := newTestTarballCommand()
+			sub := findCommand(command.Commands(), name)
+			if !assert.NotNil(t, sub, "missing %s command", name) {
+				return
+			}
+
+			var output bytes.Buffer
+			sub.SetOut(&output)
+			sub.SetErr(&output)
+			if !assert.NoError(t, sub.Help()) {
+				return
+			}
+
+			help := output.String()
+			normalizedHelp := strings.Join(strings.Fields(help), " ")
+			assert.Contains(t, normalizedHelp, expectedHelpDefault)
+			assert.NotContains(t, help, home)
+			assert.NotContains(t, help, dataHome)
+			assert.NotContains(t, help, envTarget)
+
+			target, err := sub.Flags().GetString(tarballTargetFlag)
+			if assert.NoError(t, err) {
+				assert.Equal(t, envTarget, target)
+			}
+		})
+	}
+}
+
 func TestTarballCommand_RestoreExplicitArchiveBypassesInput(t *testing.T) {
 	root := t.TempDir()
 	home := filepath.Join(root, "home")
