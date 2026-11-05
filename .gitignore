@@ -743,36 +743,12 @@ tags
 
 # Persistent undo
 [._]*.un~
-
-#####################################################################################
-# End of https://www.toptal.com/developers/gitignore/api/eclipse,intellij,pycharm,goland,vim,emacs,macos,python,windows,gradle,maven
-#####################################################################################
-
-######################
-# Others
-######################
-*.class
-*.*~
-*~
-.merge_file*
-
-
-######################
-# go
-######################
-vendor
-*_mocks.go
-*_enum.go
-######################
-# development
-######################
-bin
-.opencode/package-lock.json
-.worktrees/
 # Created by https://www.toptal.com/developers/gitignore/api/node
 # Edit at https://www.toptal.com/developers/gitignore?templates=node
 
-### Node ###
+######################
+# Node
+######################
 # Logs
 logs
 *.log
@@ -847,13 +823,6 @@ web_modules/
 # Yarn Integrity file
 .yarn-integrity
 
-# dotenv environment variable files
-.env
-.env.development.local
-.env.test.local
-.env.production.local
-.env.local
-
 # parcel-bundler cache (https://parceljs.org/)
 .cache
 .parcel-cache
@@ -912,4 +881,41 @@ dist
 # SvelteKit build / generate output
 .svelte-kit
 
-# End of https://www.toptal.com/developers/gitignore/api/node
+
+#####################################################################################
+# End of https://www.toptal.com/developers/gitignore/api/eclipse,intellij,pycharm,goland,vim,emacs,macos,python,windows,gradle,maven,node
+#####################################################################################
+
+######################
+# Others
+######################
+*.class
+*.*~
+*~
+.merge_file*
+
+######################
+# mise
+######################
+mise.local.toml
+
+######################
+# go
+######################
+vendor
+*_mocks.go
+*_enum.go
+######################
+# development
+######################
+bin
+.opencode/package-lock.json
+.worktrees/
+######################
+# dotenv environment variable files
+######################
+.env
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
