@@ -85,6 +85,13 @@ Keep the current archive-target configuration names and precedence:
 | Archive directory | `--target` > `TGZ_TARGET` > `${XDG_DATA_HOME:-$HOME/.local/share}/tarballs` |
 | Restore destination | `--dest`, otherwise `$HOME` |
 
+At runtime, resolve the archive directory with this precedence. In Cobra help,
+show the fallback symbolically as `TGZ_TARGET, else $XDG_DATA_HOME/tarballs,
+else ~/.local/share/tarballs` for both backup and restore. Do not expand
+environment variables or `~` to user-specific absolute paths in help. The help
+display is separate from the runtime `--target` value, which continues to use
+`defaultTarballTarget()`.
+
 List mode fails clearly if `--input` is omitted or the YAML file is missing or
 invalid. Explicit paths and explicit archive restore do not require an input
 file. Do not support the old `tarballs.txt` format or implicitly seed a list.
@@ -245,8 +252,10 @@ depend on the host `tar` or checksum commands.
 
 Cover:
 
-- CLI registration, flags, explicit-path precedence, YAML parsing and path
-  resolution, required `--input`, and invalid/missing input behavior.
+- CLI registration, flags, explicit-path precedence, symbolic `--target` help
+  for backup and restore without changing runtime environment precedence, YAML
+  parsing and path resolution, required `--input`, and invalid/missing input
+  behavior.
 - Round trips for files, directories, symlinks, in-home layout, and external
   basename layout.
 - Complete artifact creation, naming collisions, target/source overlap, and
