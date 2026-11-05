@@ -353,7 +353,7 @@ func TestRestore_PreserveOwnerOptIn(t *testing.T) {
 	uid := int64(os.Geteuid() + 1000)
 	gid := int64(os.Getegid() + 1000)
 	manifest := Manifest{SchemaVersion: 1, Entries: []ManifestEntry{{
-		Path: "file.txt", Type: EntryTypeFile, UID: int64Pointer(uid), GID: int64Pointer(gid),
+		Path: "file.txt", Type: EntryTypeFile, UID: new(uid), GID: new(gid),
 	}}}
 	artifacts := writeTestArchiveFixture(t, archivePath, []testArchiveMember{{
 		Header: tar.Header{Name: "file.txt", Typeflag: tar.TypeReg, Mode: 0o600, Size: 1, Uid: int(uid), Gid: int(gid)},
@@ -382,7 +382,7 @@ func TestRestore_PreserveOwnerChecksReusedDirectoryEvenWhenArchiveOwnerIsCurrent
 	uid := int64(os.Geteuid())
 	gid := int64(os.Getegid())
 	manifest := Manifest{SchemaVersion: 1, Entries: []ManifestEntry{{
-		Path: "Documents", Type: EntryTypeDirectory, UID: int64Pointer(uid), GID: int64Pointer(gid),
+		Path: "Documents", Type: EntryTypeDirectory, UID: new(uid), GID: new(gid),
 	}}}
 	artifacts := writeTestArchiveFixture(t, archivePath, []testArchiveMember{{
 		Header: tar.Header{Name: "Documents/", Typeflag: tar.TypeDir, Mode: 0o755, Uid: int(uid), Gid: int(gid)},
@@ -448,7 +448,7 @@ func TestRestore_PreserveOwnerDeniedRetainsReusedDirectoryOwner(t *testing.T) {
 	uid := int64(os.Geteuid() + 1000)
 	gid := int64(os.Getegid() + 1000)
 	manifest := Manifest{SchemaVersion: 1, Entries: []ManifestEntry{{
-		Path: "Documents", Type: EntryTypeDirectory, UID: int64Pointer(uid), GID: int64Pointer(gid),
+		Path: "Documents", Type: EntryTypeDirectory, UID: new(uid), GID: new(gid),
 	}}}
 	artifacts := writeTestArchiveFixture(t, archivePath, []testArchiveMember{{
 		Header: tar.Header{Name: "Documents/", Typeflag: tar.TypeDir, Mode: 0o755, Uid: int(uid), Gid: int(gid)},

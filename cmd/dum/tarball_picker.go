@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"os/exec"
+	"slices"
 	"strings"
 )
 
@@ -66,10 +67,8 @@ func validateArchiveSelection(selection string, candidates []string) (string, er
 	if selection == "" {
 		return "", fmt.Errorf("archive selection was empty")
 	}
-	for _, candidate := range candidates {
-		if selection == candidate {
-			return selection, nil
-		}
+	if slices.Contains(candidates, selection) {
+		return selection, nil
 	}
 	return "", fmt.Errorf("picker returned an archive that was not a candidate: %q", selection)
 }

@@ -365,7 +365,7 @@ func createTempFileInRoot(root *os.Root, memberPath string) (string, *os.File, e
 	if parent == "." {
 		parent = ""
 	}
-	for attempt := 0; attempt < 16; attempt++ {
+	for range 16 {
 		name, err := randomTempName(parent)
 		if err != nil {
 			return "", nil, err
@@ -387,7 +387,7 @@ func createTempSymlinkInRoot(root *os.Root, memberPath, target string) (string, 
 	if parent == "." {
 		parent = ""
 	}
-	for attempt := 0; attempt < 16; attempt++ {
+	for range 16 {
 		name, err := randomTempName(parent)
 		if err != nil {
 			return "", err

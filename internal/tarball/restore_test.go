@@ -116,8 +116,8 @@ func TestStageRestore_RejectsManifestArchiveMismatches(t *testing.T) {
 			manifest: ManifestEntry{
 				Path: "Documents/file.txt",
 				Type: EntryTypeFile,
-				UID:  int64Pointer(502),
-				GID:  int64Pointer(20),
+				UID:  new(int64(502)),
+				GID:  new(int64(20)),
 			},
 			manifestID: "owner-mismatch",
 		},
@@ -393,8 +393,9 @@ func mustMarshalTestManifest(t *testing.T, manifest Manifest) []byte {
 	return data
 }
 
+//go:fix inline
 func int64Pointer(value int64) *int64 {
-	return &value
+	return new(value)
 }
 
 func assertStageRestoreFails(t *testing.T, archivePath string) {
