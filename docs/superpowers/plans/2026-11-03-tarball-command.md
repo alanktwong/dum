@@ -484,3 +484,103 @@ Do not regenerate the installer JSON schema; `input.yml` is separate from
 
   If coverage or tests fail, return to the owning task, fix and re-verify before
   committing the documentation.
+
+### Task 8: Add backup exemptions
+
+**Files:**
+
+- Create: `internal/tarball/exemptions.go`
+- Test: `internal/tarball/exemptions_test.go`
+- Modify: `internal/tarball/service.go` — add `Exemptions []string` and
+  `UseGitignore bool` to `BackupOptions`.
+- Modify: `internal/tarball/manifest.go` — add `Exemptions []string` and
+  `UseGitignore bool` top-level manifest fields with yaml tags.
+- Modify: `internal/tarball/backup.go` — skip exempted entries in `writeArchive`;
+  validate patterns in `planBackup`; record exemption config in manifest.
+- Modify: `cmd/dum/tarball.go` — add `--exclude PATTERN` (repeatable) and
+  `--use-gitignore` flags; build `Exemptions` in `runBackup`.
+- Modify: `README.md` — document `--exclude` and `--use-gitignore` with
+  `node_modules` / `dist` / `.gitignore` examples.
+
+No new package dependencies: `path.Match` and `bufio`/`os` suffice. Do not add
+`**` recursion in v1.
+
+- [ ] **Step 1: Write exemption matcher tests**
+
+  Cover `path.Match` semantics: basename-at-any-depth for pattern without `/`,
+  source-root anchoring for pattern with `/`, directory-only trailing slash,
+  negation not supported (invalid leading `!` rejected), invalid glob rejection,
+  `.gitignore` parsing (comments, blank lines, negation prefix, nested
+  directory-relative resolution), and source-root merge.
+
+- [ ] **Step 2: Run the focused tests and confirm they fail**
+
+  Run: `go test ./internal/tarball -run TestExemptions -v`
+  Expected: FAIL because the matcher package is not implemented yet.
+
+- [ ] **Step 3: Implement exemption matcher**
+
+  Implement `internal/tarball/exemptions.go`: compile each pattern with
+  `path.Match`, match against each entry's slash-separated path relative to the
+  source root, treat a trailing slash as directory-only, treat pattern without
+  `/` as basename match at any depth, load `.gitignore` per source root and
+  merge into the same set, resolve nested `.gitignore` patterns relative to
+  their own directory, and reject invalid globs upfront.
+
+- [ ] **Step 4: Re-run the focused tests**
+
+  Run: `go test ./internal/tarball -run TestExemptions -v`
+  Expected: PASS for matcher and `.gitignore` cases.
+
+- [ ] **Step 5: Wire exemptions into backup options and walk**
+
+  Add `Exemptions []string` and `UseGitignore bool` to `BackupOptions`. In
+  `planBackup`, validate every pattern before walking sources. In
+  `writeArchive`'s `filepath.WalkDir`, compute each entry's relative archive
+  path; when matched, return `nil` for files and `filepath.SkipDir` for
+  directories so contents are never visited. Record the exemption config
+  (patterns and `use_gitignore` flag) as top-level manifest fields so the
+  manifest documents why entries are absent. Exempted entries never reach the
+  manifest entries, checksum, or sidecars.
+
+- [ ] **Step 6: Add CLI flags**
+
+  Add `--exclude PATTERN` (repeatable, no default) and `--use-gitignore` (bool,
+  default false) to `dum tarball backup`. Read them in `runBackup`, build the
+  exemption set (loading `.gitignore` per source when the flag is set), and pass
+  it into `BackupOptions.Exemptions`. Capture which source each pattern set
+  applies to for nested `.gitignore` resolution.
+
+- [ ] **Step 7: Add backup exemption tests**
+
+  Assert excluded `node_modules/`, `dist/`, and `*.log` files are absent from
+  the archive and manifest entries; assert the manifest top-level `exemptions`
+  list and `use_gitignore` field are recorded correctly; assert an exempted
+  directory is pruned (its nested files never visited); assert
+  `--use-gitignore` honors a source-root `.gitignore`; assert a nested
+  `.gitignore` applies relative to its own directory; assert invalid
+  `--exclude` globs fail before artifacts are created; assert dry-run creates
+  no files.
+
+- [ ] **Step 8: Re-run backup tests**
+
+  Run: `go test ./internal/tarball -run TestBackup -v`
+  Expected: PASS including exemption pruning.
+
+- [ ] **Step 9: Run repository checks**
+
+  Run: `go test ./internal/tarball ./cmd/dum`
+  Run: `mise run test`
+  Run: `mise run lint`
+  Run: `mise run vet`
+  Run: `mise run build`
+  Run: `mise run check-coverage`
+
+- [ ] **Step 10: Commit exemptions**
+
+  ```bash
+  git add internal/tarball/exemptions.go internal/tarball/exemptions_test.go \
+    internal/tarball/service.go internal/tarball/backup.go \
+    cmd/dum/tarball.go README.md
+  git commit -m "feat(tarball): exempt files from backup"
+  ```

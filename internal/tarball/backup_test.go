@@ -307,3 +307,157 @@ func manifestEntryByPath(manifest Manifest, memberPath string) ManifestEntry {
 	}
 	return ManifestEntry{}
 }
+
+func TestBackup_ExcludesFilesByPattern(t *testing.T) {
+	t.Parallel()
+	root := t.TempDir()
+	home := filepath.Join(root, "home")
+	source := filepath.Join(home, "Project")
+	writeTestFile(t, filepath.Join(source, "main.go"), []byte("code"), 0o644, time.Now())
+	writeTestFile(t, filepath.Join(source, "debug.log"), []byte("log"), 0o644, time.Now())
+	writeTestFile(t, filepath.Join(source, "notes.txt"), []byte("notes"), 0o644, time.Now())
+
+	target := filepath.Join(root, "archives")
+	service := newBackupTestService()
+	result, err := service.Backup(context.Background(), BackupOptions{
+		Paths:        []string{source},
+		Exemptions:   []string{"*.log"},
+		UseGitignore: false,
+		Target:       target,
+		Home:         home,
+	})
+	if !assert.NoError(t, err) {
+		return
+	}
+	assert.Len(t, result.Artifacts, 1)
+
+	entries := readTestArchive(t, result.Artifacts[0].ArchivePath)
+	assert.Contains(t, entries, "Project/main.go")
+	assert.Contains(t, entries, "Project/notes.txt")
+	assert.NotContains(t, entries, "Project/debug.log")
+
+	manifest := readTestManifest(t, result.Artifacts[0].ManifestPath)
+	assert.Equal(t, []string{"*.log"}, manifest.Exemptions)
+	assert.False(t, manifest.UseGitignore)
+	manifestPathSet := make(map[string]struct{}, len(manifest.Entries))
+	for _, entry := range manifest.Entries {
+		manifestPathSet[entry.Path] = struct{}{}
+	}
+	assert.Contains(t, manifestPathSet, "Project/main.go")
+	assert.Contains(t, manifestPathSet, "Project/notes.txt")
+	assert.NotContains(t, manifestPathSet, "Project/debug.log")
+}
+
+func TestBackup_ExemptsDirectoryAndPrunesChildren(t *testing.T) {
+	t.Parallel()
+	root := t.TempDir()
+	home := filepath.Join(root, "home")
+	source := filepath.Join(home, "Project")
+	writeTestFile(t, filepath.Join(source, "main.go"), []byte("code"), 0o644, time.Now())
+	writeTestFile(t, filepath.Join(source, "node_modules", "dep.js"), []byte("dep"), 0o644, time.Now())
+	writeTestFile(t, filepath.Join(source, "node_modules", "nested", "deep.js"), []byte("deep"), 0o644, time.Now())
+
+	target := filepath.Join(root, "archives")
+	service := newBackupTestService()
+	result, err := service.Backup(context.Background(), BackupOptions{
+		Paths:        []string{source},
+		Exemptions:   []string{"node_modules"},
+		UseGitignore: false,
+		Target:       target,
+		Home:         home,
+	})
+	if !assert.NoError(t, err) {
+		return
+	}
+	assert.Len(t, result.Artifacts, 1)
+
+	entries := readTestArchive(t, result.Artifacts[0].ArchivePath)
+	assert.Contains(t, entries, "Project/main.go")
+	assert.NotContains(t, entries, "Project/node_modules")
+	assert.NotContains(t, entries, "Project/node_modules/dep.js")
+	assert.NotContains(t, entries, "Project/node_modules/nested/deep.js")
+}
+
+func TestBackup_UsesGitignore(t *testing.T) {
+	t.Parallel()
+	root := t.TempDir()
+	home := filepath.Join(root, "home")
+	source := filepath.Join(home, "Project")
+	writeTestFile(t, filepath.Join(source, ".gitignore"), []byte("*.log\nnode_modules\n"), 0o644, time.Now())
+	writeTestFile(t, filepath.Join(source, "main.go"), []byte("code"), 0o644, time.Now())
+	writeTestFile(t, filepath.Join(source, "debug.log"), []byte("log"), 0o644, time.Now())
+	writeTestFile(t, filepath.Join(source, "node_modules", "dep.js"), []byte("dep"), 0o644, time.Now())
+
+	target := filepath.Join(root, "archives")
+	service := newBackupTestService()
+	result, err := service.Backup(context.Background(), BackupOptions{
+		Paths:        []string{source},
+		Exemptions:   []string{},
+		UseGitignore: true,
+		Target:       target,
+		Home:         home,
+	})
+	if !assert.NoError(t, err) {
+		return
+	}
+	assert.Len(t, result.Artifacts, 1)
+
+	entries := readTestArchive(t, result.Artifacts[0].ArchivePath)
+	assert.Contains(t, entries, "Project/.gitignore")
+	assert.Contains(t, entries, "Project/main.go")
+	assert.NotContains(t, entries, "Project/debug.log")
+	assert.NotContains(t, entries, "Project/node_modules")
+	assert.NotContains(t, entries, "Project/node_modules/dep.js")
+
+	manifest := readTestManifest(t, result.Artifacts[0].ManifestPath)
+	assert.True(t, manifest.UseGitignore)
+	assert.Contains(t, manifest.Exemptions, "*.log")
+	assert.Contains(t, manifest.Exemptions, "node_modules")
+}
+
+func TestBackup_InvalidExcludeFailsBeforeArtifacts(t *testing.T) {
+	t.Parallel()
+	root := t.TempDir()
+	home := filepath.Join(root, "home")
+	source := filepath.Join(home, "Project")
+	writeTestFile(t, filepath.Join(source, "main.go"), []byte("code"), 0o644, time.Now())
+
+	target := filepath.Join(root, "archives")
+	service := newBackupTestService()
+	_, err := service.Backup(context.Background(), BackupOptions{
+		Paths:        []string{source},
+		Exemptions:   []string{"[unclosed"},
+		UseGitignore: false,
+		Target:       target,
+		Home:         home,
+	})
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "invalid exclude pattern")
+	assert.NoDirExists(t, target)
+}
+
+func TestBackup_ExemptionsRecordedInManifest(t *testing.T) {
+	t.Parallel()
+	root := t.TempDir()
+	home := filepath.Join(root, "home")
+	source := filepath.Join(home, "Project")
+	writeTestFile(t, filepath.Join(source, "main.go"), []byte("code"), 0o644, time.Now())
+
+	target := filepath.Join(root, "archives")
+	service := newBackupTestService()
+	result, err := service.Backup(context.Background(), BackupOptions{
+		Paths:        []string{source},
+		Exemptions:   []string{"dist/", "*.tmp"},
+		UseGitignore: true,
+		Target:       target,
+		Home:         home,
+	})
+	if !assert.NoError(t, err) {
+		return
+	}
+	assert.Len(t, result.Artifacts, 1)
+
+	manifest := readTestManifest(t, result.Artifacts[0].ManifestPath)
+	assert.Equal(t, []string{"dist/", "*.tmp"}, manifest.Exemptions)
+	assert.True(t, manifest.UseGitignore)
+}

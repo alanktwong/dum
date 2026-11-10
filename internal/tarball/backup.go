@@ -17,9 +17,11 @@ import (
 )
 
 type backupPlan struct {
-	source     string
-	memberRoot string
-	artifacts  ArtifactSet
+	source       string
+	memberRoot   string
+	exemptions   []string
+	useGitignore bool
+	artifacts    ArtifactSet
 }
 
 type publishedArtifact struct {
@@ -85,6 +87,14 @@ func (s *Service) planBackup(options BackupOptions) ([]backupPlan, string, error
 		return nil, "", fmt.Errorf("validate backup target: %w", err)
 	}
 
+	matcher, err := NewExemptionMatcher(options.Exemptions, options.UseGitignore)
+	if err != nil {
+		return nil, "", fmt.Errorf("compile exclude patterns: %w", err)
+	}
+	if err := matcher.MergeGitignore(sources); err != nil {
+		return nil, "", fmt.Errorf("load .gitignore patterns: %w", err)
+	}
+
 	now := time.Now
 	if s != nil && s.now != nil {
 		now = s.now
@@ -108,7 +118,13 @@ func (s *Service) planBackup(options BackupOptions) ([]backupPlan, string, error
 				return nil, "", fmt.Errorf("preflight output for %q: %w", source, err)
 			}
 		}
-		plans[index] = backupPlan{source: source, memberRoot: memberRoot, artifacts: artifacts}
+		plans[index] = backupPlan{
+			source:       source,
+			memberRoot:   memberRoot,
+			exemptions:   matcher.Patterns(),
+			useGitignore: matcher.UseGitignore(),
+			artifacts:    artifacts,
+		}
 	}
 	return plans, filepath.Clean(absoluteTarget), nil
 }
@@ -175,7 +191,7 @@ func (s *Service) backupOne(ctx context.Context, plan backupPlan) error {
 		_ = os.Remove(archiveTempPath)
 	}()
 
-	manifest, err := s.writeArchive(ctx, archiveFile, plan.source, plan.memberRoot)
+	manifest, err := s.writeArchive(ctx, archiveFile, plan.source, plan.memberRoot, plan.exemptions, plan.useGitignore)
 	if err != nil {
 		return fmt.Errorf("write archive: %w", err)
 	}
@@ -230,10 +246,25 @@ func (s *Service) backupOne(ctx context.Context, plan backupPlan) error {
 	return nil
 }
 
-func (s *Service) writeArchive(ctx context.Context, output io.Writer, source, memberRoot string) (Manifest, error) {
+func (s *Service) writeArchive(
+	ctx context.Context,
+	output io.Writer,
+	source, memberRoot string,
+	exemptions []string,
+	useGitignore bool,
+) (Manifest, error) {
 	compressed := gzip.NewWriter(output)
 	archive := tar.NewWriter(compressed)
-	manifest := Manifest{SchemaVersion: manifestSchemaVersion}
+	manifest := Manifest{
+		SchemaVersion: manifestSchemaVersion,
+		Exemptions:    exemptions,
+		UseGitignore:  useGitignore,
+	}
+
+	matcher, err := NewExemptionMatcher(exemptions, useGitignore)
+	if err != nil {
+		return Manifest{}, fmt.Errorf("compile exclude patterns: %w", err)
+	}
 
 	walkErr := filepath.WalkDir(source, func(currentPath string, _ os.DirEntry, walkErr error) error {
 		if walkErr != nil {
@@ -252,6 +283,12 @@ func (s *Service) writeArchive(ctx context.Context, output io.Writer, source, me
 			return err
 		}
 		if skip {
+			return nil
+		}
+		if matcher.Match(memberPath, info.IsDir()) {
+			if info.IsDir() {
+				return filepath.SkipDir
+			}
 			return nil
 		}
 		if err := validateMemberPath(memberPath); err != nil {

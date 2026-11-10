@@ -29,6 +29,8 @@ const (
 // Manifest is the versioned inventory stored beside each archive.
 type Manifest struct {
 	SchemaVersion int             `yaml:"schema_version"`
+	Exemptions    []string        `yaml:"exemptions,omitempty"`
+	UseGitignore  bool            `yaml:"use_gitignore,omitempty"`
 	Entries       []ManifestEntry `yaml:"entries"`
 }
 

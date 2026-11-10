@@ -43,7 +43,8 @@ checksum handling, and safe path logic live in a Cobra-free
 Proposed interface:
 
 ```text
-dum tarball backup [PATH...] [--input INPUT.yml] [--target DIR] [--dry-run]
+dum tarball backup [PATH...] [--input INPUT.yml] [--target DIR] [--exclude PATTERN]
+                   [--use-gitignore] [--dry-run]
 dum tarball restore [ARCHIVE] [--input INPUT.yml] [--target DIR] [--dest DIR]
                     [--overwrite] [--allow-unsafe-links] [--preserve-owner]
                     [--dry-run]
@@ -118,6 +119,12 @@ the tar headers. If ownership metadata is unavailable or cleared, omit both
 fields and write neutral owner IDs (`uid: 0`, `gid: 0`) to the tar header. Do
 not include per-file hashes or the original absolute source path.
 
+The manifest also records backup configuration at the top level: `exemptions`
+lists the glob patterns used to exclude files from the archive (omitted when
+none were configured), and `use_gitignore` is a boolean indicating whether a
+source-root `.gitignore` was consulted. These fields describe why certain
+entries are absent from the inventory.
+
 Tar headers carry permissions and modification times. Restore preserves
 ordinary permission bits and modification times, but strips setuid and setgid
 bits. Do not restore ACLs or extended attributes.
@@ -173,8 +180,34 @@ the backup with a clear error.
    on failure and leave any pre-existing output untouched.
 7. Do not remove source paths. There is no `--delete-source` in v1.
 
+## Exemptions
+
+Exclude files and directories from a backup before they enter the archive.
+Exemptions apply per source, match against the entry's path relative to the
+source root, and drop matched directories without descending into them.
+
+1. `--exclude PATTERN` (repeatable): one glob pattern per flag. Patterns use
+   `path.Match` syntax (`*`, `?`, `[...]`). A pattern without `/` matches any
+   path segment by basename at any depth (`node_modules`, `dist`, `*.log`).
+   A pattern with `/` anchors from the source root (`build/output`). A trailing
+   slash matches directories only (`dist/`). Invalid globs are rejected before
+   walking sources.
+2. `--use-gitignore`: load `.gitignore` from each source root and merge its
+   patterns into the same exemption set. Patterns in a nested `.gitignore`
+   apply relative to that file's own directory.
+3. Exempted entries are skipped in the walk and never appear in the archive,
+   manifest entries, checksum, or sidecars. Directories matched by an exemption
+   are pruned with `SkipDir`, so their contents are never visited.
+4. The manifest records the exemption configuration used: the list of glob
+   patterns under `exemptions` and whether `.gitignore` was consulted under
+   `use_gitignore`. When no exemptions were configured, `exemptions` is omitted
+   and `use_gitignore` is `false`.
+5. Exemptions are configured only on `backup`; restore has no exemption concept
+   and restores exactly what the archive contains.
+
 `--dry-run` validates inputs and prints the planned outputs without creating or
-changing files.
+changing files. Exemption pruning is part of the walk, so `--dry-run` plans
+assume exemptions are not materialized until an actual backup runs.
 
 ## Restore and safety behavior
 
@@ -280,6 +313,11 @@ Cover:
   directories.
 - List restore zero/one/multiple archive selection, relative archive paths,
   basename-collision rejection, and picker-unavailable diagnostics.
+- Backup exemptions: `--exclude` repeated patterns skip matching files and
+  directories at any depth; `--use-gitignore` honors a source-root `.gitignore`;
+  nested `.gitignore` patterns apply relative to their own directory; exempted
+  directories are pruned and never descended into; manifest, checksum, and
+  sidecars contain no exempted entries.
 
 Run the focused package tests, then the repository's normal `mise run test`,
 `mise run lint`, and `mise run vet` checks during implementation.

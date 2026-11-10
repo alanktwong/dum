@@ -18,10 +18,12 @@ type Service struct {
 
 // BackupOptions describes one backup invocation after CLI input resolution.
 type BackupOptions struct {
-	Paths  []string
-	Target string
-	Home   string
-	DryRun bool
+	Paths        []string
+	Exemptions   []string
+	UseGitignore bool
+	Target       string
+	Home         string
+	DryRun       bool
 }
 
 // RestoreOptions describes one archive restore operation.

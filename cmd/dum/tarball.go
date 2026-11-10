@@ -22,6 +22,8 @@ const (
 	tarballAllowUnsafeLinksFlag = "allow-unsafe-links"
 	tarballPreserveOwnerFlag    = "preserve-owner"
 	tarballDryRunFlag           = "dry-run"
+	tarballExcludeFlag          = "exclude"
+	tarballUseGitignoreFlag     = "use-gitignore"
 )
 
 type archiveRestorer func(context.Context, tb.RestoreOptions) (tb.RestoreResult, error)
@@ -128,6 +130,12 @@ func (d *TarballCommand) newBackupCommand(rootUse, tarballUse string) *ca.Comman
 	}
 	cmd.Flags().String(tarballInputFlag, "", "read source paths from INPUT.yml (required when PATH is omitted)")
 	addTarballTargetFlag(cmd, "directory for tarballs and sidecars")
+	cmd.Flags().StringArray(
+		tarballExcludeFlag,
+		nil,
+		"exclude files/directories matching this glob pattern (repeatable)",
+	)
+	cmd.Flags().Bool(tarballUseGitignoreFlag, false, "honor .gitignore in each source root when selecting backup paths")
 	cmd.Flags().Bool(tarballDryRunFlag, false, "show planned outputs without writing files")
 	return cmd
 }
@@ -202,6 +210,15 @@ func (d *TarballCommand) runBackup(cmd *ca.Command, args []string) error {
 		return fmt.Errorf("read --dry-run flag: %w", err)
 	}
 
+	exemptions, err := cmd.Flags().GetStringArray(tarballExcludeFlag)
+	if err != nil {
+		return fmt.Errorf("read --exclude flag: %w", err)
+	}
+	useGitignore, err := cmd.Flags().GetBool(tarballUseGitignoreFlag)
+	if err != nil {
+		return fmt.Errorf("read --use-gitignore flag: %w", err)
+	}
+
 	paths := make([]string, 0, len(args))
 	if len(args) > 0 {
 		for _, source := range args {
@@ -227,10 +244,12 @@ func (d *TarballCommand) runBackup(cmd *ca.Command, args []string) error {
 		return fmt.Errorf("resolve home directory: %w", err)
 	}
 	result, backupErr := d.Service.Backup(cmd.Context(), tb.BackupOptions{
-		Paths:  paths,
-		Target: target,
-		Home:   home,
-		DryRun: dryRun,
+		Paths:        paths,
+		Exemptions:   exemptions,
+		UseGitignore: useGitignore,
+		Target:       target,
+		Home:         home,
+		DryRun:       dryRun,
 	})
 	if err := printBackupResult(cmd, result, dryRun); err != nil {
 		return err
