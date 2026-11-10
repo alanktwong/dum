@@ -258,9 +258,11 @@ Do not regenerate the installer JSON schema; `input.yml` is separate from
 
   Copy the archive into a private temporary snapshot while hashing it; compare
   the `.sha256` digest before gzip/tar parsing. Parse only that snapshot. Require
-  a supported manifest and exact entry match. Verify symlink target/safety from
-  tar headers rather than trusting YAML; require optional UID/GID pairs to
-  match headers and neutral `0/0` headers when omitted.
+  a supported manifest and exact entry match for the original full-inventory
+  format. Task 9 refines schema version 1 to also support directory/link-only
+  manifests. Verify symlink target/safety from tar headers rather than trusting
+  YAML; require optional UID/GID pairs to match headers and neutral `0/0` headers
+  when omitted.
 
 - [x] **Step 4: Add malicious archive fixtures and tests**
 
@@ -505,69 +507,73 @@ Do not regenerate the installer JSON schema; `input.yml` is separate from
 No new package dependencies: `path.Match` and `bufio`/`os` suffice. Do not add
 `**` recursion in v1.
 
-- [ ] **Step 1: Write exemption matcher tests**
+- [x] **Step 1: Write exemption matcher tests**
 
   Cover `path.Match` semantics: basename-at-any-depth for pattern without `/`,
   source-root anchoring for pattern with `/`, directory-only trailing slash,
   negation not supported (invalid leading `!` rejected), invalid glob rejection,
   `.gitignore` parsing (comments, blank lines, negation prefix, nested
-  directory-relative resolution), and source-root merge.
+  directory-relative resolution), per-source isolation, recursive loading,
+  and rejection of symlinked `.gitignore` files.
 
-- [ ] **Step 2: Run the focused tests and confirm they fail**
+- [x] **Step 2: Run the focused tests and confirm they fail**
 
-  Run: `go test ./internal/tarball -run TestExemptions -v`
-  Expected: FAIL because the matcher package is not implemented yet.
+  Run: `go test ./internal/tarball -run 'TestBackup_UsesNestedGitignoreFilesInScope|TestBackup_GitignoreRulesArePerSource|TestLoadGitignorePatternsDoesNotFollowSymlinks' -v`
+  Expected: FAIL because nested rules are not loaded/scoped and source rules are
+  currently merged across backups.
 
-- [ ] **Step 3: Implement exemption matcher**
+- [x] **Step 3: Implement exemption matcher**
 
   Implement `internal/tarball/exemptions.go`: compile each pattern with
-  `path.Match`, match against each entry's slash-separated path relative to the
-  source root, treat a trailing slash as directory-only, treat pattern without
-  `/` as basename match at any depth, load `.gitignore` per source root and
-  merge into the same set, resolve nested `.gitignore` patterns relative to
-  their own directory, and reject invalid globs upfront.
+  `path.Match`; scope patterns from each `.gitignore` to that directory; treat a
+  trailing slash as directory-only and patterns without `/` as basename matches
+  below their scope. Load a directory's `.gitignore` as the archive walk enters
+  it, after ancestor exemptions have had a chance to prune it. Reject negation
+  and symlinked `.gitignore` files.
 
-- [ ] **Step 4: Re-run the focused tests**
+- [x] **Step 4: Re-run the focused tests**
 
-  Run: `go test ./internal/tarball -run TestExemptions -v`
-  Expected: PASS for matcher and `.gitignore` cases.
+  Run: `go test ./internal/tarball -run 'TestBackup_UsesNestedGitignoreFilesInScope|TestBackup_GitignoreRulesArePerSource|TestLoadGitignorePatternsDoesNotFollowSymlinks|TestExemptionMatcher' -v`
+  Expected: PASS for scoped matching, recursive `.gitignore`, and source isolation.
 
-- [ ] **Step 5: Wire exemptions into backup options and walk**
+- [x] **Step 5: Wire exemptions into backup options and walk**
 
   Add `Exemptions []string` and `UseGitignore bool` to `BackupOptions`. In
-  `planBackup`, validate every pattern before walking sources. In
-  `writeArchive`'s `filepath.WalkDir`, compute each entry's relative archive
-  path; when matched, return `nil` for files and `filepath.SkipDir` for
-  directories so contents are never visited. Record the exemption config
-  (patterns and `use_gitignore` flag) as top-level manifest fields so the
-  manifest documents why entries are absent. Exempted entries never reach the
-  manifest entries, checksum, or sidecars.
+  `planBackup`, validate every explicit pattern before walking sources. In
+  `writeArchive`'s `filepath.WalkDir`, compute each entry's path relative to its
+  source root; match CLI patterns and `.gitignore` rules scoped to the current
+  directory. Load each reachable directory's `.gitignore` before descending; on
+  a match, return `nil` for files or `filepath.SkipDir` for directories. Each
+  source gets its own matcher and manifest rules. Record exemption config
+  (patterns and `use_gitignore`) in the manifest. Exempted entries never reach
+  the archive or manifest entries.
 
-- [ ] **Step 6: Add CLI flags**
+- [x] **Step 6: Add CLI flags**
 
   Add `--exclude PATTERN` (repeatable, no default) and `--use-gitignore` (bool,
-  default false) to `dum tarball backup`. Read them in `runBackup`, build the
-  exemption set (loading `.gitignore` per source when the flag is set), and pass
-  it into `BackupOptions.Exemptions`. Capture which source each pattern set
-  applies to for nested `.gitignore` resolution.
+  default false) to `dum tarball backup`. Read them in `runBackup` and pass
+  explicit patterns plus the flag in `BackupOptions`; load source-specific
+  root/nested `.gitignore` rules during each source archive walk.
 
-- [ ] **Step 7: Add backup exemption tests**
+- [x] **Step 7: Add backup exemption tests**
 
   Assert excluded `node_modules/`, `dist/`, and `*.log` files are absent from
-  the archive and manifest entries; assert the manifest top-level `exemptions`
-  list and `use_gitignore` field are recorded correctly; assert an exempted
-  directory is pruned (its nested files never visited); assert
-  `--use-gitignore` honors a source-root `.gitignore`; assert a nested
-  `.gitignore` applies relative to its own directory; assert invalid
-  `--exclude` globs fail before artifacts are created; assert dry-run creates
-  no files.
+  the archive; assert the manifest top-level `exemptions` list and explicit
+  `use_gitignore: true` or `use_gitignore: false` are recorded correctly; assert
+  an exempted directory is pruned (its nested files never visited); assert
+  `--use-gitignore` honors root and nested `.gitignore` files, with nested rules
+  scoped to their directory and no cross-source leakage; assert symlinked
+  `.gitignore` files are rejected; assert invalid `--exclude` globs fail before
+  artifacts are created; assert dry-run creates no files. Manifest inventory
+  assertions are covered separately by Task 9: only directories and symlinks
+  are listed.
 
-- [ ] **Step 8: Re-run backup tests**
+- [x] **Step 8: Re-run backup tests**
 
   Run: `go test ./internal/tarball -run TestBackup -v`
   Expected: PASS including exemption pruning.
 
-- [ ] **Step 9: Run repository checks**
+- [x] **Step 9: Run repository checks**
 
   Run: `go test ./internal/tarball ./cmd/dum`
   Run: `mise run test`
@@ -583,4 +589,121 @@ No new package dependencies: `path.Match` and `bufio`/`os` suffice. Do not add
     internal/tarball/service.go internal/tarball/backup.go \
     cmd/dum/tarball.go README.md
   git commit -m "feat(tarball): exempt files from backup"
+  ```
+
+### Task 9: List directories and symlinks in manifests
+
+**Files:**
+
+- Modify: `internal/tarball/backup.go` — omit regular-file entries from newly
+  written manifests and mark unavailable regular-file owner metadata in the tar
+  header.
+- Modify: `internal/tarball/extract.go` — validate unlisted regular files while
+  requiring manifest directory/link entries to match. Continue accepting
+  pre-existing development manifests with complete file entries.
+- Modify: `internal/tarball/apply.go` — restore regular-file ownership from tar
+  headers when the manifest omits file entries; honor the unavailable-owner
+  marker.
+- Test: `internal/tarball/backup_test.go`, `internal/tarball/restore_test.go`,
+  and `internal/tarball/roundtrip_test.go`.
+- Modify: `README.md` and this design spec to document the reduced manifest.
+
+Keep `schema_version: 1`; this format is not released. New backups list every
+directory (including empty directories) and symlink, but no regular files.
+Restore remains compatible with development archives whose v1 manifests list
+every file.
+
+- [x] **Step 1: Add a failing backup manifest test**
+
+  Create a source containing a regular file, nested/empty directories, and a
+  symlink. Assert the archive still contains all non-exempted entries while the
+  manifest lists only directories and symlinks. Assert directory/link owner
+  metadata remains paired, file owner IDs remain in tar headers, and
+  `schema_version` remains 1. Inject unavailable file ownership and assert the
+  tar header uses `0:0` plus the exact PAX marker
+  `dum.owner-metadata=unavailable`; separately assert known `0:0` is not marked
+  unavailable.
+
+- [x] **Step 2: Run the focused backup test and confirm it fails**
+
+  Run: `go test ./internal/tarball -run TestBackup_ManifestListsDirectoriesAndSymlinks -v`
+  Expected: FAIL because backup currently lists regular files in the manifest.
+
+- [x] **Step 3: Omit regular files from new manifests**
+
+  In `writeArchive`, continue writing regular-file tar headers and content, but
+  append `ManifestEntry` only for directories and symlinks. Preserve file
+  UID/GID in tar headers. If `fileOwner` reports unavailable metadata, write
+  neutral `0:0` header IDs and PAX record
+  `dum.owner-metadata=unavailable` so restore can distinguish unavailable
+  metadata from a root-owned file. Rejecting invalid markers is covered in the
+  restore tests. Use the existing owner metadata seam to test this branch.
+
+- [x] **Step 4: Re-run the focused backup test**
+
+  Run: `go test ./internal/tarball -run TestBackup_ManifestListsDirectoriesAndSymlinks -v`
+  Expected: PASS; tar members remain complete while manifest entries omit files.
+
+- [x] **Step 5: Add failing restore tests for reduced manifests**
+
+  Build Go-generated fixtures where a regular file exists in the tar but has no
+  manifest entry, while all directories and symlinks do. Assert restore accepts
+  the archive, still rejects unsafe paths/duplicates/type mismatches, and
+  `--preserve-owner` uses tar-header IDs for unlisted files. Assert the owner
+  unavailable marker triggers the current-user fallback; reject the marker on
+  non-files, unknown marker values, and marked files whose IDs are not `0:0`.
+  Reject unlisted directories and symlinks. Keep tests proving complete
+  pre-release v1 file inventories still restore and mismatches still fail.
+
+- [x] **Step 6: Run focused restore tests and confirm reduced-manifest cases fail**
+
+  Run: `go test ./internal/tarball -run 'ReducedManifest|TarHeaderOwner|UnmarkedZeroOwner|UnavailableFileOwner|InvalidOwnerMetadataMarkers' -v`
+  Expected: FAIL because every tar member is currently required in the manifest
+  and file ownership currently comes from manifest entries.
+
+- [x] **Step 7: Support directory/link inventory validation and header ownership**
+
+  In archive inspection, require every manifest entry to match a tar member.
+  If the manifest includes any regular-file entries, retain exact full-inventory
+  matching for that pre-release format. If it has no regular-file entries,
+  accept structurally valid tar files without manifest records while continuing
+  all path, duplicate, type, symlink-parent, and directory/link checks. During
+  apply, use manifest ownership for listed entries and tar-header ownership for
+  unlisted regular files unless the exact PAX marker
+  `dum.owner-metadata=unavailable` says metadata is unavailable. Require this
+  marker's IDs to be neutral `0:0` and reject invalid marker placement/values.
+  Populate `RestoreResult.Paths` from all staged archive members so dry-run
+  output still reports regular files omitted from the manifest.
+
+- [x] **Step 8: Re-run focused backup, restore, and round-trip tests**
+
+  Run: `go test ./internal/tarball -run 'Backup_Manifest|RegularFileOwnerMetadataMarker|ReducedManifest|TarHeaderOwner|UnmarkedZeroOwner|UnavailableFileOwner|InvalidOwnerMetadataMarkers|Restore_RoundTripsBackupArchives' -v`
+  Expected: PASS for compact manifests, full archive validation, owner restore,
+  and pre-release compatibility.
+
+- [x] **Step 9: Update documentation and run repository checks**
+
+  Document that the manifest lists directories and links, not regular files;
+  clarify that restore validates regular-file paths from the tar and SHA-256
+  covers archive bytes. Document `dum.owner-metadata=unavailable` behavior.
+  Run:
+
+  ```bash
+  go test ./internal/tarball ./cmd/dum
+  mise run test
+  mise run lint
+  mise run vet
+  mise run build
+  mise run check-coverage
+  ```
+
+- [ ] **Step 10: Commit the reduced manifest change**
+
+  ```bash
+  git add internal/tarball/backup.go internal/tarball/extract.go \
+    internal/tarball/apply.go internal/tarball/backup_test.go \
+    internal/tarball/restore_test.go internal/tarball/roundtrip_test.go \
+    README.md docs/superpowers/specs/2026-11-03-tarball-command-design.md \
+    docs/superpowers/plans/2026-11-03-tarball-command.md
+  git commit -m "feat(tarball): omit files from manifests"
   ```

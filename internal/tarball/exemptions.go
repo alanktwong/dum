@@ -12,6 +12,7 @@ import (
 // compiledPattern is a single compiled exemption pattern with matching rules.
 type compiledPattern struct {
 	pattern  string // original pattern string
+	scope    string // source-relative base directory for a .gitignore pattern
 	matcher  func(string) bool
 	dirOnly  bool // true when the pattern ends with '/' (matches directories only)
 	anchored bool // true when the pattern contains '/' (anchored to source root)
@@ -106,11 +107,25 @@ func (m *ExemptionMatcher) Match(relPath string, isDir bool) bool {
 		if cp.dirOnly && !isDir {
 			continue
 		}
-		if cp.matcher(relPath) {
+		candidate, ok := pathWithinScope(relPath, cp.scope)
+		if ok && candidate != "" && cp.matcher(candidate) {
 			return true
 		}
 	}
 	return false
+}
+
+func pathWithinScope(relPath, scope string) (string, bool) {
+	if scope == "" {
+		if relPath == "." {
+			return "", true
+		}
+		return relPath, true
+	}
+	if relPath == scope || !strings.HasPrefix(relPath, scope+"/") {
+		return "", false
+	}
+	return strings.TrimPrefix(relPath, scope+"/"), true
 }
 
 // UseGitignore reports whether .gitignore patterns were merged into this
@@ -128,12 +143,23 @@ func (m *ExemptionMatcher) Patterns() []string {
 	return patterns
 }
 
-// LoadGitignorePatterns reads a .gitignore file from the given directory and
+// LoadGitignorePatterns reads a .gitignore file and
 // returns its patterns. Comments, blank lines, and the negation prefix (!)
 // are handled: comments and blanks are skipped, negation prefixes are
 // stripped (negation itself is not supported in v1 and is rejected).
 // Patterns are returned relative to the .gitignore file's own directory.
 func LoadGitignorePatterns(gitignorePath string) ([]string, error) {
+	info, err := os.Lstat(gitignorePath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("inspect .gitignore %q: %w", gitignorePath, err)
+	}
+	if !info.Mode().IsRegular() {
+		return nil, fmt.Errorf(".gitignore %q is not a regular file", gitignorePath)
+	}
+
 	file, err := os.Open(gitignorePath)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -142,6 +168,13 @@ func LoadGitignorePatterns(gitignorePath string) ([]string, error) {
 		return nil, fmt.Errorf("read .gitignore %q: %w", gitignorePath, err)
 	}
 	defer func() { _ = file.Close() }()
+	openedInfo, err := file.Stat()
+	if err != nil {
+		return nil, fmt.Errorf("stat .gitignore %q: %w", gitignorePath, err)
+	}
+	if !os.SameFile(info, openedInfo) {
+		return nil, fmt.Errorf(".gitignore changed while opening %q", gitignorePath)
+	}
 
 	var patterns []string
 	scanner := bufio.NewScanner(file)
@@ -161,30 +194,34 @@ func LoadGitignorePatterns(gitignorePath string) ([]string, error) {
 	return patterns, nil
 }
 
-// MergeGitignore loads .gitignore from each source root and merges its
-// patterns into the matcher. Nested .gitignore files are resolved relative
-// to their own directory. This is a no-op when useGitignore is false.
-func (m *ExemptionMatcher) MergeGitignore(sourceRoots []string) error {
+// MergeGitignoreAt loads a directory's .gitignore and scopes its patterns to
+// that directory relative to the backup source root.
+func (m *ExemptionMatcher) MergeGitignoreAt(directory, scope string) error {
 	if !m.useGitignore {
 		return nil
 	}
-	seen := make(map[string]struct{})
-	for _, root := range sourceRoots {
-		gitignorePath := filepath.Join(root, ".gitignore")
-		patterns, err := LoadGitignorePatterns(gitignorePath)
+	gitignorePath := filepath.Join(directory, ".gitignore")
+	patterns, err := LoadGitignorePatterns(gitignorePath)
+	if err != nil {
+		return err
+	}
+	for _, pattern := range patterns {
+		cp, err := compilePattern(pattern)
 		if err != nil {
-			return err
+			return fmt.Errorf("invalid pattern in .gitignore %q: %w", gitignorePath, err)
 		}
-		for _, pattern := range patterns {
-			if _, ok := seen[pattern]; ok {
-				continue
-			}
-			seen[pattern] = struct{}{}
-			cp, err := compilePattern(pattern)
-			if err != nil {
-				return fmt.Errorf("invalid pattern in .gitignore %q: %w", gitignorePath, err)
-			}
-			m.patterns = append(m.patterns, cp)
+		cp.scope = scope
+		m.patterns = append(m.patterns, cp)
+	}
+	return nil
+}
+
+// MergeGitignore loads each source root's .gitignore. Runtime backups use
+// MergeGitignoreAt while walking so nested rules are loaded before descent.
+func (m *ExemptionMatcher) MergeGitignore(sourceRoots []string) error {
+	for _, root := range sourceRoots {
+		if err := m.MergeGitignoreAt(root, ""); err != nil {
+			return err
 		}
 	}
 	return nil

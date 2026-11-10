@@ -71,16 +71,14 @@ func TestBackup_WritesArchiveAndSidecarsPerPath(t *testing.T) {
 
 	insideManifest := readTestManifest(t, result.Artifacts[0].ManifestPath)
 	assert.Equal(t, 1, insideManifest.SchemaVersion)
-	assert.Equal(t, []string{"Documents", "Documents/notes.txt"}, manifestPaths(insideManifest))
-	fileEntry := manifestEntryByPath(insideManifest, "Documents/notes.txt")
-	assert.NotNil(t, fileEntry.UID)
-	assert.NotNil(t, fileEntry.GID)
+	assert.Equal(t, []string{"Documents"}, manifestPaths(insideManifest))
+	assert.NotContains(t, manifestPaths(insideManifest), "Documents/notes.txt")
 	stat, err := os.Stat(insideFile)
 	if assert.NoError(t, err) {
 		owner, ok := stat.Sys().(*syscall.Stat_t)
 		if assert.True(t, ok) {
-			assert.Equal(t, int64(owner.Uid), *fileEntry.UID)
-			assert.Equal(t, int64(owner.Gid), *fileEntry.GID)
+			assert.Equal(t, int(owner.Uid), insideEntries["Documents/notes.txt"].Header.Uid)
+			assert.Equal(t, int(owner.Gid), insideEntries["Documents/notes.txt"].Header.Gid)
 		}
 	}
 }
@@ -343,9 +341,93 @@ func TestBackup_ExcludesFilesByPattern(t *testing.T) {
 	for _, entry := range manifest.Entries {
 		manifestPathSet[entry.Path] = struct{}{}
 	}
-	assert.Contains(t, manifestPathSet, "Project/main.go")
-	assert.Contains(t, manifestPathSet, "Project/notes.txt")
+	assert.Equal(t, map[string]struct{}{"Project": {}}, manifestPathSet)
+	assert.NotContains(t, manifestPathSet, "Project/main.go")
+	assert.NotContains(t, manifestPathSet, "Project/notes.txt")
 	assert.NotContains(t, manifestPathSet, "Project/debug.log")
+}
+
+func TestBackup_ManifestListsDirectoriesAndSymlinks(t *testing.T) {
+	t.Parallel()
+	root := t.TempDir()
+	home := filepath.Join(root, "home")
+	source := filepath.Join(home, "Project")
+	writeTestFile(t, filepath.Join(source, "notes.txt"), []byte("notes"), 0o644, time.Now())
+	writeTestFile(t, filepath.Join(source, "sub", "readme.txt"), []byte("readme"), 0o644, time.Now())
+	if err := os.Mkdir(filepath.Join(source, "empty"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink("readme.txt", filepath.Join(source, "sub", "readme-link")); err != nil {
+		t.Fatal(err)
+	}
+
+	target := filepath.Join(root, "archives")
+	result, err := newBackupTestService().Backup(context.Background(), BackupOptions{
+		Paths:  []string{source},
+		Target: target,
+		Home:   home,
+	})
+	if !assert.NoError(t, err) {
+		return
+	}
+	if !assert.Len(t, result.Artifacts, 1) {
+		return
+	}
+
+	archiveEntries := readTestArchive(t, result.Artifacts[0].ArchivePath)
+	assert.Contains(t, archiveEntries, "Project/notes.txt")
+	assert.Contains(t, archiveEntries, "Project/sub/readme.txt")
+	assert.Contains(t, archiveEntries, "Project/empty")
+	assert.Contains(t, archiveEntries, "Project/sub/readme-link")
+
+	manifest := readTestManifest(t, result.Artifacts[0].ManifestPath)
+	assert.Equal(t, manifestSchemaVersion, manifest.SchemaVersion)
+	assert.Equal(t, []string{
+		"Project",
+		"Project/empty",
+		"Project/sub",
+		"Project/sub/readme-link",
+	}, manifestPaths(manifest))
+}
+
+func TestBackup_RegularFileOwnerMetadataMarker(t *testing.T) {
+	t.Parallel()
+	for _, test := range []struct {
+		name       string
+		uid        int64
+		gid        int64
+		available  bool
+		wantMarker string
+	}{
+		{name: "unavailable", available: false, wantMarker: "unavailable"},
+		{name: "known root owner", uid: 0, gid: 0, available: true},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			root := t.TempDir()
+			home := filepath.Join(root, "home")
+			source := filepath.Join(home, "Project")
+			writeTestFile(t, filepath.Join(source, "notes.txt"), []byte("notes"), 0o644, time.Now())
+
+			service := newBackupTestService()
+			service.ownerOf = func(os.FileInfo) (int64, int64, bool) {
+				return test.uid, test.gid, test.available
+			}
+			result, err := service.Backup(context.Background(), BackupOptions{
+				Paths:  []string{source},
+				Target: filepath.Join(root, "archives"),
+				Home:   home,
+			})
+			if !assert.NoError(t, err) || !assert.Len(t, result.Artifacts, 1) {
+				return
+			}
+
+			entry := readTestArchive(t, result.Artifacts[0].ArchivePath)["Project/notes.txt"]
+			assert.Equal(t, int(test.uid), entry.Header.Uid)
+			assert.Equal(t, int(test.gid), entry.Header.Gid)
+			assert.Equal(t, test.wantMarker, entry.Header.PAXRecords["dum.owner-metadata"])
+		})
+	}
 }
 
 func TestBackup_ExemptsDirectoryAndPrunesChildren(t *testing.T) {
@@ -413,6 +495,81 @@ func TestBackup_UsesGitignore(t *testing.T) {
 	assert.True(t, manifest.UseGitignore)
 	assert.Contains(t, manifest.Exemptions, "*.log")
 	assert.Contains(t, manifest.Exemptions, "node_modules")
+}
+
+func TestBackup_UsesNestedGitignoreFilesInScope(t *testing.T) {
+	t.Parallel()
+	root := t.TempDir()
+	home := filepath.Join(root, "home")
+	source := filepath.Join(home, "Project")
+	writeTestFile(t, filepath.Join(source, ".gitignore"), []byte("node_modules/\n"), 0o644, time.Now())
+	writeTestFile(t, filepath.Join(source, "src", ".gitignore"), []byte("*.log\ncache/\n"), 0o644, time.Now())
+	writeTestFile(t, filepath.Join(source, "src", "main.log"), []byte("ignored"), 0o644, time.Now())
+	writeTestFile(t, filepath.Join(source, "src", "keep.txt"), []byte("kept"), 0o644, time.Now())
+	writeTestFile(t, filepath.Join(source, "src", "cache", "secret.txt"), []byte("ignored"), 0o644, time.Now())
+	writeTestFile(t, filepath.Join(source, "other", "debug.log"), []byte("kept"), 0o644, time.Now())
+	writeTestFile(t, filepath.Join(source, "node_modules", "pkg", "index.js"), []byte("ignored"), 0o644, time.Now())
+
+	result, err := newBackupTestService().Backup(context.Background(), BackupOptions{
+		Paths:        []string{source},
+		UseGitignore: true,
+		Target:       filepath.Join(root, "archives"),
+		Home:         home,
+	})
+	if !assert.NoError(t, err) || !assert.Len(t, result.Artifacts, 1) {
+		return
+	}
+
+	entries := readTestArchive(t, result.Artifacts[0].ArchivePath)
+	assert.NotContains(t, entries, "Project/src/main.log")
+	assert.NotContains(t, entries, "Project/src/cache")
+	assert.NotContains(t, entries, "Project/src/cache/secret.txt")
+	assert.NotContains(t, entries, "Project/node_modules")
+	assert.NotContains(t, entries, "Project/node_modules/pkg/index.js")
+	assert.Contains(t, entries, "Project/src/keep.txt")
+	assert.Contains(t, entries, "Project/other/debug.log")
+
+	manifest := readTestManifest(t, result.Artifacts[0].ManifestPath)
+	assert.True(t, manifest.UseGitignore)
+	assert.Contains(t, manifest.Exemptions, "node_modules/")
+	assert.Contains(t, manifest.Exemptions, "*.log")
+	assert.Contains(t, manifest.Exemptions, "cache/")
+}
+
+func TestBackup_GitignoreRulesArePerSource(t *testing.T) {
+	t.Parallel()
+	root := t.TempDir()
+	home := filepath.Join(root, "home")
+	sourceA := filepath.Join(home, "Alpha")
+	sourceB := filepath.Join(home, "Beta")
+	writeTestFile(t, filepath.Join(sourceA, ".gitignore"), []byte("*.log\n"), 0o644, time.Now())
+	writeTestFile(t, filepath.Join(sourceA, "ignored.log"), []byte("ignored"), 0o644, time.Now())
+	writeTestFile(t, filepath.Join(sourceA, "kept.tmp"), []byte("kept"), 0o644, time.Now())
+	writeTestFile(t, filepath.Join(sourceB, ".gitignore"), []byte("*.tmp\n"), 0o644, time.Now())
+	writeTestFile(t, filepath.Join(sourceB, "kept.log"), []byte("kept"), 0o644, time.Now())
+	writeTestFile(t, filepath.Join(sourceB, "ignored.tmp"), []byte("ignored"), 0o644, time.Now())
+
+	result, err := newBackupTestService().Backup(context.Background(), BackupOptions{
+		Paths:        []string{sourceA, sourceB},
+		UseGitignore: true,
+		Target:       filepath.Join(root, "archives"),
+		Home:         home,
+	})
+	if !assert.NoError(t, err) || !assert.Len(t, result.Artifacts, 2) {
+		return
+	}
+
+	alphaEntries := readTestArchive(t, result.Artifacts[0].ArchivePath)
+	assert.NotContains(t, alphaEntries, "Alpha/ignored.log")
+	assert.Contains(t, alphaEntries, "Alpha/kept.tmp")
+	alphaManifest := readTestManifest(t, result.Artifacts[0].ManifestPath)
+	assert.Equal(t, []string{"*.log"}, alphaManifest.Exemptions)
+
+	betaEntries := readTestArchive(t, result.Artifacts[1].ArchivePath)
+	assert.Contains(t, betaEntries, "Beta/kept.log")
+	assert.NotContains(t, betaEntries, "Beta/ignored.tmp")
+	betaManifest := readTestManifest(t, result.Artifacts[1].ManifestPath)
+	assert.Equal(t, []string{"*.tmp"}, betaManifest.Exemptions)
 }
 
 func TestBackup_InvalidExcludeFailsBeforeArtifacts(t *testing.T) {

@@ -23,6 +23,9 @@ The design builds on the list-driven behavior in
 - Use a simple top-level `paths` array; relative entries resolve from the
   directory containing the input YAML file.
 - Produce one archive per source path.
+- Keep `schema_version: 1`; this tarball format is not released yet. New manifests
+  list directories and symlinks, not regular files. Restore also accepts existing
+  development manifests that contain a full file inventory.
 - Preserve numeric UID/GID metadata when available. Restore uses the current
   process owner by default; applying archived ownership requires
   `--preserve-owner`.
@@ -110,20 +113,28 @@ case-insensitive basename collisions before writing any output:
 ```
 
 The `.sha256` file contains one lowercase 64-character hexadecimal digest and
-a newline. The manifest is versioned YAML. Its inventory records each
-archive-relative path and its type (`file`, `directory`, or `symlink`).
-Symlink entries also record their literal target and, when unsafe, a warning
-and unsafe marker. Entries may include numeric `uid` and `gid` when source
-ownership metadata is available; both fields must be present together and match
-the tar headers. If ownership metadata is unavailable or cleared, omit both
-fields and write neutral owner IDs (`uid: 0`, `gid: 0`) to the tar header. Do
-not include per-file hashes or the original absolute source path.
+a newline. The manifest is YAML with `schema_version: 1`. New manifests list
+each archive-relative directory and symlink, but omit regular-file entries.
+Directory entries preserve empty directories and their metadata. Symlink entries
+record their literal target and, when unsafe, a warning and unsafe marker.
+Directory and symlink entries, plus regular-file entries in a full-inventory
+development manifest, may include numeric `uid` and `gid` when source ownership
+metadata is available; both fields must be present together and match the tar
+headers. Regular-file ownership is stored in the tar header; a PAX marker
+`dum.owner-metadata=unavailable` identifies files whose ownership metadata was
+unavailable, since neutral `0:0` IDs alone cannot distinguish unavailable
+metadata from a root-owned file. That marker is valid only on regular files and
+requires neutral `0:0` tar-header IDs; reject unknown marker values and
+inconsistent IDs. When ownership metadata is unavailable, write neutral IDs
+(`uid: 0`, `gid: 0`) to the tar header. Do not include per-file hashes or the
+original absolute source path.
 
 The manifest also records backup configuration at the top level: `exemptions`
 lists the glob patterns used to exclude files from the archive (omitted when
-none were configured), and `use_gitignore` is a boolean indicating whether a
-source-root `.gitignore` was consulted. These fields describe why certain
-entries are absent from the inventory.
+none were configured), and `use_gitignore` is always emitted as a boolean
+indicating whether a source-root `.gitignore` was consulted. Emit explicit
+`false` when it was not used. These fields describe why certain entries are
+absent from the inventory.
 
 Tar headers carry permissions and modification times. Restore preserves
 ordinary permission bits and modification times, but strips setuid and setgid
@@ -135,17 +146,18 @@ basename as the member root. No original absolute path is used as an extraction
 destination. Detect path/name collisions before writing; never overwrite any
 existing archive or sidecar.
 
-Example manifest shape:
+Example manifest shape (regular files are intentionally absent from `entries`):
 
 ```yaml
 schema_version: 1
+exemptions:
+  - node_modules/
+use_gitignore: true
 entries:
   - path: Documents
     type: directory
-  - path: Documents/project/readme.txt
-    type: file
-    uid: 501
-    gid: 20
+  - path: Documents/project
+    type: directory
   - path: Documents/config-link
     type: symlink
     target: /old/location
@@ -155,10 +167,11 @@ entries:
     gid: 20
 ```
 
-Paths in `entries` must be normalized, relative archive paths. The manifest
-describes the complete archive inventory, including directory entries. Do not
-silently omit unsupported filesystem entries such as devices or sockets; fail
-the backup with a clear error.
+Paths in `entries` must be normalized, relative archive paths. The manifest is
+not a complete file inventory: it records directories and symlinks only. Restore
+still validates every archive member, including regular-file paths, types,
+duplicates, and parent safety. Do not silently omit unsupported filesystem
+entries such as devices or sockets; fail the backup with a clear error.
 
 ## Backup behavior
 
@@ -179,6 +192,9 @@ the backup with a clear error.
    completion marker; restore requires the full trio. Clean up temporary files
    on failure and leave any pre-existing output untouched.
 7. Do not remove source paths. There is no `--delete-source` in v1.
+8. Record directory and symlink entries in the manifest; do not record regular
+   files. All included files remain in the tar archive and are covered by its
+   SHA-256 checksum.
 
 ## Exemptions
 
@@ -192,16 +208,21 @@ source root, and drop matched directories without descending into them.
    A pattern with `/` anchors from the source root (`build/output`). A trailing
    slash matches directories only (`dist/`). Invalid globs are rejected before
    walking sources.
-2. `--use-gitignore`: load `.gitignore` from each source root and merge its
-   patterns into the same exemption set. Patterns in a nested `.gitignore`
-   apply relative to that file's own directory.
+2. `--use-gitignore`: recursively load `.gitignore` files from each source
+   root as the backup walk reaches their directories. Each file's patterns are
+   scoped to its containing directory: slash-containing patterns anchor there;
+   patterns without `/` match path-segment basenames below that directory.
+   Rules are per source and do not leak across sources. Do not follow symlinks
+   to `.gitignore` files or descend into a directory already exempted by an
+   ancestor rule; its nested `.gitignore` does not apply. Negation patterns are
+   rejected in v1.
 3. Exempted entries are skipped in the walk and never appear in the archive,
    manifest entries, checksum, or sidecars. Directories matched by an exemption
    are pruned with `SkipDir`, so their contents are never visited.
 4. The manifest records the exemption configuration used: the list of glob
    patterns under `exemptions` and whether `.gitignore` was consulted under
    `use_gitignore`. When no exemptions were configured, `exemptions` is omitted
-   and `use_gitignore` is `false`.
+   and `use_gitignore: false` is still emitted.
 5. Exemptions are configured only on `backup`; restore has no exemption concept
    and restores exactly what the archive contains.
 
@@ -216,14 +237,24 @@ assume exemptions are not materialized until an actual backup runs.
 2. Copy the archive into a private temporary snapshot while computing SHA-256.
    Compare the digest before decompressing or parsing the archive. Parse only the
    verified snapshot to avoid a hash-then-reopen race.
-3. Parse a supported manifest version and validate every tar entry. Require an
-   exact inventory/type match. Optional UID/GID fields must appear as a pair and
-   match the tar header; if omitted, the header must contain neutral owner IDs.
-   For symlinks, require the manifest's literal target to match the tar header
-   and derive unsafe status independently from that header; reject mismatched
-   or falsely-safe manifest metadata. Reject absolute member paths, parent
-   traversal, duplicate paths, unsupported hard links/special entries, and any
-   member path that traverses a symlink.
+3. Parse schema version 1 and validate every tar entry. A manifest containing
+   one or more regular-file entries selects full-inventory mode and must list
+   every archive member; a manifest with no regular-file entries uses the new
+   directory/link-only mode. In either mode, require every listed directory and
+   symlink to match the archive exactly. Validate all regular-file headers and
+   paths even when they have no manifest entry. Optional UID/GID fields on any
+   listed entry must appear as a pair and match the tar header; if omitted, the
+   header must contain neutral owner IDs. `--preserve-owner` uses manifest IDs
+   for listed entries and falls back when those IDs are absent. For unlisted
+   regular files, it uses validated tar-header IDs unless the exact PAX marker
+   `dum.owner-metadata=unavailable` is present; then warn and leave the file
+   owned by the current process. Reject that marker on non-files, unknown marker
+   values, or marked files with non-neutral header IDs. For symlinks, require
+   the manifest's literal target to match the tar header and derive unsafe
+   status independently from that header; reject mismatched or falsely-safe
+   manifest metadata. Reject absolute member paths, parent traversal, duplicate
+   paths, unsupported hard links/special entries, and any member path that
+   traverses a symlink.
 4. Validate symlink targets. Safe relative links that remain inside the archive
    root may be restored. An absolute or escaping link causes restore to fail
    before destination writes unless `--allow-unsafe-links` is set. Even with the
@@ -244,9 +275,11 @@ assume exemptions are not materialized until an actual backup runs.
    layout is preserved relative to `$HOME`; external sources land under
    `<dest>/<basename>`. Preserve ordinary file/directory modes and modification
    times while clearing setuid/setgid bits. By default, new entries are owned by
-   the current process UID/GID. With `--preserve-owner`, attempt to apply the
-   manifest UID/GID; if values are absent or ownership changes are denied, warn
-   and leave new entries owned by the current process user. Apply metadata from
+   the current process UID/GID. With `--preserve-owner`, use manifest UID/GID
+   for listed entries (including legacy full-inventory regular files) and
+   tar-header UID/GID for unlisted regular files. If metadata is absent or
+   ownership changes are denied, warn and leave new entries owned by the current
+   process user. Apply metadata from
    explicit directory entries; implicit structural parents keep their safe
    default mode and current-user ownership. Reused directories retain existing
    ownership when a change is denied. This flag can assign files to other local
@@ -293,6 +326,9 @@ Cover:
   basename layout.
 - Complete artifact creation, naming collisions, target/source overlap, and
   cleanup after failed backup publication.
+- New manifests omit regular-file entries while retaining directories and
+  symlinks; restore validates unlisted files structurally and continues to
+  restore existing full-inventory development manifests.
 - Digest mismatch, missing sidecars, malformed/unsupported manifest, and
   archive/manifest inventory mismatch.
 - Traversal, absolute archive members, duplicate paths, unsupported entry

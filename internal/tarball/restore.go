@@ -75,10 +75,10 @@ func (s *Service) Restore(ctx context.Context, options RestoreOptions) (RestoreR
 	result := RestoreResult{
 		ArchivePath: archivePath,
 		Destination: destinationRoot,
-		Paths:       make([]string, 0, len(staged.Manifest.Entries)),
+		Paths:       make([]string, 0, len(staged.Members)),
 	}
-	for _, entry := range staged.Manifest.Entries {
-		result.Paths = append(result.Paths, entry.Path)
+	for _, member := range staged.Members {
+		result.Paths = append(result.Paths, member.Path)
 	}
 	if options.DryRun {
 		return result, nil

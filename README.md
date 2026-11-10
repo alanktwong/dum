@@ -74,6 +74,7 @@ Creates one gzip tarball per source, with SHA-256 and YAML inventory sidecars:
 
 ```shell
 dum tarball backup ~/Documents                       # Explicit paths
+dum tarball backup ~/Project --exclude 'dist/' --exclude node_modules --use-gitignore
 dum tarball backup --input input.yml                 # Paths from YAML
 dum tarball backup --input input.yml --dry-run       # Preview outputs
 dum tarball restore /path/to/Photos-2026-01-02-030405.tgz --dest /tmp/restore
@@ -98,6 +99,18 @@ with their `$HOME`-relative layout; sources outside `$HOME` restore under the
 destination by basename. `--target` selects the archive directory (default:
 `$XDG_DATA_HOME/tarballs`, or `~/.local/share/tarballs`; `TGZ_TARGET` overrides
 it).
+
+The manifest records directories and symlinks, not regular-file paths. Files
+remain in the archive and are validated from tar headers; the SHA-256 sidecar
+covers the archive bytes. The manifest also records `--exclude` patterns and
+whether `.gitignore` was used.
+
+`--exclude PATTERN` can be repeated. `--use-gitignore` reads `.gitignore` files
+recursively from each source root as backup traverses directories. Nested rules
+apply relative to their `.gitignore` directory; rules do not cross between
+sources. Excluded directories are pruned, so nested `.gitignore` files inside
+them are not read. Negation rules (`!pattern`) and symlinked `.gitignore` files
+are unsupported.
 
 List restore discovers `<basename>-*.tgz`. A single match is automatic;
 multiple matches use `fzf` or `gum` when installed. Missing or invalid entries

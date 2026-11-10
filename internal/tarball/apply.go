@@ -114,7 +114,10 @@ func (s *Service) applyStagedRestore(
 		if member.Type != EntryTypeFile {
 			continue
 		}
-		manifestEntry := manifestEntries[member.Path]
+		manifestEntry, ok := manifestEntries[member.Path]
+		if !ok {
+			manifestEntry = regularFileOwnerEntry(member)
+		}
 		if err := s.applyStagedFile(destination, staged.StageDir, member, manifestEntry, options); err != nil {
 			return fmt.Errorf("apply file %q: %w", member.Path, err)
 		}
@@ -166,6 +169,18 @@ func (s *Service) applyStagedRestore(
 		}
 	}
 	return nil
+}
+
+func regularFileOwnerEntry(member archiveMember) ManifestEntry {
+	entry := ManifestEntry{Path: member.Path, Type: EntryTypeFile}
+	if member.Header.PAXRecords[ownerMetadataPAXKey] == ownerMetadataUnavailable {
+		return entry
+	}
+	uid := int64(member.Header.Uid)
+	gid := int64(member.Header.Gid)
+	entry.UID = &uid
+	entry.GID = &gid
+	return entry
 }
 
 func (s *Service) applyStagedFile(

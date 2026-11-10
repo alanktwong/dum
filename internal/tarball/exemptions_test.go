@@ -1,6 +1,7 @@
 package tarball
 
 import (
+	"os"
 	"path/filepath"
 	"testing"
 	"time"
@@ -108,6 +109,22 @@ func TestLoadGitignorePatterns(t *testing.T) {
 	_, err = LoadGitignorePatterns(filepath.Join(dir, "bad.gitignore"))
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "negation patterns are not supported")
+}
+
+func TestLoadGitignorePatternsDoesNotFollowSymlinks(t *testing.T) {
+	t.Parallel()
+	root := t.TempDir()
+	target := filepath.Join(root, "outside.gitignore")
+	writeTestFile(t, target, []byte("*.secret\n"), 0o644, time.Now())
+	link := filepath.Join(root, ".gitignore")
+	if err := os.Symlink(target, link); err != nil {
+		t.Fatal(err)
+	}
+
+	_, err := LoadGitignorePatterns(link)
+	if assert.Error(t, err) {
+		assert.Contains(t, err.Error(), "not a regular file")
+	}
 }
 
 func TestExemptionMatcher_MergeGitignore(t *testing.T) {

@@ -24,6 +24,7 @@ func TestManifest_MarshalAndParse(t *testing.T) {
 		return
 	}
 	assert.Contains(t, string(data), "schema_version: 1")
+	assert.Contains(t, string(data), "use_gitignore: false")
 	assert.Less(
 		t,
 		strings.Index(string(data), "path: Documents\n"),

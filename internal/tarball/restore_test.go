@@ -35,6 +35,217 @@ func TestStageRestore_VerifiesAndStagesValidArchive(t *testing.T) {
 	assert.NoDirExists(t, destination)
 }
 
+func TestStageRestore_AcceptsReducedManifestWithUnlistedFiles(t *testing.T) {
+	root := t.TempDir()
+	archivePath := filepath.Join(root, "Documents-2026-11-03-101112.tgz")
+	manifest := Manifest{
+		SchemaVersion: 1,
+		Entries: []ManifestEntry{
+			{Path: "Documents", Type: EntryTypeDirectory},
+		},
+	}
+	artifacts := writeTestArchiveFixture(t, archivePath, []testArchiveMember{
+		{Header: tar.Header{Name: "Documents/", Typeflag: tar.TypeDir, Mode: 0o755}},
+		{
+			Header: tar.Header{Name: "Documents/file.txt", Typeflag: tar.TypeReg, Mode: 0o644, Size: 7},
+			Data:   []byte("payload"),
+		},
+	}, manifest)
+
+	staged, err := NewService(nil).stageRestore(context.Background(), RestoreOptions{Archive: artifacts.ArchivePath})
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer func() { _ = staged.cleanup() }()
+
+	content, err := os.ReadFile(filepath.Join(staged.StageDir, "Documents", "file.txt"))
+	if assert.NoError(t, err) {
+		assert.Equal(t, []byte("payload"), content)
+	}
+}
+
+func TestStageRestore_ReducedManifestRequiresDirectoryAndSymlinkEntries(t *testing.T) {
+	tests := []struct {
+		name   string
+		header tar.Header
+	}{
+		{
+			name: "unlisted directory",
+			header: tar.Header{
+				Name: "Documents/", Typeflag: tar.TypeDir, Mode: 0o755,
+			},
+		},
+		{
+			name: "unlisted symlink",
+			header: tar.Header{
+				Name: "link", Typeflag: tar.TypeSymlink, Linkname: "target", Mode: 0o777,
+			},
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			root := t.TempDir()
+			archivePath := filepath.Join(root, "archive.tgz")
+			artifacts := writeTestArchiveFixture(t, archivePath, []testArchiveMember{{Header: test.header}}, Manifest{
+				SchemaVersion: 1,
+			})
+			_, err := NewService(nil).stageRestore(context.Background(), RestoreOptions{
+				Archive: artifacts.ArchivePath,
+			})
+			if assert.Error(t, err) {
+				assert.Contains(t, err.Error(), "missing from manifest")
+			}
+		})
+	}
+}
+
+func TestRestore_UsesTarHeaderOwnerForUnlistedRegularFiles(t *testing.T) {
+	root := t.TempDir()
+	archivePath := filepath.Join(root, "archive.tgz")
+	uid, gid := int64(1234567), int64(7654321)
+	artifacts := writeTestArchiveFixture(t, archivePath, []testArchiveMember{{
+		Header: tar.Header{
+			Name: "file.txt", Typeflag: tar.TypeReg, Mode: 0o644, Size: 7,
+			Uid: int(uid), Gid: int(gid), Format: tar.FormatPAX,
+		},
+		Data: []byte("payload"),
+	}}, Manifest{SchemaVersion: 1})
+
+	var gotUID, gotGID int
+	ownerChanged := false
+	service := NewService(nil)
+	service.changeOwner = func(_ *os.Root, _ string, newUID, newGID int, symlink bool) error {
+		ownerChanged = true
+		gotUID, gotGID = newUID, newGID
+		assert.False(t, symlink)
+		return nil
+	}
+
+	result, err := service.Restore(context.Background(), RestoreOptions{
+		Archive:       artifacts.ArchivePath,
+		Destination:   filepath.Join(root, "destination"),
+		PreserveOwner: true,
+	})
+	if !assert.NoError(t, err) {
+		return
+	}
+	assert.True(t, ownerChanged)
+	assert.Equal(t, int(uid), gotUID)
+	assert.Equal(t, int(gid), gotGID)
+	assert.Equal(t, []string{"file.txt"}, result.Paths)
+}
+
+func TestRestore_TreatsUnmarkedZeroOwnerAsKnown(t *testing.T) {
+	root := t.TempDir()
+	archivePath := filepath.Join(root, "archive.tgz")
+	artifacts := writeTestArchiveFixture(t, archivePath, []testArchiveMember{{
+		Header: tar.Header{
+			Name: "file.txt", Typeflag: tar.TypeReg, Mode: 0o644, Size: 7,
+			Uid: 0, Gid: 0, Format: tar.FormatPAX,
+		},
+		Data: []byte("payload"),
+	}}, Manifest{SchemaVersion: 1})
+
+	var gotUID, gotGID int
+	ownerChanged := false
+	service := NewService(nil)
+	service.ownerOf = func(os.FileInfo) (int64, int64, bool) { return 501, 20, true }
+	service.changeOwner = func(_ *os.Root, _ string, uid, gid int, _ bool) error {
+		ownerChanged = true
+		gotUID, gotGID = uid, gid
+		return nil
+	}
+	_, err := service.Restore(context.Background(), RestoreOptions{
+		Archive:       artifacts.ArchivePath,
+		Destination:   filepath.Join(root, "destination"),
+		PreserveOwner: true,
+	})
+	if !assert.NoError(t, err) {
+		return
+	}
+	assert.True(t, ownerChanged)
+	assert.Zero(t, gotUID)
+	assert.Zero(t, gotGID)
+}
+
+func TestRestore_UnavailableFileOwnerMarkerFallsBack(t *testing.T) {
+	root := t.TempDir()
+	archivePath := filepath.Join(root, "archive.tgz")
+	artifacts := writeTestArchiveFixture(t, archivePath, []testArchiveMember{{
+		Header: tar.Header{
+			Name: "file.txt", Typeflag: tar.TypeReg, Mode: 0o644, Size: 7,
+			PAXRecords: map[string]string{"dum.owner-metadata": "unavailable"},
+		},
+		Data: []byte("payload"),
+	}}, Manifest{SchemaVersion: 1})
+
+	ownerChanged := false
+	service := NewService(nil)
+	service.changeOwner = func(_ *os.Root, _ string, _, _ int, _ bool) error {
+		ownerChanged = true
+		return nil
+	}
+	_, err := service.Restore(context.Background(), RestoreOptions{
+		Archive:       artifacts.ArchivePath,
+		Destination:   filepath.Join(root, "destination"),
+		PreserveOwner: true,
+	})
+	if assert.NoError(t, err) {
+		assert.False(t, ownerChanged)
+	}
+}
+
+func TestStageRestore_RejectsInvalidOwnerMetadataMarkers(t *testing.T) {
+	tests := []struct {
+		name          string
+		header        tar.Header
+		manifest      []ManifestEntry
+		wantErrorText string
+	}{
+		{
+			name: "unknown marker value",
+			header: tar.Header{
+				Name: "file.txt", Typeflag: tar.TypeReg, Mode: 0o644, Size: 1, Format: tar.FormatPAX,
+				PAXRecords: map[string]string{"dum.owner-metadata": "unknown"},
+			},
+			wantErrorText: "unsupported owner metadata marker",
+		},
+		{
+			name: "marker on directory",
+			header: tar.Header{
+				Name: "Documents/", Typeflag: tar.TypeDir, Mode: 0o755, Format: tar.FormatPAX,
+				PAXRecords: map[string]string{"dum.owner-metadata": "unavailable"},
+			},
+			manifest:      []ManifestEntry{{Path: "Documents", Type: EntryTypeDirectory}},
+			wantErrorText: "owner metadata marker is only valid on regular files",
+		},
+		{
+			name: "unavailable marker with non-neutral ids",
+			header: tar.Header{
+				Name: "file.txt", Typeflag: tar.TypeReg, Mode: 0o644, Size: 1, Uid: 501, Format: tar.FormatPAX,
+				PAXRecords: map[string]string{"dum.owner-metadata": "unavailable"},
+			},
+			wantErrorText: "unavailable owner metadata requires neutral 0:0 ids",
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			root := t.TempDir()
+			archivePath := filepath.Join(root, "archive.tgz")
+			artifacts := writeTestArchiveFixture(t, archivePath, []testArchiveMember{{
+				Header: test.header,
+				Data:   []byte("x"),
+			}}, Manifest{SchemaVersion: 1, Entries: test.manifest})
+			_, err := NewService(nil).stageRestore(context.Background(), RestoreOptions{
+				Archive: artifacts.ArchivePath,
+			})
+			if assert.Error(t, err) {
+				assert.Contains(t, err.Error(), test.wantErrorText)
+			}
+		})
+	}
+}
+
 func TestStageRestore_RequiresBothSidecars(t *testing.T) {
 	root := t.TempDir()
 	archivePath := filepath.Join(root, "legacy.tgz")

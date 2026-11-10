@@ -22,6 +22,7 @@ type archiveMember struct {
 type archiveInspection struct {
 	manifest         Manifest
 	allowUnsafeLinks bool
+	fullInventory    bool
 	expected         map[string]ManifestEntry
 	seen             map[string]struct{}
 	caseFolded       map[string]string
@@ -63,12 +64,17 @@ func inspectArchive(snapshotPath string, manifest Manifest, allowUnsafeLinks boo
 
 func newArchiveInspection(manifest Manifest, allowUnsafeLinks bool) *archiveInspection {
 	expected := make(map[string]ManifestEntry, len(manifest.Entries))
+	fullInventory := false
 	for _, entry := range manifest.Entries {
 		expected[entry.Path] = entry
+		if entry.Type == EntryTypeFile {
+			fullInventory = true
+		}
 	}
 	return &archiveInspection{
 		manifest:         manifest,
 		allowUnsafeLinks: allowUnsafeLinks,
+		fullInventory:    fullInventory,
 		expected:         expected,
 		seen:             make(map[string]struct{}, len(manifest.Entries)),
 		caseFolded:       make(map[string]string, len(manifest.Entries)),
@@ -93,9 +99,10 @@ func (inspection *archiveInspection) add(header *tar.Header) error {
 	}
 	manifestEntry, ok := inspection.expected[memberPath]
 	if !ok {
-		return fmt.Errorf("archive member %q is missing from manifest", memberPath)
-	}
-	if err := validateArchiveManifestMatch(
+		if entryType != EntryTypeFile || inspection.fullInventory {
+			return fmt.Errorf("archive member %q is missing from manifest", memberPath)
+		}
+	} else if err := validateArchiveManifestMatch(
 		header,
 		memberPath,
 		entryType,
@@ -153,6 +160,17 @@ func validateArchiveHeader(header *tar.Header, memberPath string, entryType Entr
 	if entryType != EntryTypeSymlink && header.Linkname != "" {
 		return fmt.Errorf("non-symlink archive member %q has a link target", memberPath)
 	}
+	if marker, ok := header.PAXRecords[ownerMetadataPAXKey]; ok {
+		if entryType != EntryTypeFile {
+			return fmt.Errorf("archive member %q: owner metadata marker is only valid on regular files", memberPath)
+		}
+		if marker != ownerMetadataUnavailable {
+			return fmt.Errorf("archive member %q: unsupported owner metadata marker %q", memberPath, marker)
+		}
+		if header.Uid != 0 || header.Gid != 0 {
+			return fmt.Errorf("archive member %q: unavailable owner metadata requires neutral 0:0 ids", memberPath)
+		}
+	}
 	return nil
 }
 
@@ -172,6 +190,12 @@ func validateArchiveManifestMatch(
 		}
 	} else if int64(header.Uid) != *manifestEntry.UID || int64(header.Gid) != *manifestEntry.GID {
 		return fmt.Errorf("archive member %q owner ids do not match manifest", memberPath)
+	}
+	if header.PAXRecords[ownerMetadataPAXKey] == ownerMetadataUnavailable && manifestEntry.UID != nil {
+		return fmt.Errorf(
+			"archive member %q marks owner metadata unavailable but manifest contains owner ids",
+			memberPath,
+		)
 	}
 	if entryType == EntryTypeSymlink {
 		return validateArchiveSymlink(header, memberPath, manifestEntry, allowUnsafeLinks)
@@ -194,12 +218,13 @@ func validateArchiveSymlink(header *tar.Header, memberPath string, entry Manifes
 }
 
 func (inspection *archiveInspection) finish() ([]archiveMember, error) {
-	if len(inspection.members) != len(inspection.manifest.Entries) {
-		return nil, fmt.Errorf(
-			"archive has %d entries; manifest lists %d",
-			len(inspection.members),
-			len(inspection.manifest.Entries),
-		)
+	for memberPath := range inspection.expected {
+		if _, ok := inspection.seen[memberPath]; !ok {
+			return nil, fmt.Errorf("manifest member %q is missing from archive", memberPath)
+		}
+	}
+	if inspection.fullInventory && len(inspection.members) != len(inspection.manifest.Entries) {
+		return nil, fmt.Errorf("archive does not match the full manifest inventory")
 	}
 	if err := validateArchiveParents(inspection.members); err != nil {
 		return nil, err

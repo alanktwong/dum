@@ -16,6 +16,11 @@ import (
 	"time"
 )
 
+const (
+	ownerMetadataPAXKey      = "dum.owner-metadata"
+	ownerMetadataUnavailable = "unavailable"
+)
+
 type backupPlan struct {
 	source       string
 	memberRoot   string
@@ -90,9 +95,6 @@ func (s *Service) planBackup(options BackupOptions) ([]backupPlan, string, error
 	matcher, err := NewExemptionMatcher(options.Exemptions, options.UseGitignore)
 	if err != nil {
 		return nil, "", fmt.Errorf("compile exclude patterns: %w", err)
-	}
-	if err := matcher.MergeGitignore(sources); err != nil {
-		return nil, "", fmt.Errorf("load .gitignore patterns: %w", err)
 	}
 
 	now := time.Now
@@ -274,92 +276,133 @@ func (s *Service) writeArchive(
 			return fmt.Errorf("backup source walk canceled: %w", err)
 		}
 
-		info, err := os.Lstat(currentPath)
-		if err != nil {
-			return fmt.Errorf("inspect source entry %q: %w", currentPath, err)
-		}
-		memberPath, skip, err := archiveMemberPath(source, currentPath, memberRoot, info)
+		manifestEntry, include, err := s.archiveSourceEntry(
+			archive,
+			source,
+			memberRoot,
+			currentPath,
+			matcher,
+		)
 		if err != nil {
 			return err
 		}
-		if skip {
-			return nil
+		if include {
+			manifest.Entries = append(manifest.Entries, manifestEntry)
 		}
-		if matcher.Match(memberPath, info.IsDir()) {
-			if info.IsDir() {
-				return filepath.SkipDir
-			}
-			return nil
-		}
-		if err := validateMemberPath(memberPath); err != nil {
-			return fmt.Errorf("invalid archive member %q: %w", memberPath, err)
-		}
-
-		uid, gid, hasOwner := fileOwner(info)
-		header := &tar.Header{
-			Name:    memberPath,
-			Mode:    int64(info.Mode().Perm() & 0o777),
-			ModTime: info.ModTime(),
-			Uid:     0,
-			Gid:     0,
-			Format:  tar.FormatPAX,
-		}
-		manifestEntry := ManifestEntry{Path: memberPath}
-		if hasOwner {
-			header.Uid = int(uid)
-			header.Gid = int(gid)
-			manifestEntry.UID = &uid
-			manifestEntry.GID = &gid
-		}
-
-		mode := info.Mode()
-		switch {
-		case mode&os.ModeSymlink != 0:
-			target, err := os.Readlink(currentPath)
-			if err != nil {
-				return fmt.Errorf("read symlink %q: %w", currentPath, err)
-			}
-			unsafe, warning := classifySymlinkTarget(memberPath, target)
-			header.Typeflag = tar.TypeSymlink
-			header.Linkname = target
-			manifestEntry.Type = EntryTypeSymlink
-			manifestEntry.Target = target
-			manifestEntry.Unsafe = unsafe
-			if unsafe {
-				manifestEntry.Warning = warning + "; restore requires --allow-unsafe-links"
-				if s.Log != nil {
-					s.Log.Warn("unsafe symlink in backup", "path", currentPath, "target", target, "warning", warning)
-				}
-			}
-			if err := archive.WriteHeader(header); err != nil {
-				return fmt.Errorf("write symlink header %q: %w", currentPath, err)
-			}
-		case info.IsDir():
-			header.Typeflag = tar.TypeDir
-			header.Name = memberPath + "/"
-			manifestEntry.Type = EntryTypeDirectory
-			if err := archive.WriteHeader(header); err != nil {
-				return fmt.Errorf("write directory header %q: %w", currentPath, err)
-			}
-		case mode.IsRegular():
-			manifestEntry.Type = EntryTypeFile
-			header.Typeflag = tar.TypeReg
-			if err := writeRegularFile(archive, header, info, currentPath); err != nil {
-				return err
-			}
-		default:
-			return fmt.Errorf("unsupported source entry %q with mode %s", currentPath, mode.Type())
-		}
-
-		manifest.Entries = append(manifest.Entries, manifestEntry)
 		return nil
 	})
+	manifest.Exemptions = matcher.Patterns()
 	archiveCloseErr := archive.Close()
 	gzipCloseErr := compressed.Close()
 	if err := errors.Join(walkErr, archiveCloseErr, gzipCloseErr); err != nil {
 		return Manifest{}, fmt.Errorf("finish archive: %w", err)
 	}
 	return manifest, nil
+}
+
+func (s *Service) archiveSourceEntry(
+	archive *tar.Writer,
+	source, memberRoot, currentPath string,
+	matcher *ExemptionMatcher,
+) (ManifestEntry, bool, error) {
+	info, err := os.Lstat(currentPath)
+	if err != nil {
+		return ManifestEntry{}, false, fmt.Errorf("inspect source entry %q: %w", currentPath, err)
+	}
+	relativePath, err := filepath.Rel(source, currentPath)
+	if err != nil {
+		return ManifestEntry{}, false, fmt.Errorf("make source entry %q relative to %q: %w", currentPath, source, err)
+	}
+	if relativePath == "." {
+		relativePath = ""
+	} else {
+		relativePath = filepath.ToSlash(relativePath)
+	}
+	memberPath, skip, err := archiveMemberPath(source, currentPath, memberRoot, info)
+	if err != nil {
+		return ManifestEntry{}, false, err
+	}
+	if matcher.Match(relativePath, info.IsDir()) {
+		if info.IsDir() {
+			return ManifestEntry{}, false, filepath.SkipDir
+		}
+		return ManifestEntry{}, false, nil
+	}
+	if info.IsDir() && matcher.UseGitignore() {
+		if err := matcher.MergeGitignoreAt(currentPath, relativePath); err != nil {
+			return ManifestEntry{}, false, fmt.Errorf("load .gitignore rules for %q: %w", currentPath, err)
+		}
+	}
+	if skip {
+		return ManifestEntry{}, false, nil
+	}
+	if err := validateMemberPath(memberPath); err != nil {
+		return ManifestEntry{}, false, fmt.Errorf("invalid archive member %q: %w", memberPath, err)
+	}
+
+	ownerOf := fileOwner
+	if s != nil && s.ownerOf != nil {
+		ownerOf = s.ownerOf
+	}
+	uid, gid, hasOwner := ownerOf(info)
+	header := &tar.Header{
+		Name:    memberPath,
+		Mode:    int64(info.Mode().Perm() & 0o777),
+		ModTime: info.ModTime(),
+		Uid:     0,
+		Gid:     0,
+		Format:  tar.FormatPAX,
+	}
+	if mode := info.Mode(); mode.IsRegular() && !hasOwner {
+		header.PAXRecords = map[string]string{ownerMetadataPAXKey: ownerMetadataUnavailable}
+	}
+	manifestEntry := ManifestEntry{Path: memberPath}
+	if hasOwner {
+		header.Uid = int(uid)
+		header.Gid = int(gid)
+		manifestEntry.UID = &uid
+		manifestEntry.GID = &gid
+	}
+
+	mode := info.Mode()
+	switch {
+	case mode&os.ModeSymlink != 0:
+		target, err := os.Readlink(currentPath)
+		if err != nil {
+			return ManifestEntry{}, false, fmt.Errorf("read symlink %q: %w", currentPath, err)
+		}
+		unsafe, warning := classifySymlinkTarget(memberPath, target)
+		header.Typeflag = tar.TypeSymlink
+		header.Linkname = target
+		manifestEntry.Type = EntryTypeSymlink
+		manifestEntry.Target = target
+		manifestEntry.Unsafe = unsafe
+		if unsafe {
+			manifestEntry.Warning = warning + "; restore requires --allow-unsafe-links"
+			if s != nil && s.Log != nil {
+				s.Log.Warn("unsafe symlink in backup", "path", currentPath, "target", target, "warning", warning)
+			}
+		}
+		if err := archive.WriteHeader(header); err != nil {
+			return ManifestEntry{}, false, fmt.Errorf("write symlink header %q: %w", currentPath, err)
+		}
+	case info.IsDir():
+		header.Typeflag = tar.TypeDir
+		header.Name = memberPath + "/"
+		manifestEntry.Type = EntryTypeDirectory
+		if err := archive.WriteHeader(header); err != nil {
+			return ManifestEntry{}, false, fmt.Errorf("write directory header %q: %w", currentPath, err)
+		}
+	case mode.IsRegular():
+		manifestEntry.Type = EntryTypeFile
+		header.Typeflag = tar.TypeReg
+		if err := writeRegularFile(archive, header, info, currentPath); err != nil {
+			return ManifestEntry{}, false, err
+		}
+	default:
+		return ManifestEntry{}, false, fmt.Errorf("unsupported source entry %q with mode %s", currentPath, mode.Type())
+	}
+	return manifestEntry, manifestEntry.Type != EntryTypeFile, nil
 }
 
 func writeRegularFile(archive *tar.Writer, header *tar.Header, info os.FileInfo, sourcePath string) error {
