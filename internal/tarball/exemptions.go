@@ -68,7 +68,7 @@ func compilePattern(pattern string) (compiledPattern, error) {
 		}
 		matcher = func(relPath string) bool {
 			// Split the path into segments and test each segment's basename.
-			for _, segment := range strings.Split(relPath, "/") {
+			for segment := range strings.SplitSeq(relPath, "/") {
 				if baseMatch(segment) {
 					return true
 				}
