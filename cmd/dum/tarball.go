@@ -53,7 +53,7 @@ func NewTarballCommand(rootUse string, dum *TarballCommand) *ca.Command {
 	cmd := &ca.Command{
 		Aliases: []string{alias},
 		Use:     use,
-		Short:   "create and restore checksummed tar archives",
+		Short:   fmt.Sprintf("%v-%v (or %v) create and restore checksummed tar archives", rootUse, use, alias),
 		Long: fmt.Sprintf(
 			"%s-%s (or %s) creates gzip tar archives with SHA-256 and YAML sidecars, then verifies and safely restores them.",
 			rootUse,
@@ -94,7 +94,8 @@ func (d *TarballCommand) newBackupCommand(rootUse, tarballUse string) *ca.Comman
 	cmd := &ca.Command{
 		Use:     fmt.Sprintf("%s [PATH...]", use),
 		Aliases: []string{alias},
-		Short:   "create one tarball and sidecars per path",
+		Short: fmt.Sprintf("%v-%v-%v (or %v) create one tarball and sidecars per path",
+			rootUse, tarballUse, use, alias),
 		Long: tarballInputFileDoc(
 			[]string{
 				fmt.Sprintf(
@@ -136,7 +137,8 @@ func (d *TarballCommand) newRestoreCommand(rootUse, tarballUse string) *ca.Comma
 	cmd := &ca.Command{
 		Use:     fmt.Sprintf("%s [ARCHIVE]", use),
 		Aliases: []string{alias},
-		Short:   "verify and restore one tarball or archives from input.yml",
+		Short: fmt.Sprintf("%v-%v-%v (or %v) verify and restore one tarball (from input.yml)",
+			rootUse, tarballUse, use, alias),
 		Long: tarballInputFileDoc(
 			[]string{
 				fmt.Sprintf(
