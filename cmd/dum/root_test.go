@@ -35,6 +35,22 @@ func TestNewDum_Subcommands(t *testing.T) {
 	assert.False(t, subcommands["list"])
 	assert.True(t, subcommands["log"])
 	assert.True(t, subcommands["schema"])
+	assert.True(t, subcommands["tarball"])
+}
+
+func TestNewDum_TarballSubcommands(t *testing.T) {
+	dum := NewDum()
+	tarballCmd := findCommand(dum.Cmd.Commands(), "tarball")
+	if !assert.NotNil(t, tarballCmd) {
+		return
+	}
+
+	subcommands := make(map[string]bool)
+	for _, cmd := range tarballCmd.Commands() {
+		subcommands[cmd.Name()] = true
+	}
+	assert.True(t, subcommands["backup"])
+	assert.True(t, subcommands["restore"])
 }
 
 func TestNewDum_SubcommandAliases(t *testing.T) {
@@ -174,7 +190,7 @@ func TestNewDum_LogLevelHelper(t *testing.T) {
 
 func findCommand(cmds []*cobra.Command, name string) *cobra.Command {
 	for _, cmd := range cmds {
-		if cmd.Use == name {
+		if cmd.Name() == name {
 			return cmd
 		}
 	}

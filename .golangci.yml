@@ -85,6 +85,8 @@ linters-settings:
         alias: tk
       - prefix: alanktwong/dum/internal/tasks/installer
         alias: ti
+      - prefix: alanktwong/dum/internal/tarball
+        alias: tb
       - prefix: alanktwong/dum/internal/types
         alias: ty
       - prefix: alanktwong/dum/internal/types/gen
